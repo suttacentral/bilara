@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>bilara</title>
+    <meta name="description" content="bilara description">
+
+    <!-- See https://goo.gl/OOhYW5 -->
+    <link rel="manifest" href="/manifest.json">
+
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    
+    <script type="application/json" id="source_data">
+      {
+        "sn1.10:0.1": "Saṃyutta Nikāya 1",
+        "sn1.10:0.2": "1. Naḷavagga",
+        "sn1.10:0.3": "10. Araññasutta",
+        "sn1.10:1.1": "Sāvatthinidānaṃ.",
+        "sn1.10:1.2": "Ekamantaṃ ṭhitā kho sā devatā bhagavantaṃ gāthāya ajjhabhāsi:",
+        "sn1.10:2.1": "“Araññe viharantānaṃ,",
+        "sn1.10:2.2": "santānaṃ brahmacārinaṃ;",
+        "sn1.10:2.3": "Ekabhattaṃ bhuñjamānānaṃ,",
+        "sn1.10:2.4": "kena vaṇṇo pasīdatī”ti.",
+        "sn1.10:3.1": "“Atītaṃ nānusocanti,",
+        "sn1.10:3.2": "nappajappanti nāgataṃ;",
+        "sn1.10:3.3": "Paccuppannena yāpenti,",
+        "sn1.10:3.4": "tena vaṇṇo pasīdati.",
+        "sn1.10:4.1": "Anāgatappajappāya,",
+        "sn1.10:4.2": "atītassānusocanā;",
+        "sn1.10:4.3": "Etena bālā sussanti,",
+        "sn1.10:4.4": "naḷova harito luto”ti.",
+        "sn1.10:4.5": "Naḷavaggo paṭhamo.",
+        "sn1.10:5.1": "Oghaṃ nimokkhaṃ upaneyyaṃ,",
+        "sn1.10:5.2": "Accenti katichindi ca;",
+        "sn1.10:5.3": "Jāgaraṃ appaṭividitā,",
+        "sn1.10:5.4": "Susammuṭṭhā mānakāminā;",
+        "sn1.10:5.5": "Araññe dasamo vutto,",
+        "sn1.10:5.6": "Vaggo tena pavuccati."
+      }
+    </script>
+    <script type="application/json" id="target_data">
+      {
+        "sn1.10:0.1": "Linked Discourses 1",
+        "sn1.10:0.2": "1. A Reed",
+        "sn1.10:0.3": "10. Wilderness",
+        "sn1.10:1.1": "At Sāvatthī.",
+        "sn1.10:1.2": "Standing to one side, that deity addressed the Buddha in verse:",
+        "sn1.10:2.1": "“Living in the wilderness,",
+        "sn1.10:2.2": "peaceful spiritual practitioners",
+        "sn1.10:2.3": "eat just one meal a day:",
+        "sn1.10:2.4": "so why is their complexion so clear?”",
+        "sn1.10:3.1": "“They don’t worry about the past,",
+        "sn1.10:3.2": "nor do they long for the future;",
+        "sn1.10:3.3": "feeding on whatever comes in the present day,",
+        "sn1.10:3.4": "that’s why their complexion is so clear.",
+        "sn1.10:4.1": "Because they long for the future,",
+        "sn1.10:4.2": "and worry about the past,",
+        "sn1.10:4.3": "fools wither away,",
+        "sn1.10:4.4": "like a green reed mowed down.”"
+      }
+    </script>
+    
+    <script type="application/json" id="comment_data">
+        {
+            "sn1.10:2.3": {
+                "blake": "and chocolate in the evening?"
+            },
+            "sn1.10:2.4": {
+                "blake": "yeah that is puzzling."
+            }
+        }
+    </script>
+
+    <script type="module" src="/src/bilara-app/bilara-editor.js" crossorigin></script>
+  </head>
+  <body>
+    
+    <bilara-editor id="editor"></bilara-editor>
+    
+    <script>
+        
+
+        var editor = document.getElementById('editor');
+        editor.source = JSON.parse(document.getElementById('source_data').text);
+        editor.target = JSON.parse(document.getElementById('target_data').text);
+        editor.comment = JSON.parse(document.getElementById('comment_data').text);
+        
+
+    </script>
+  </body>
+</html>

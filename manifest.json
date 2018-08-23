@@ -1,0 +1,6 @@
+{
+  "name": "bilara",
+  "short_name": "bilara",
+  "start_url": "/",
+  "display": "standalone"
+}
