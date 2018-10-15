@@ -1,0 +1,5 @@
+*.pyc
+
+local_config.py
+
+flask_session
