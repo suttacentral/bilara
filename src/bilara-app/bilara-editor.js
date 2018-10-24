@@ -4,6 +4,9 @@ import {html, LitElement} from '@polymer/lit-element';
 import './bilara-settings';
 import  './bilara-segment';
 
+
+
+
 class BilaraEditor extends LitElement {
   static get properties() {
     return {
@@ -21,21 +24,19 @@ class BilaraEditor extends LitElement {
     super();
     this.comment = {};
     this.user = {
-              name: "guest"
-          }
+        name: "guest"
+    }
     this.saved = {
       source: {},
       target: {}
     }
+    this.addEventListener('gainedFocus', (e) => {
+      this.activeSegmentId = e.detail.segmentId;
+    });
   }
 
   ready() {
     super.ready();
-
-    this.addEventListener('gainedFocus', (e) => {
-      this.activeSegmentId = e.detail.segmentId;
-    });
-
     this.addEventListener('stringChanged', (e) => {
       let dataType = e.detail.type,
           segmentId = e.detail.segmentId,
@@ -49,6 +50,16 @@ class BilaraEditor extends LitElement {
       }
 
     });
+  }
+
+  _setData({source, target, comment}) {
+    this.source = source;
+    this.target = target;
+    this.comment = comment;
+    let keys = Object.keys(this.source);
+    if (keys.length > 0 && !this.activeSegmentId) {
+      this.activeSegmentId = keys[0];
+    }
   }
 
   render() {
@@ -71,12 +82,12 @@ class BilaraEditor extends LitElement {
       <div class="page">
 
         <div class="wrap">
-          ${html`
+          ${this.source ? html`
             ${ Object.keys(this.source).map(key => {
 
               return html`
                 <bilara-segment id=${key} .sourceString=${this.source[key]} .targetString=${this.target[key]} .segmentId=${key} .active=${key == this.activeSegmentId} .commentDict=${ this.comment[key] || {} }></bilara-segment>
-              `})}`}
+              `})}` : html``}
         </div>
 
         ${ this.source ? html`<bilara-settings id="settings" mode="submit" activeSegmentId="${this.activeSegmentId}" user="${this.user}"></bilara-settings>` : html`` }

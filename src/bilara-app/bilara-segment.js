@@ -15,6 +15,17 @@ class BilaraSegment extends LitElement {
     super();
     this._onSourceChange = this._onSourceChange.bind(this);
     this._onTargetChange = this._onTargetChange.bind(this);
+    this.addEventListener('focus', (e) => {
+      this.dispatchEvent(new CustomEvent("gainedFocus",
+        {
+          bubbles: true,
+          composed: true,
+          detail: {
+            segmentId: this.segmentId
+          }
+        }
+      ))
+    });
   }
 
   _onSourceChange(e) {
@@ -45,22 +56,6 @@ class BilaraSegment extends LitElement {
       }
     }));
   }
-  ready() {
-    super.ready();
-
-    this.addEventListener('focus', (e) => {
-      this.dispatchEvent(new CustomEvent("gainedFocus",
-        {
-          bubbles: true,
-          composed: true,
-          detail: {
-            segmentId: this.segmentId
-          }
-        }
-      ))
-    });
-  }
-
   render() {
     return html`
       <style>
@@ -141,7 +136,7 @@ class BilaraSegment extends LitElement {
           <div id="comments">
             ${ Object.keys(this.commentDict).map(name => {
               let value = this.commentDict[name];
-              return html`<div class="comment"><span class="username">${this.name}: </span><span class="comment-text">${this.value}</span></div>`
+              return html`<div class="comment"><span class="username">${name}: </span><span class="comment-text">${value}</span></div>`
             }) }
           </div>` : html`` }
       </div>
