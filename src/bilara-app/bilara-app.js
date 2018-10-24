@@ -1,11 +1,9 @@
-import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
+import {LitElement, html} from '@polymer/lit-element';
+import {installRouter} from '@pwa-helpers/router.js';
 
-/**
- * @customElement
- * @polymer
- */
-class BilaraApp extends PolymerElement {
-  static get template() {
+
+class BilaraApp extends LitElement {
+  render() {
     return html`
       <style>
         :host {

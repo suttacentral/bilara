@@ -10,17 +10,17 @@ class BilaraSegment extends LitElement {
       active: Boolean
     }
   }
-  
+
   constructor() {
     super();
     this._onSourceChange = this._onSourceChange.bind(this);
     this._onTargetChange = this._onTargetChange.bind(this);
   }
-  
+
   _onSourceChange(e) {
     let value = e.target.value;
     if (value == this.sourceString) return
-    
+
     this.dispatchEvent(new CustomEvent("stringChanged", {
       bubbles: true,
       composed: true,
@@ -30,28 +30,26 @@ class BilaraSegment extends LitElement {
         value: value
       }
     }));
-  }    
-    
+  }
   _onTargetChange(e) {
     let value = e.target.value;
-    if (value == this.targetString) return
-    
+    if (value == this.sourceString) return
+
     this.dispatchEvent(new CustomEvent("stringChanged", {
       bubbles: true,
       composed: true,
-      detail: {
+      details: {
         type: 'target',
         segmentId: this.segmentId,
         value: value
       }
     }));
   }
-  
   ready() {
     super.ready();
-    
+
     this.addEventListener('focus', (e) => {
-      this.dispatchEvent(new CustomEvent("gainedFocus", 
+      this.dispatchEvent(new CustomEvent("gainedFocus",
         {
           bubbles: true,
           composed: true,
@@ -62,8 +60,8 @@ class BilaraSegment extends LitElement {
       ))
     });
   }
-    
-  _render({sourceString, targetString, segmentId, active, commentDict}) {
+
+  render() {
     return html`
       <style>
         :host {
@@ -82,14 +80,14 @@ class BilaraSegment extends LitElement {
         div {
 
         }
-        
+
         #wrap {
           display: flex;
           flex-direction: column;
         }
-        
+
         #strings {
-                  display: flex;
+          display: flex;
           flex-direction: row;
           flex-wrap: nowrap;
           justify-content: center;
@@ -98,15 +96,15 @@ class BilaraSegment extends LitElement {
           width: 100%;
           flex-direction: row;
         }
-        
+
         #comments {
           display: block;
         }
-        
+
         textarea {
           flex-grow: 2;
         }
-        
+
         a {
           position: absolute;
           margin-left: -5em;
@@ -115,35 +113,35 @@ class BilaraSegment extends LitElement {
           padding: 0.1em;
           align-self: center;
         }
-        
+
         .comment {
           padding: 0.25em;
           display: flex;
         }
-        
+
         .username {
           flex-grow: 0;
           padding-right: 1em;
           font-size: 80%;
         }
-        
+
         .comment-text {
           flex-grow: 1;
         }
-          
+
       </style>
-      <a class="segment-id">${segmentId}</a>
-      <div id="wrap" class$="${active ? 'active': ''}">
+      <a class="segment-id">${this.segmentId}</a>
+      <div id="wrap" class=${this.active ? 'active': ''}>
         <div id="strings">
-          
-          <textarea class="source" value="${sourceString}" onblur="${this._onSourceChange}" disabled=disabled></textarea>
-          <textarea class="target" value="${targetString}" onblur="${this._onTargetChange}"></textarea>
+
+          <textarea class="source" .value="${this.sourceString}" @blur=${this._onSourceChange} disabled=disabled></textarea>
+          <textarea class="target" .value="${this.targetString}" @blur=${this._onSourceChange}></textarea>
         </div>
-        ${ active ? html`
+        ${ this.active ? html`
           <div id="comments">
-            ${ Object.keys(commentDict).map(name => {
-              let value = commentDict[name];
-              return html`<div class="comment"><span class="username">${name}: </span><span class="comment-text">${value}</span></div>`
+            ${ Object.keys(this.commentDict).map(name => {
+              let value = this.commentDict[name];
+              return html`<div class="comment"><span class="username">${this.name}: </span><span class="comment-text">${this.value}</span></div>`
             }) }
           </div>` : html`` }
       </div>

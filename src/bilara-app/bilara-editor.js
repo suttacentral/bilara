@@ -3,7 +3,7 @@ import {html, LitElement} from '@polymer/lit-element';
 
 import './bilara-settings';
 import  './bilara-segment';
-      
+
 class BilaraEditor extends LitElement {
   static get properties() {
     return {
@@ -16,7 +16,7 @@ class BilaraEditor extends LitElement {
       }
     }
   }
-  
+
   constructor() {
     super();
     this.comment = {};
@@ -28,30 +28,30 @@ class BilaraEditor extends LitElement {
       target: {}
     }
   }
-  
+
   ready() {
     super.ready();
-    
+
     this.addEventListener('gainedFocus', (e) => {
       this.activeSegmentId = e.detail.segmentId;
     });
-    
+
     this.addEventListener('stringChanged', (e) => {
       let dataType = e.detail.type,
           segmentId = e.detail.segmentId,
           value = e.detail.value;
-        
+
       if (dataType == 'comment') {
         if (!this.comment[[this.activeSegmentId]]) this.comment[[this.activeSegmentId]] = {};
         this.comment[this.activeSegmentId][this.user.name] = value;
       } else {
         this[dataType][segmentId] = value;
       }
-      
+
     });
   }
-  
-  _render({source, target, activeSegmentId, comment, user}) { 
+
+  render() {
     return html`
       <style>
       :host {
@@ -60,7 +60,7 @@ class BilaraEditor extends LitElement {
       :host([hidden]) {
         display: none;
       }
-      
+
       .wrap {
         padding-top: 4em;
         max-width: 60em;
@@ -69,22 +69,22 @@ class BilaraEditor extends LitElement {
 
       </style>
       <div class="page">
-        
+
         <div class="wrap">
           ${html`
-            ${ Object.keys(source).map(key => { 
-              
+            ${ Object.keys(this.source).map(key => {
+
               return html`
-                <bilara-segment id="${key}" sourceString="${source[key]}" targetString="${target[key]}" segmentId="${key}" active="${key == activeSegmentId}" commentDict="${ this.comment[key] || {} }"></bilara-segment>
+                <bilara-segment id=${key} .sourceString=${this.source[key]} .targetString=${this.target[key]} .segmentId=${key} .active=${key == this.activeSegmentId} .commentDict=${ this.comment[key] || {} }></bilara-segment>
               `})}`}
         </div>
-        
-        ${ source ? html`<bilara-settings id="settings" mode="submit" activeSegmentId="${activeSegmentId}" user="${user}"></bilara-settings>` : html`` }
-        
+
+        ${ this.source ? html`<bilara-settings id="settings" mode="submit" activeSegmentId="${this.activeSegmentId}" user="${this.user}"></bilara-settings>` : html`` }
+
         <hr>
-        <code>${JSON.stringify(source)}</code>
+        <code>${JSON.stringify(this.source)}</code>
         <hr>
-        <code>${JSON.stringify(target)}</code>
+        <code>${JSON.stringify(this.target)}</code>
       </div>
     `;
   }
