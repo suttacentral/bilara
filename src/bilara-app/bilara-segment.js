@@ -1,4 +1,7 @@
-import {html, LitElement} from '@polymer/lit-element';
+import {
+  html, LitElement
+}
+from '@polymer/lit-element';
 
 class BilaraSegment extends LitElement {
   static get properties() {
@@ -13,51 +16,35 @@ class BilaraSegment extends LitElement {
 
   constructor() {
     super();
-    this._onSourceChange = this._onSourceChange.bind(this);
-    this._onTargetChange = this._onTargetChange.bind(this);
     this.addEventListener('focus', (e) => {
-      this.dispatchEvent(new CustomEvent("gainedFocus",
-        {
-          bubbles: true,
-          composed: true,
-          detail: {
-            segmentId: this.segmentId
-          }
+      this.dispatchEvent(new CustomEvent("gainedFocus", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          segmentId: this.segmentId
         }
-      ))
+      }))
     });
   }
 
-  _onSourceChange(e) {
-    let value = e.target.value;
-    if (value == this.sourceString) return
-
+  _blur(e) {
+    let value = e.target.value,
+      name = e.target.name;
+    if (name == 'target' && value == this.targetString) return
+    if (name == 'source' && value == this.sourceString) return
     this.dispatchEvent(new CustomEvent("stringChanged", {
       bubbles: true,
       composed: true,
-      details: {
-        type: 'source',
+      detail: {
+        type: name,
         segmentId: this.segmentId,
         value: value
       }
     }));
   }
-  _onTargetChange(e) {
-    let value = e.target.value;
-    if (value == this.sourceString) return
 
-    this.dispatchEvent(new CustomEvent("stringChanged", {
-      bubbles: true,
-      composed: true,
-      details: {
-        type: 'target',
-        segmentId: this.segmentId,
-        value: value
-      }
-    }));
-  }
   render() {
-    return html`
+      return html `
       <style>
         :host {
           display: block;
@@ -129,18 +116,17 @@ class BilaraSegment extends LitElement {
       <div id="wrap" class=${this.active ? 'active': ''}>
         <div id="strings">
 
-          <textarea class="source" .value="${this.sourceString}" @blur=${this._onSourceChange} disabled=disabled></textarea>
-          <textarea class="target" .value="${this.targetString}" @blur=${this._onSourceChange}></textarea>
+          <textarea class="source" name="source" .value=${this.sourceString} disabled=disabled></textarea>
+          <textarea class="target" name="target" .value=${this.targetString} @blur=${ this._blur }></textarea>
         </div>
-        ${ this.active ? html`
-          <div id="comments">
-            ${ Object.keys(this.commentDict).map(name => {
-              let value = this.commentDict[name];
-              return html`<div class="comment"><span class="username">${name}: </span><span class="comment-text">${value}</span></div>`
-            }) }
-          </div>` : html`` }
-      </div>
-      `
+        ${ this.active ? html`<div id="comments">
+        ${
+          Object.keys(this.commentDict).map(name => {
+            let value = this.commentDict[name];
+            return html `<div class="comment"><span class="username">${name}: </span><span class="comment-text">${value}</span></div>`
+          })
+        }</div>` : html`` } </div >
+        `
   }
 }
 

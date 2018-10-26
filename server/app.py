@@ -1,11 +1,17 @@
 from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string
 from flask_oauthlib.client import OAuth
+from flask_cors import CORS
+
+from flask import jsonify
 
 from github import Github
 
 from config import config
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['JSON_AS_ASCII'] = False
+app.config['JSON_SORT_KEYS'] = False
 app.debug = True
 app.secret_key = 'development'
 oauth = OAuth(app)
@@ -23,13 +29,23 @@ github_auth = oauth.remote_app(
 )
 
 
+@app.route('/api/')
+def api():
+    import fs
+    uid = request.args.get('uid')
+    to_lang = request.args.get('to_lang')
+
+    result = fs.get_data(uid=uid, to_lang=to_lang)
+
+    return jsonify(result)
+
 @app.route('/')
 def index():
     if 'github_token' in session:
         data = github_auth.get('user').data
         return jsonify(call_github())
     return render_template_string('<a href="{{ url_for("login") }}">Login</a>')
-    
+
 
 
 @app.route('/login')
@@ -69,6 +85,12 @@ def call_github():
     for repo in github.get_user().get_repos():
         result.append(repo.name)
     return result
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.get_json()
+    print(data)
+    return 'Okay', 200
 
 if __name__ == '__main__':
     app.run()

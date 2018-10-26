@@ -33,10 +33,6 @@ class BilaraEditor extends LitElement {
     this.addEventListener('gainedFocus', (e) => {
       this.activeSegmentId = e.detail.segmentId;
     });
-  }
-
-  ready() {
-    super.ready();
     this.addEventListener('stringChanged', (e) => {
       let dataType = e.detail.type,
           segmentId = e.detail.segmentId,
@@ -55,7 +51,7 @@ class BilaraEditor extends LitElement {
   _setData({source, target, comment}) {
     this.source = source;
     this.target = target;
-    this.comment = comment;
+    this.comment = comment || {};
     let keys = Object.keys(this.source);
     if (keys.length > 0 && !this.activeSegmentId) {
       this.activeSegmentId = keys[0];
@@ -84,9 +80,9 @@ class BilaraEditor extends LitElement {
         <div class="wrap">
           ${this.source ? html`
             ${ Object.keys(this.source).map(key => {
-
+              if (key == '_meta') return ''
               return html`
-                <bilara-segment id=${key} .sourceString=${this.source[key]} .targetString=${this.target[key]} .segmentId=${key} .active=${key == this.activeSegmentId} .commentDict=${ this.comment[key] || {} }></bilara-segment>
+                <bilara-segment id=${key} .sourceString=${this.source[key]} .targetString=${this.target[key] || ''} .segmentId=${key} .active=${key == this.activeSegmentId} .commentDict=${ this.comment[key] || {} }></bilara-segment>
               `})}` : html``}
         </div>
 

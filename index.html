@@ -11,7 +11,8 @@
     <link rel="manifest" href="/manifest.json">
 
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-    
+
+
     <script type="application/json" id="source_data">
       {
         "sn1.10:0.1": "Saṃyutta Nikāya 1",
@@ -61,7 +62,8 @@
         "sn1.10:4.4": "like a green reed mowed down.”"
       }
     </script>
-    
+
+
     <script type="application/json" id="comment_data">
         {
             "sn1.10:2.3": {
@@ -76,17 +78,43 @@
     <script type="module" src="/src/bilara-app/bilara-editor.js" crossorigin></script>
   </head>
   <body>
-    
+
     <bilara-editor id="editor"></bilara-editor>
-    
-    <script>
-        
+
+    <script type="module">
+      import {installRouter} from '/node_modules/pwa-helpers/router.js';
+      installRouter( (location) => handleNavigation(location) );
+
+      async function getTestData() {
+        return {
+          source: JSON.parse(document.getElementById('source_data').text),
+          target: JSON.parse(document.getElementById('target_data').text),
+          comment: JSON.parse(document.getElementById('comment_data').text)
+        }
+      }
+      async function handleNavigation(location) {
+        let params = new URLSearchParams(location.search);
+
+        let uid = params.get('uid'),
+            to_lang = params.get('to_lang');
+        console.log(uid, to_lang);
+        let response = await fetch(`http://localhost:5000/api?uid=${uid}&to_lang=${to_lang}`);
+        let data = await response.json();
+        console.log(data);
+        editor._setData(data);
+
+
+      }
+
 
         var editor = document.getElementById('editor');
-        editor.source = JSON.parse(document.getElementById('source_data').text);
-        editor.target = JSON.parse(document.getElementById('target_data').text);
-        editor.comment = JSON.parse(document.getElementById('comment_data').text);
-        
+        //setTimeout(async () => {
+          //let data = await getTestData();
+          //editor._setData(data)
+        //}, 1)
+
+
+
 
     </script>
   </body>
