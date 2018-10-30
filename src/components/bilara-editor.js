@@ -4,9 +4,6 @@ import {html, LitElement} from '@polymer/lit-element';
 import './bilara-settings';
 import  './bilara-segment';
 
-
-
-
 class BilaraEditor extends LitElement {
   static get properties() {
     return {
