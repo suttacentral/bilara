@@ -28,9 +28,8 @@ github_auth = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize'
 )
 
-
-@app.route('/api/')
-def api():
+@app.route('/api/segments/')
+def segments():
     import fs
     uid = request.args.get('uid')
     to_lang = request.args.get('to_lang')
@@ -38,6 +37,11 @@ def api():
     result = fs.get_data(uid=uid, to_lang=to_lang)
 
     return jsonify(result)
+
+@app.route('/api/nav/')
+def nav():
+    import fs
+    return jsonify(fs.get_condensed_tree(['translation']))
 
 @app.route('/')
 def index():

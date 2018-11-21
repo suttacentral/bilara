@@ -1,6 +1,10 @@
 import json
+import pathlib
+import logging
 from config import config
 from util import humansortkey
+
+from collections import defaultdict, Counter
 
 REPO_DIR = config.REPO_DIR
 
@@ -71,9 +75,72 @@ def make_file_index():
 _tree_index = None
 _flat_index = None
 
+class StatsCalculator:
+    def __init__(self):
+        self._completion = {}
+
+    def get_completion(self, translation):
+
+        path = translation['path']
+
+        if path not in self._completion:
+            self._completion[path] = self.calculate_completion(translation)
+
+        return self._completion[path]
+
+    def calculate_completion(self, translation):
+        translated_count = self.count_strings(translation)
+
+        source = get_source(translation)
+        source_count = self.count_strings(source)
+
+        return {'_translated': translated_count, '_source': source_count}
+
+    def count_strings(self, entry):
+        json_file = REPO_DIR / entry['path'][1:]
+        data = json_load(json_file)
+        count = 0
+        for k, v in data.items():
+            if k == '_meta':
+                continue
+            if v:
+                count += 1
+        return count
+
+stats_calculator = StatsCalculator()
+
+def get_source(translation):
+    name = pathlib.Path(translation['path']).stem
+    query = {'language': translation['_meta']['source_lang'],
+             'edition': translation['_meta']['source_edition']}
+    return get_matching_entry(name, query)
+
+def get_matching_entry(filename, query):
+    for result in _flat_index[filename]:
+        if not result['path'].endswith('.json'):
+            continue
+        for k, v in query.items():
+            if result['_meta'].get(k) != v:
+                break
+        else:
+            #If we did not break we matched the query
+            print(filename, result)
+            return result
+    raise FileNotFoundError(filename, keys)
+
+
+def json_load(file):
+    with file.open('r') as f:
+        try:
+            return json.load(f)
+        except Exception as e:
+            logging.error(file)
+            raise e
+
+
 def load_json(result):
-    with open(REPO_DIR / result['path'][1:]) as f:
-        return {'_meta': result['_meta'], **json.load(f)}
+    json_file = REPO_DIR / result['path'][1:]
+    return {'_meta': result['_meta'], **json_load(f)}
 
 def get_data(uid, to_lang, desired={'source', 'translation'}):
     if not _flat_index:
@@ -104,7 +171,43 @@ def get_data(uid, to_lang, desired={'source', 'translation'}):
     return result
 
 
+def sum_counts(subtree):
+    counts = {'_translated_count': 0, '_source_count': 0}
 
+    for key, child in subtree.items():
+        if '_source' in child:
+            counts['_source_count'] += child['_source']
+            counts['_translated_count'] += child.get('_translated', 0)
+        else:
+            if key.startswith('_'):
+                continue
+            child_counts = sum_counts(child)
+            for prop in ['_translated_count', '_source_count']:
+                counts[prop] += child_counts[prop]
+    subtree.update(counts)
+    return counts
+
+def get_condensed_tree(path):
+    if not _tree_index:
+        make_file_index()
+    tree = _tree_index
+    for part in path:
+        tree = tree[part]
+
+    def recurse(subtree):
+        result = {}
+        for key, value in subtree.items():
+            if key.endswith('.json'):
+                result[key] = stats_calculator.get_completion(value)
+            elif key.startswith('_meta'):
+                pass
+            else:
+                result[key] = recurse(value)
+        return result
+
+    tree = recurse(tree)
+    sum_counts(tree)
+    return tree
 
 
 
