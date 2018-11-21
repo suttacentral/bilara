@@ -1,9 +1,12 @@
-import {
-  html, LitElement
-}
-from '@polymer/lit-element';
+import {html, LitElement} from '@polymer/lit-element';
+import { connect } from '@polymer/pwa-helpers/connect-mixin';
+import { store } from '../store/store.js';
 
-class BilaraSegment extends LitElement {
+import { gainedFocus, lostFocus } from '../store/actions/segment.js';
+
+class BilaraSegment extends connect(store)(LitElement) {
+  static get is() { return 'bilara-segment'; }
+
   static get properties() {
     return {
       sourceString: String,
@@ -14,33 +17,23 @@ class BilaraSegment extends LitElement {
     }
   }
 
+  stateChanged(state) {
+  }
+
   constructor() {
     super();
     this.addEventListener('focus', (e) => {
-      this.dispatchEvent(new CustomEvent("gainedFocus", {
-        bubbles: true,
-        composed: true,
-        detail: {
-          segmentId: this.segmentId
-        }
-      }))
+      store.dispatch(gainedFocus({segmentId: this.segmentId}));
     });
   }
 
   _blur(e) {
     let value = e.target.value,
-      name = e.target.name;
-    if (name == 'target' && value == this.targetString) return
-    if (name == 'source' && value == this.sourceString) return
-    this.dispatchEvent(new CustomEvent("stringChanged", {
-      bubbles: true,
-      composed: true,
-      detail: {
-        type: name,
-        segmentId: this.segmentId,
-        value: value
-      }
-    }));
+        name = e.target.name,
+        param = name + 'String';
+
+    if (value == this[param]) return
+    store.dispatch(stringChanged({type: name, segmentId: this.segmentId, value: value});
   }
 
   render() {
