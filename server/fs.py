@@ -140,7 +140,7 @@ def json_load(file):
 
 def load_json(result):
     json_file = REPO_DIR / result['path'][1:]
-    return {'_meta': result['_meta'], **json_load(f)}
+    return {'_meta': result['_meta'], **json_load(json_file)}
 
 def get_data(uid, to_lang, desired={'source', 'translation'}):
     if not _flat_index:

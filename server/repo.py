@@ -16,3 +16,7 @@ def get_repo():
 repo = get_repo()
 lock = threading.Lock()
 
+def pull():
+    with lock:
+        repo.pull()
+        
