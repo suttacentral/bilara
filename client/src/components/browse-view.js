@@ -40,13 +40,21 @@ class NavItem extends LitElement {
         margin-left: 1em;
         display: block;
       }
+      .division {
+        cursor: pointer;
+      }
+      .more:after {
+        content: '▶';
+      }
       paper-progress {
         display: inline-block;
         -paper-progress-secondary-color: rgb(200,100,100);
       }
       </style>
 
-      <div>${ isFile ? html`<a href="/translation/${uid}/${lang}" @click="${this._navigate}">${this._name}</a>` : this._name}
+      <div class="${isFile ? "file" : "division"}">${ 
+          isFile ? html`<a href="/translation/${uid}/${lang}" @click="${this._navigate}">${this._name}</a>` 
+                 : html`${ this._name }` }
         ${ _translated ? html`<paper-progress value="${_translated}" max="${_source}"></paper-progress>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
           ${this.open ? repeat(Object.keys(this._tree), (key)=>key, (name, index) => {

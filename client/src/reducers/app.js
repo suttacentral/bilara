@@ -11,8 +11,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import {
   UPDATE_PAGE,
   UPDATE_OFFLINE,
-  OPEN_SNACKBAR,
-  CLOSE_SNACKBAR,
   UPDATE_DRAWER_STATE
 } from '../actions/app.js';
 
@@ -20,7 +18,6 @@ const INITIAL_STATE = {
   page: '',
   offline: false,
   drawerOpened: false,
-  snackbarOpened: false,
 };
 
 const app = (state = INITIAL_STATE, action) => {

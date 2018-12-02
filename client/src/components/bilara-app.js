@@ -213,7 +213,7 @@ class BilaraApp extends connect(store)(LitElement) {
 
     <footer>
       <p>Made for SuttaCentral by Blake Walsh</p>
-    </footer>
+    </footer>`
   }
 
   static get properties() {
