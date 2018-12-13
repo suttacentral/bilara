@@ -91,8 +91,8 @@ class StatsCalculator:
     def calculate_completion(self, translation):
         translated_count = self.count_strings(translation)
 
-        source = get_source(translation)
-        source_count = self.count_strings(source)
+        source_entry = get_source_entry(translation)
+        source_count = self.count_strings(source_entry)
 
         return {'_translated': translated_count, '_source': source_count}
 
@@ -109,7 +109,7 @@ class StatsCalculator:
 
 stats_calculator = StatsCalculator()
 
-def get_source(translation):
+def get_source_entry(translation):
     name = pathlib.Path(translation['path']).stem
     query = {'language': translation['_meta']['source_lang'],
              'edition': translation['_meta']['source_edition']}
@@ -119,14 +119,15 @@ def get_matching_entry(filename, query):
     for result in _flat_index[filename]:
         if not result['path'].endswith('.json'):
             continue
-        for k, v in query.items():
-            if result['_meta'].get(k) != v:
+        for key, wanted_value in query.items():
+            # all keys in the query must match
+            if result['_meta'].get(key) != wanted_value:
                 break
         else:
             #If we did not break we matched the query
             print(filename, result)
             return result
-    raise FileNotFoundError(filename, keys)
+    raise FileNotFoundError(filename)
 
 
 def json_load(file):
@@ -142,12 +143,12 @@ def load_json(result):
     json_file = REPO_DIR / result['path'][1:]
     return {'_meta': result['_meta'], **json_load(json_file)}
 
-def get_data(uid, to_lang, desired={'source', 'translation'}):
+def get_data(uid, to_lang, desired={'source_entry', 'translation'}):
     if not _flat_index:
         make_file_index()
 
     translation = None
-    source = None
+    source_entry = None
     for result in _flat_index[uid]:
         path = result['path']
         if path.startswith(f'/translation/{to_lang}/'):
@@ -161,10 +162,10 @@ def get_data(uid, to_lang, desired={'source', 'translation'}):
     for result in _flat_index[uid]:
         path = result['path']
         if path.startswith(f'/source/{source_lang}/'):
-            source = result
+            source_entry = result
 
     result = {
-        'source': load_json(source),
+        'source': load_json(source_entry),
         'target': load_json(translation)
     }
 

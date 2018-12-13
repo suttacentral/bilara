@@ -7,6 +7,9 @@
   "license": "BSD-3-Clause",
   "repository": "Polymer/pwa-starter-kit",
   "scripts": {
+    "serv": "polymer serve -p 8088 --compile",
+    "watch": "browser-sync start --proxy 0.0.0.0:8088 --files \"**/*.*, index.html, *.js\" --no-open",
+    "dev": "npm run serv | npm run watch",
     "start": "polymer serve",
     "build": "npm run build:prpl-server && npm run build:static",
     "build:prpl-server": "polymer build --auto-base-path && gulp prpl-server",
