@@ -4,8 +4,8 @@ export const FAIL_SEGMENT_DATA = 'FAIL_SEGMENT_DATA';
 
 export const fetchSegmentData = () => (dispatch, getState) => {
     const state = getState();
-    const uid = state.app.page_lefts[0] || 'dn1',
-          to_lang = state.app.page_lefts[1] || 'en';
+    const uid = state.app.page.subpath[0],
+          to_lang = state.app.page.subpath[1];
 
     dispatch(requestSegmentData(uid, to_lang));
     

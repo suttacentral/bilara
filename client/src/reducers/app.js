@@ -15,7 +15,10 @@ import {
 } from '../actions/app.js';
 
 const INITIAL_STATE = {
-  page: '',
+  page: {
+    view: 'browse',
+    subpath: []
+  },
   offline: false,
   drawerOpened: false,
 };
@@ -25,8 +28,10 @@ const app = (state = INITIAL_STATE, action) => {
     case UPDATE_PAGE:
       return {
         ...state,
-        page: action.page,
-        page_lefts: action.lefts
+        page: {
+          view: action.view,
+          subpath: action.subpath
+        }
       };
     case UPDATE_OFFLINE:
       return {

@@ -15,42 +15,46 @@ export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
   const pageArray = path.split('/');
-  const page = path === '/' ? 'view1' : pageArray[1];
-  const lefts = pageArray.slice(2);
+  const view = path === '/' ? 'view1' : pageArray[1];
+  const subpath = pageArray.slice(2);
 
   console.log('Navigating to ' + path);
   // Any other info you might want to extract from the path (like page type),
   // you can do here
-  dispatch(loadPage(page, lefts));
+  dispatch(loadPage(view, subpath));
 
   // Close the drawer - in case the *path* change came from a link in the drawer.
   dispatch(updateDrawerState(false));
 };
 
-const loadPage = (page, lefts) => (dispatch) => {
-  switch(page) {
+const loadPage = (view, subpath) => (dispatch) => {
+  switch(view) {
     case 'browse': 
       import('../components/browse-view.js');
       break;
     case 'translation':
+      console.log(subpath);
+      if (subpath.length === 0) {
+        subpath = ['dn1', 'en']
+      }
       import('../components/translation-view.js');
       break;
     case 'redux':
       import('../components/redux-view.js');
       break;
     default:
-      page = 'view404';
+      view = 'view404';
       import('../components/my-view404.js');
   }
 
-  dispatch(updatePage(page, lefts));
+  dispatch(updatePage(view, subpath));
 };
 
-const updatePage = (page, lefts) => {
+const updatePage = (view, subpath) => {
   return {
     type: UPDATE_PAGE,
-    page,
-    lefts
+    view,
+    subpath
   };
 };
 

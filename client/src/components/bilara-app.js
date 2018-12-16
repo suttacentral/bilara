@@ -35,6 +35,9 @@ import { menuIcon } from './my-icons.js';
 
 class BilaraApp extends connect(store)(LitElement) {
   render() {
+    
+    let translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : '/translation/dn1/en';
+
     // Anything that's related to rendering should be done in here.
     return html`
     <style>
@@ -187,9 +190,9 @@ class BilaraApp extends connect(store)(LitElement) {
 
       <!-- This gets hidden on a small screen-->
       <nav class="toolbar-list">
-        <a ?selected="${this._page === 'browse'}" href="/browse">Browse</a>
-        <a ?selected="${this._page === 'translation'}" href="/translation">Translate</a>
-        <a ?selected="${this._page === 'redux'}" href="/redux">Debug</a>
+        <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
+        <a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>
+        <a ?selected="${this._page.view === 'redux'}" href="/redux">Debug</a>
       </nav>
     </app-header>
 
@@ -197,18 +200,18 @@ class BilaraApp extends connect(store)(LitElement) {
     <app-drawer .opened="${this._drawerOpened}"
         @opened-changed="${this._drawerOpenedChanged}">
       <nav class="drawer-list">
-      <a ?selected="${this._page === 'browse'}" href="/browse">Browse</a>
-        <a ?selected="${this._page === 'translation'}" href="/translation">Translate</a>
+      <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
+        <a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>
         <a ?selected="${this._page == 'redux'}" href="/redux">Debug</a>
       </nav>
     </app-drawer>
 
     <!-- Main content -->
     <main role="main" class="main-content">
-      <browse-view class="page" ?active="${this._page === 'browse'}"></browse-view>
-      <translation-view class="page" ?active="${this._page === 'translation'}"></translation-view>
-      <redux-view class="page" ?active="${this._page === 'redux'}"></redux-view>
-      <my-view404 class="page" ?active="${this._page === 'view404'}"></my-view404>
+      <browse-view class="page" ?active="${this._page.view === 'browse'}"></browse-view>
+      <translation-view class="page" ?active="${this._page.view === 'translation'}"></translation-view>
+      <redux-view class="page" ?active="${this._page.view === 'redux'}"></redux-view>
+      <my-view404 class="page" ?active="${this._page.view === 'view404'}"></my-view404>
     </main>
 
     <footer>
@@ -219,7 +222,7 @@ class BilaraApp extends connect(store)(LitElement) {
   static get properties() {
     return {
       appTitle: { type: String },
-      _page: { type: String },
+      _page: { type: Object },
       _drawerOpened: { type: Boolean },
       _offline: { type: Boolean }
     }
