@@ -8,10 +8,11 @@ from collections import defaultdict, Counter
 
 REPO_DIR = config.REPO_DIR
 
-for file in REPO_DIR.glob('**/*.json'):
-    if file.name == '_meta.json':
-        new_file = file.parent / f'_{file.parent.name}'
-        file.rename(new_file)
+def get_file(filepath):
+    if filepath.startswith('/'):
+        filepath = filepath[1:]
+    return REPO_DIR / filepath
+
 
 def strip_suffix(file):
     if file.isdir():
@@ -97,7 +98,7 @@ class StatsCalculator:
         return {'_translated': translated_count, '_source': source_count}
 
     def count_strings(self, entry):
-        json_file = REPO_DIR / entry['path'][1:]
+        json_file = get_file(entry['path'])
         data = json_load(json_file)
         count = 0
         for k, v in data.items():
@@ -138,10 +139,14 @@ def json_load(file):
             logging.error(file)
             raise e
 
+def json_save(data, file):
+    with file.open('w') as f:
+        json.dump(data, ensure_ascii=False, indent=2)
 
 def load_json(result):
-    json_file = REPO_DIR / result['path'][1:]
-    return {'_meta': result['_meta'], **json_load(json_file)}
+    json_file = get_file(result['path'])
+    meta = {'filepath': result['path'], **result['_meta']}
+    return {'_meta': meta, **json_load(json_file)}
 
 def get_data(uid, to_lang, desired={'source_entry', 'translation'}):
     if not _flat_index:
@@ -210,6 +215,10 @@ def get_condensed_tree(path):
     sum_counts(tree)
     return tree
 
+def update_segment(filepath, new_data):
+    file = get_file(filepath)
 
-
-
+    file_data = json_load(file)
+    file_data.update(new_data)
+    sorted_data = dict(sorted(file_data.items(), key=humansortkey))
+    json_save(sorted_data, filepath)

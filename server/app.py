@@ -28,7 +28,7 @@ github_auth = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize'
 )
 
-@app.route('/api/segments/')
+@app.route('/api/segments/', methods=['GET'])
 def segments():
     import fs
     uid = request.args.get('uid')
@@ -37,6 +37,11 @@ def segments():
     result = fs.get_data(uid=uid, to_lang=to_lang)
 
     return jsonify(result)
+
+@app.route('/api/segments/', methods=['POST'])
+def update():
+    import fs
+    return fs.update_segment(filepath=filepath, data=data)
 
 @app.route('/api/nav/')
 def nav():
