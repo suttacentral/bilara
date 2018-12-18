@@ -2,10 +2,8 @@ export const REQUEST_SEGMENT_DATA = 'REQUEST_SEGMENT_DATA';
 export const RECEIVE_SEGMENT_DATA = 'RECEIVE_SEGMENT_DATA';
 export const FAIL_SEGMENT_DATA = 'FAIL_SEGMENT_DATA';
 
-export const fetchSegmentData = () => (dispatch, getState) => {
+export const fetchSegmentData = (uid, to_lang) => (dispatch, getState) => {
     const state = getState();
-    const uid = state.app.page.subpath[0],
-          to_lang = state.app.page.subpath[1];
 
     dispatch(requestSegmentData(uid, to_lang));
     

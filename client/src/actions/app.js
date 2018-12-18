@@ -1,3 +1,5 @@
+import { fetchSegmentData } from './segment-data.js';
+
 /**
 @license
 Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
@@ -15,10 +17,9 @@ export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
   const pageArray = path.split('/');
-  const view = path === '/' ? 'view1' : pageArray[1];
   const subpath = pageArray.slice(2);
+  const view = path === '/' ? 'browse' : pageArray[1];
 
-  console.log('Navigating to ' + path);
   // Any other info you might want to extract from the path (like page type),
   // you can do here
   dispatch(loadPage(view, subpath));
@@ -37,6 +38,7 @@ const loadPage = (view, subpath) => (dispatch) => {
       if (subpath.length === 0) {
         subpath = ['dn1', 'en']
       }
+      dispatch(fetchSegmentData(subpath[0], subpath[1]));
       import('../components/translation-view.js');
       break;
     case 'redux':

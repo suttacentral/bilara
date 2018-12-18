@@ -58,9 +58,9 @@ class TranslationView extends connect(store)(PageViewElement) {
     }
   }
 
-  firstUpdated() {
-    store.dispatch(fetchSegmentData());
-  }
+  //firstUpdated() {
+//    store.dispatch(fetchSegmentData());
+//  }
 
   stateChanged(state) {
     this._fetching = state.segmentData.isFetching;
