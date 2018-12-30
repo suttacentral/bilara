@@ -14,6 +14,11 @@ export const UPDATE_PAGE = 'UPDATE_PAGE';
 export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 
+export const getApiUrl = (getState) => {
+  const state = getState();
+  return state.app.apiUrl;
+}
+
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
   const pageArray = path.split('/');
@@ -34,7 +39,6 @@ const loadPage = (view, subpath) => (dispatch) => {
       import('../components/browse-view.js');
       break;
     case 'translation':
-      console.log(subpath);
       if (subpath.length === 0) {
         subpath = ['dn1', 'en']
       }

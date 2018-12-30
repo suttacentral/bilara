@@ -2,15 +2,14 @@ export const REQUEST_SEGMENT_DATA = 'REQUEST_SEGMENT_DATA';
 export const RECEIVE_SEGMENT_DATA = 'RECEIVE_SEGMENT_DATA';
 export const FAIL_SEGMENT_DATA = 'FAIL_SEGMENT_DATA';
 
-export const fetchSegmentData = (uid, to_lang) => (dispatch, getState) => {
-    const state = getState();
+import { getApiUrl } from './app.js';
 
+export const fetchSegmentData = (uid, to_lang) => (dispatch, getState) => {
     dispatch(requestSegmentData(uid, to_lang));
-    
-    return fetch(`http://localhost:5000/api/segments/?uid=${uid}&to_lang=${to_lang}`, {mode: 'cors'})
+    const apiUrl = getApiUrl(getState);
+    return fetch(`${apiUrl}/segments/?uid=${uid}&to_lang=${to_lang}`, {mode: 'cors'})
         .then(res => res.json())
         .then(data => {
-            console.log('Received Data', JSON.stringify(data));
             dispatch(receiveSegmentData(uid, to_lang, data));
         }).catch( (e) => {console.log(e); dispatch(failSegmentData(uid, to_lang))});
 }

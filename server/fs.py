@@ -3,6 +3,7 @@ import pathlib
 import logging
 from config import config
 from util import humansortkey
+from itertools import groupby
 
 from collections import defaultdict, Counter
 
@@ -125,8 +126,6 @@ def get_matching_entry(filename, query):
             if result['_meta'].get(key) != wanted_value:
                 break
         else:
-            #If we did not break we matched the query
-            print(filename, result)
             return result
     raise FileNotFoundError(filename)
 
@@ -141,7 +140,7 @@ def json_load(file):
 
 def json_save(data, file):
     with file.open('w') as f:
-        json.dump(data, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_json(result):
     json_file = get_file(result['path'])
@@ -215,10 +214,29 @@ def get_condensed_tree(path):
     sum_counts(tree)
     return tree
 
-def update_segment(filepath, new_data):
+def update_segments(segments):
+    results = {}
+    for filepath, group in groupby(segments.items(), lambda t: t[1]['filepath']):
+        file_segments = list(group)
+        results.update(update_file(filepath, file_segments))
+        pass
+    return results
+
+
+def update_file(filepath, segments):
     file = get_file(filepath)
 
     file_data = json_load(file)
-    file_data.update(new_data)
+
+    for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
+        file_data[segment['segmentId']] = segment['value']
+
     sorted_data = dict(sorted(file_data.items(), key=humansortkey))
-    json_save(sorted_data, filepath)
+    try:
+        json_save(sorted_data, file)
+        return {key: "SUCCESS" for key, segment in segments}
+    except Exception as e:
+        logging.exception(f"error writing json to {filepath}")
+        return {key: "ERROR" for key in segments}
+
+

@@ -41,7 +41,7 @@ def segments():
 @app.route('/api/segments/', methods=['POST'])
 def update():
     import fs
-    return fs.update_segment(filepath=filepath, data=data)
+    return jsonify(fs.update_segments(segments=request.get_json()))
 
 @app.route('/api/nav/')
 def nav():
@@ -88,7 +88,6 @@ def get_github_oauth_token():
 
 
 def call_github():
-    print(session.get('github_token'))
     github = Github(session.get('github_token')[0])
     result = []
     for repo in github.get_user().get_repos():
@@ -98,7 +97,6 @@ def call_github():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
-    print(data)
     return 'Okay', 200
 
 if __name__ == '__main__':

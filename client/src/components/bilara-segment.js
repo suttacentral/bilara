@@ -35,6 +35,7 @@ export class BilaraSegment extends connect(store)(LitElement){
         data-type="target"
         class="string"
         @blur="${this._inputEvent}"
+        @keypress=${this._keypressEvent}"
     >${this._targetString}</span></div>` 
   }
 
@@ -42,16 +43,38 @@ export class BilaraSegment extends connect(store)(LitElement){
     return {
       _segmentId: String,
       _sourceString: String,
-      _targetString: String
+      _targetString: String,
+      _sourceFilepath: String,
+      _targetFilepath: String
     }
+  }
+
+  setFocus(dataType) {
+    let e = this.shadowRoot.querySelector(`[data-type=${dataType}]`);
+    e.focus();
   }
 
   _inputEvent(e){
     const segmentId = this._segmentId,
           value = e.currentTarget.textContent,
-          dataType = e.currentTarget.dataset.type;
-    console.log(segmentId, dataType, value);
-    store.dispatch(updateSegment(segmentId, dataType, value));
+          dataType = e.currentTarget.dataset.type,
+          filepath = dataType == 'source' ? this._sourceFilePath : this._targetFilepath,
+          hasChanged = dataType == 'source' ? this._sourceString != value : this._targetString != value;
+    
+    if (hasChanged) {
+      store.dispatch(updateSegment(filepath, segmentId, dataType, value));
+    }
+  }
+
+  _keypressEvent(e) {
+    if (e.key == 'Enter') {
+      e.preventDefault();
+      this.blur();
+      let nextSegment = this.nextElementSibling;
+      if (nextSegment) {
+        nextSegment.setFocus(e.path[0].getAttribute('data-type'));
+      }
+    }
   }
 }
 

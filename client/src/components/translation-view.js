@@ -42,7 +42,9 @@ class TranslationView extends connect(store)(PageViewElement) {
           }
           return html`<bilara-segment _segmentId="${segmentId}"
                                       _sourceString="${source}"
-                                      _targetString="${target}"></bilara-segment>`
+                                      _targetString="${target}"
+                                      _sourceFilepath="${this._source._meta.filepath}"
+                                      _targetFilepath="${this._target._meta.filepath}"></bilara-segment>`
                    
         })}
           <pre><code>${JSON.stringify(this._segmentData, null, 2)}</code></pre>`
@@ -54,7 +56,9 @@ class TranslationView extends connect(store)(PageViewElement) {
     return {
       _segmentData: { type: Object },
       _fetching: { type: Boolean },
-      _failure: { type: Boolean }
+      _failure: { type: Boolean },
+      _source: { type: Object },
+      _target: { type: Object }
     }
   }
 
@@ -71,6 +75,7 @@ class TranslationView extends connect(store)(PageViewElement) {
       this._source = {};
       this._target = {};
     }
+    
     this._failure = state.segmentData.failure;
   }
 }

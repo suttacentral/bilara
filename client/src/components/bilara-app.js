@@ -36,7 +36,8 @@ import { menuIcon } from './my-icons.js';
 class BilaraApp extends connect(store)(LitElement) {
   render() {
     
-    let translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : '/translation/dn1/en';
+    const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null;
+
 
     // Anything that's related to rendering should be done in here.
     return html`
@@ -178,6 +179,10 @@ class BilaraApp extends connect(store)(LitElement) {
         [main-title] {
           padding-right: 0px;
         }
+
+        .disabled {
+          opacity: 0.7;
+        }
       }
     </style>
 
@@ -191,7 +196,9 @@ class BilaraApp extends connect(store)(LitElement) {
       <!-- This gets hidden on a small screen-->
       <nav class="toolbar-list">
         <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
-        <a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>
+        ${ translationUrl ? 
+        html`<a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>`
+        : html`<span class="disabled">Translate</span>` }
         <a ?selected="${this._page.view === 'redux'}" href="/redux">Debug</a>
       </nav>
     </app-header>
@@ -200,8 +207,10 @@ class BilaraApp extends connect(store)(LitElement) {
     <app-drawer .opened="${this._drawerOpened}"
         @opened-changed="${this._drawerOpenedChanged}">
       <nav class="drawer-list">
-      <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
-        <a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>
+        <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
+        ${ translationUrl ? 
+          html`<a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>`
+          : html`<span class="disabled">Translate</span>` }
         <a ?selected="${this._page == 'redux'}" href="/redux">Debug</a>
       </nav>
     </app-drawer>
@@ -215,7 +224,7 @@ class BilaraApp extends connect(store)(LitElement) {
     </main>
 
     <footer>
-      <p>Made for SuttaCentral by Blake Walsh</p>
+      <p>Computer Aided Translation for SuttaCentral</p>
     </footer>`
   }
 
@@ -224,7 +233,8 @@ class BilaraApp extends connect(store)(LitElement) {
       appTitle: { type: String },
       _page: { type: Object },
       _drawerOpened: { type: Boolean },
-      _offline: { type: Boolean }
+      _offline: { type: Boolean },
+      ApiUrl: { type: String }
     }
   }
 

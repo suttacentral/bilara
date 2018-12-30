@@ -19,6 +19,7 @@ const INITIAL_STATE = {
     view: 'browse',
     subpath: []
   },
+  apiUrl: 'http://localhost:5000/api',
   offline: false,
   drawerOpened: false,
 };
