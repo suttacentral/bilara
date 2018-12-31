@@ -1,33 +1,65 @@
 # \<bilara\>
 
 
+## Development Installation
 
-## Install the Polymer-CLI
+In development Bilara uses polymer serve for the client content and flask to serve the API.
 
-First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your application locally.
+Prequisites:
 
-## Viewing Your Application
+### Clone the repo
 
+I assume that bilara is cloned to ~/bilara
 ```
-$ polymer serve
-```
-
-## Building Your Application
-
-```
-$ polymer build
+git clone git@github.com:suttacentral/bilara.git
 ```
 
-This will create builds of your application in the `build/` directory, optimized to be served in production. You can then serve the built versions by giving `polymer serve` a folder to serve from:
+### Setup Node environment
 
+polymer-cli should be installed. I recommend installing nvm: https://github.com/creationix/nvm to use a modern version of node which should result in no problems. Once nvm is installed, run something like:
 ```
-$ polymer serve build/default
-```
-
-## Running Tests
-
-```
-$ polymer test
+nvm install node
+npm install -g polymer-cli
+cd ~/bilara/client
+npm install
 ```
 
-Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally. [Java SE Development Kit 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) is required. Note that if you do not have the `javac` command installed, you will be promted to install Java 10. To uninstall Java, see the direction [here](https://www.java.com/en/download/help/mac_uninstall_java.xml). See [issue #405 for the status of Java 10 support](https://github.com/Polymer/tools/issues/405).
+### Setup python environment
+The API server uses python3.6+, I reccomend installing pyenv: https://github.com/pyenv/pyenv
+
+Once pyenv is installed, run something like:
+```
+pyenv install 3.7.2
+cd ~/bilara/server
+pyenv local 3.7.2
+pip install -r requirements.txt
+```
+
+### Clone the data repository
+
+Note that in development mode bilara does not automatically perform git actions so you must manage the repository yourself
+
+```
+cd ~/bilara
+git clone git@github.com/suttacentral/bilara-data.git repo
+```
+
+## Running development
+
+The quick way:
+```
+cd ~/bilara
+./run_dev.sh
+```
+
+Otherwise if you wish to get seperate debug feedback from the client and server code, run in seperate terminals:
+
+```
+cd ~/bilara/server
+python app.py
+```
+
+```
+cd ~/bilara/client
+polymer serve
+```
