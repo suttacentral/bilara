@@ -16,7 +16,7 @@ git clone git@github.com:suttacentral/bilara.git
 
 ### Setup Node environment
 
-polymer-cli should be installed. I recommend installing nvm: https://github.com/creationix/nvm to use a modern version of node which should result in no problems. Once nvm is installed, run something like:
+polymer-cli should be installed. I recommend installing nvm: https://github.com/creationix/nvm to use a modern version of node which should result in no problems. Once nvm is installed (remember to open a new terminal), run something like:
 ```
 nvm install node
 npm install -g polymer-cli
@@ -27,7 +27,7 @@ npm install
 ### Setup python environment
 The API server uses python3.6+, I reccomend installing pyenv: https://github.com/pyenv/pyenv
 
-Once pyenv is installed, run something like:
+Once pyenv is installed (remember to open a new terminal), run something like:
 ```
 pyenv install 3.7.2
 cd ~/bilara/server
