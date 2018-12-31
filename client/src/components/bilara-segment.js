@@ -8,22 +8,22 @@ export class BilaraSegment extends connect(store)(LitElement){
   render() {
     return html`
     <style>
+
       div {
         display: flex;
-        background: rgb(240,240,240);
+
         margin-bottom: 5px;
       }
+
       .string {
         display: inline-flex;
         flex: 1;
-        padding: 0 0.2em 0 0.2em;
-        
-        box-shadow: 2px 2px 2px rgba(200,200,200);
+        padding: 0 8px;
+      }
+      .string[contenteditable="true"]{
+        font-family:"source serif pro"
       }
 
-      div > span:focus {
-        background: rgb(255,255,255);
-      }
     </style>
     
     <div id="${this._segmentId}">
