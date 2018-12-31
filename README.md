@@ -41,7 +41,7 @@ Note that in development mode bilara does not automatically perform git actions 
 
 ```
 cd ~/bilara
-git clone git@github.com/suttacentral/bilara-data.git repo
+git clone git@github.com:suttacentral/bilara.git repo
 ```
 
 ## Running development
