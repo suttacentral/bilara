@@ -19,6 +19,7 @@ export class BilaraSegment extends connect(store)(LitElement){
         display: inline-flex;
         flex: 1;
         padding: 0 8px;
+        hyphens: auto;
       }
       .string[contenteditable="true"]{
         font-family:"source serif pro"
