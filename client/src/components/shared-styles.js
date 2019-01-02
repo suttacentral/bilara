@@ -15,6 +15,8 @@ export const SharedStyles = html`
   :host {
     display: block;
     box-sizing: border-box;
+    font-family: "source sans pro";
+    color: var(--app-dark-text-color);
   }
 
   section {
@@ -36,7 +38,12 @@ export const SharedStyles = html`
     font-size: 24px;
     text-align: center;
     color: var(--app-dark-text-color);
+    display:none
   }
+
+a{
+ color: var(--app-primary-color);
+}
 
   @media (min-width: 460px) {
     h2 {
