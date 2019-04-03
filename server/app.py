@@ -107,4 +107,5 @@ except Exception as e:
     logging.error(f'An error occured while setting up OAuth app {str(e)}')
 
 if __name__ == '__main__':
+    import fs
     app.run()

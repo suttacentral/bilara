@@ -1,11 +1,14 @@
 import json
 import pathlib
 import logging
+import threading
 from config import config
 from util import humansortkey
 from itertools import groupby
 
 from collections import defaultdict, Counter
+
+import tm
 
 REPO_DIR = config.REPO_DIR
 
@@ -24,6 +27,8 @@ def strip_suffix(file):
 def make_file_index():
     global _tree_index
     global _flat_index
+
+    print('Building file index')
 
     index = {}
     def recurse(folder, old_meta=None, names=None):
@@ -72,6 +77,8 @@ def make_file_index():
     _tree_index = recurse(REPO_DIR)
     _flat_index = index
 
+    build_thread = threading.Thread(target=tm.build_tm_if_needed, args=(len(_flat_index),))
+    build_thread.start()
 
 
 _tree_index = None
@@ -215,6 +222,11 @@ def get_condensed_tree(path):
     return tree
 
 def update_segments(segments):
+    try:
+        tm.update_docs(segments)
+    except Exception as e:
+        logging.exception("Could not update TM")
+    
     results = {}
     for filepath, group in groupby(segments.items(), lambda t: t[1]['filepath']):
         file_segments = list(group)
@@ -240,3 +252,4 @@ def update_file(filepath, segments):
         return {key: "ERROR" for key in segments}
 
 
+make_file_index()

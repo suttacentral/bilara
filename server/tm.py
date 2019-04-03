@@ -1,5 +1,7 @@
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError
 from elasticsearch.helpers import bulk, streaming_bulk
+
+from threading import Thread
 
 import pathlib
 import json
@@ -70,6 +72,42 @@ def index_bulk(force=False):
         if r[0] == 0:
             break
 
+def build_tm_if_needed(uid_count):
+    
+    try:
+        result = es.count('tm_db')
+        indexed_segment_count = result['count']
+    except NotFoundError:
+        indexed_segment_count = 0
+    
+    # there should be about 20-100 segments per uid
+    # this just detects if something is horribly wrong
+    if indexed_segment_count < uid_count:
+        print('Building TM')
+        index_bulk(force=True)
+    else:
+        print('Not rebuilding TM')
+
+def yield_update_actions(segments):
+        for segment in segments.values():
+            path = pathlib.Path(segment['filepath'])
+            lang = path.parts[2]
+            if path.parts[1] == 'translation':
+                yield {
+                    '_index': 'tm_db',
+                    '_type': 'segment',
+                    '_id': segment['segmentId'],
+                    'doc': {
+                        'translation': {
+                            lang: segment['value']
+                        }
+                    }
+                }
+
+def update_docs(segments):
+    bulk(es, yield_update_actions(segments))
+
+
 def ensure_index_exists(index_name='tm_db', recreate=False):
     exists = es.indices.exists(index_name)
     if recreate and exists:
@@ -78,6 +116,54 @@ def ensure_index_exists(index_name='tm_db', recreate=False):
 
     if not exists:
         es.indices.create(index_name)
+        # ,
+        # {
+        #     "settings": {
+        #         "index": {
+        #             "number_of_shards": 1,
+        #             "number_of_replicas": 1
+        #         },
+        #         "mappings": {
+        #             "segment": {
+        #                 "properties": {
+        #                     "source": {
+        #                         "type": "text"
+        #                     },
+        #                     "translation": {
+        #                         "type":
+        #                     }
+
+        #                 }
+        #             }
+        #         }
+        #     }
+        # })
+
+def generate_diff(string_a, string_b):
+    """
+    http://stackoverflow.com/a/788780
+    Unify operations between two compared strings seqm is a difflib.
+    SequenceMatcher instance whose a & b are strings
+    """
+    seqm = difflib.SequenceMatcher(None, string_a, string_b)
+    opcodes = seqm.get_opcodes()
+    output = []
+    total_equal = 0
+    for opcode, a0, a1, b0, b1 in opcodes:
+        if opcode == 'equal':
+            output.append(seqm.a[a0:a1])
+            total_equal += a1 - a0
+        elif opcode == 'insert':
+            output.append(f'<ins>{seqm.b[b0:b1]}</ins>')
+        elif opcode == 'delete':
+            output.append(f'<del>{seqm.a[a0:a1]}</del>')
+        elif opcode == 'replace':
+            # seqm.a[a0:a1] -> seqm.b[b0:b1]
+            output.append(f'<del>{seqm.a[a0:a1]}</del><ins>{seqm.b[b0:b1]}</ins>')
+        else:
+            raise RuntimeError("unexpected opcode")
+    sim = total_equal / max(len(string_a), len(string_b))
+    return (sim, ''.join(output))
 
 def query_related_strings(string, source_language, target_language):
     clean_string = regex.sub('[\s\p{punct}]+', ' ', string)
@@ -119,14 +205,47 @@ def query_related_strings(string, source_language, target_language):
                     }
                 ]
             }
+        },
+        "aggs": {
+            "by_source" :{ 
+                "terms":  { 
+                    "field": "source.keyword", 
+                    "order": { "max_score": "desc"},
+                    "size": 5
+                }, 
+                "aggs": { 
+                    "translation": {"terms": {"field": f"translation.{target_language}.keyword"}}, 
+                    "max_score": { "max": { "script": "_score"}}
+                }
+            }
         }
     }
     
     #print(json.dumps(body, ensure_ascii=False, indent=2))
     return es.search(index='tm_db', body=body)
 
-def get_related_strings(string, source_language, target_language, original_id=None):
+def get_related_strings(string, source_language, target_language, case_sensitive=False, original_id=None):
     es_results = query_related_strings(string, source_language, target_language)
+
+    buckets = es_results['aggregations']['by_source']['buckets']
+
+    results = []
+
+    for bucket in buckets:
+        source = bucket['key']
+        sim, diffed_source_string = generate_diff(string, source)
+        results.append({
+            'source': source,
+            'source_language': source_language,
+            'diffed_source': diffed_source_string,
+            'match_quality': sim,
+            'translations': [
+                {'translation': d['key'], 'count': d['doc_count']} 
+                for d in bucket['translation']['buckets']
+            ]
+        })
+
+    return results
 
     hits = es_results['hits']['hits']
     best_score = hits[0]['_score'] # this will usually be the string itself
@@ -134,42 +253,41 @@ def get_related_strings(string, source_language, target_language, original_id=No
 
     hits = [hit for hit in hits if hit['_score'] > min_score and hit['_id'] != original_id]
     
-    results = {}
+    # results = {}
 
-    for source_string, group in itertools.groupby(hits, lambda hit: hit['_source']['source']):
-        results[source_string] = result_group = {}
-        for hit in group:
-            translation_string = hit['_source']['translation'][target_language]
-            if translation_string not in result_group:
-                result_group[translation_string] = [hit['_id']]
-            else:
-                result_group[translation_string].append(hit['_id'])
-    
-    return results
+    # for source_string, group in itertools.groupby(hits, lambda hit: hit['_source']['source']):
+    #     results[source_string] = result_group = {}
+    #     for hit in group:
+    #         translation_string = hit['_source']['translation'][target_language]
+    #         if translation_string not in result_group:
+    #             result_group[translation_string] = [hit['_id']]
+    #         else:
+    #             result_group[translation_string].append(hit['_id'])
+    # for result in results:
 
+    # return {generate_diff(k, string): v for k, v in results.items()}
 
+    out = {}
     for i, hit in enumerate(hits):
         if i == 0:
             print(json.dumps(hit, ensure_ascii=False, indent=2))
-        source = hit['_source']['source'][source_language]
-        keys = list(source.keys())
-        assert len(keys) == 1
-        origin = keys[0]
-        source_string = source[origin]
-        
+        source_string = hit['_source']['source']        
         if source_string not in out:
-            out[source_string] = OrderedDict()
+            sim, diffed_source_string = generate_diff(string, source_string)
+            out[source_string] = {
+                'source_string': source_string,
+                'source_language': source_language,
+                'diffed_source_string': diffed_source_string,
+                'match_quality': sim,
+                'translations': {}
+            }
             
-        for origin, translation_string in hit['_source']['translation'][target_language].items():
-            if translation_string not in out:
-                out[source_string][translation_string] =  []
-            out[source_string][translation_string].append({'lang': target_language, 'origin': origin})
+        translation_string = hit['_source']['translation'][target_language]
+        if translation_string not in out[source_string]:
+            out[source_string][translation_string] =  []
+        out[source_string]['translations'][translation_string] = {'lang': target_language, 'origin': origin}
                 
-                
-    return [
-        {'source_string': source_string,
-         'translations': translations}
-        for source_string, translations in out.items()]
+    return out      
     
     
     
