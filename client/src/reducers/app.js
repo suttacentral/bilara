@@ -11,7 +11,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import {
   UPDATE_PAGE,
   UPDATE_OFFLINE,
-  UPDATE_DRAWER_STATE
+  UPDATE_DRAWER_STATE,
+  UPDATE_USER,
+  USER_MUST_REVALIDATE
 } from '../actions/app.js';
 
 const INITIAL_STATE = {
@@ -19,7 +21,12 @@ const INITIAL_STATE = {
     view: 'browse',
     subpath: []
   },
-  apiUrl: 'http://localhost:5000/api',
+  user: {
+    revalidate: true,
+    username: null,
+    avatar_url: null
+  },
+  apiUrl: '/api',
   offline: false,
   drawerOpened: false,
 };
@@ -44,6 +51,24 @@ const app = (state = INITIAL_STATE, action) => {
         ...state,
         drawerOpened: action.opened
       };
+    case UPDATE_USER:
+    return {
+      ...state,
+      user: {
+        revalidate: false,
+        username: action.username,
+        avatar_url: action.avatar_url
+      }
+    }
+    case USER_MUST_REVALIDATE:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          revalidate: true
+        }
+      }
+
     default:
       return state;
   }

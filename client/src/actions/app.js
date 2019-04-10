@@ -13,6 +13,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 export const UPDATE_PAGE = 'UPDATE_PAGE';
 export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
+export const UPDATE_USER = 'UPDATE_USER';
+export const USER_MUST_REVALIDATE = 'USER_MUST_REVALIDATE';
+
 
 export const getApiUrl = (getState) => {
   const state = getState();
@@ -48,32 +51,57 @@ const loadPage = (view, subpath) => (dispatch) => {
     case 'redux':
       import('../components/redux-view.js');
       break;
+    case 'login':
+    case 'logout':
+      //dispatch({type: USER_MUST_REVALIDATE})
+      console.log('Bypassing routing')
+      return
     default:
       view = 'view404';
       import('../components/my-view404.js');
   }
 
   dispatch(updatePage(view, subpath));
-};
+}
 
-const updatePage = (view, subpath) => {
-  return {
+const updatePage = (view, subpath) => (dispatch, getState) => {
+  let state = getState();
+  if (state.app.user.revalidate) {
+    fetch('/user').then(res => res.json())
+    .then(data => {
+      dispatch(updateUser(data.login, data.avatar_url))
+      dispatch({
+        type: UPDATE_PAGE,
+        view,
+        subpath
+      })
+    })
+  }
+  dispatch({
     type: UPDATE_PAGE,
     view,
     subpath
-  };
-};
+  })
+}
 
 export const updateOffline = (offline) => (dispatch, getState) => {
   dispatch({
     type: UPDATE_OFFLINE,
     offline
-  });
-};
+  })
+}
 
 export const updateDrawerState = (opened) => {
   return {
     type: UPDATE_DRAWER_STATE,
     opened
-  };
-};
+  }
+}
+
+export const updateUser = (username, avatarUrl) => {
+  return {
+    type: UPDATE_USER,
+    username,
+    avatarUrl
+  }
+}

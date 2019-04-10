@@ -33,6 +33,8 @@ import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { menuIcon } from './my-icons.js';
 
+import './login-view.js';
+
 class BilaraApp extends connect(store)(LitElement) {
   render() {
     
@@ -191,6 +193,9 @@ class BilaraApp extends connect(store)(LitElement) {
       <app-toolbar class="toolbar-top">
         <button class="menu-btn" title="Menu" @click="${this._menuButtonClicked}">${menuIcon}</button>
         <div main-title>${this.appTitle}</div>
+        ${
+          this._username ? html`${this._username} <a href="/logout" target="_top">Logout</a>` : html`<a href="/login"  target="_top">Login</a>` 
+        }
       </app-toolbar>
 
       <!-- This gets hidden on a small screen-->
@@ -199,7 +204,6 @@ class BilaraApp extends connect(store)(LitElement) {
         ${ translationUrl ? 
         html`<a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>`
         : html`<span class="disabled">Translate</span>` }
-        <a ?selected="${this._page.view === 'redux'}" href="/redux">Debug</a>
       </nav>
     </app-header>
 
@@ -211,17 +215,24 @@ class BilaraApp extends connect(store)(LitElement) {
         ${ translationUrl ? 
           html`<a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>`
           : html`<span class="disabled">Translate</span>` }
-        <a ?selected="${this._page == 'redux'}" href="/redux">Debug</a>
       </nav>
     </app-drawer>
-
-    <!-- Main content -->
-    <main role="main" class="main-content">
-      <browse-view class="page" ?active="${this._page.view === 'browse'}"></browse-view>
-      <translation-view class="page" ?active="${this._page.view === 'translation'}"></translation-view>
-      <redux-view class="page" ?active="${this._page.view === 'redux'}"></redux-view>
-      <my-view404 class="page" ?active="${this._page.view === 'view404'}"></my-view404>
-    </main>
+    ${
+      this._userMustRevalidate ? '' :
+      html`
+        
+        <!-- Main content -->
+        <main role="main" class="main-content">
+          ${
+            this._username ? html`
+              <browse-view class="page" ?active="${this._page.view === 'browse'}"></browse-view>
+              <translation-view class="page" ?active="${this._page.view === 'translation'}"></translation-view>
+              <my-view404 class="page" ?active="${this._page.view === 'view404'}"></my-view404>`
+            : html`<login-view></login-view>`
+          }
+        </main>
+      `
+    }
 
     <footer>
       <p>Computer Aided Translation for SuttaCentral</p>
@@ -234,6 +245,9 @@ class BilaraApp extends connect(store)(LitElement) {
       _page: { type: Object },
       _drawerOpened: { type: Boolean },
       _offline: { type: Boolean },
+      _username: { type: String },
+      _avatarUrl: { type: String },
+      _userMustRevalidate: { type: Boolean },
       ApiUrl: { type: String }
     }
   }
@@ -275,6 +289,8 @@ class BilaraApp extends connect(store)(LitElement) {
     this._page = state.app.page;
     this._offline = state.app.offline;
     this._drawerOpened = state.app.drawerOpened;
+    this._username = state.app.user.username;
+    this._avatarUrl = state.app.user.avatarUrl;
   }
 }
 

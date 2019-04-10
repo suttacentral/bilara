@@ -1,6 +1,6 @@
 import logging
-from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string
-from flask_oauthlib.client import OAuth
+from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string, Response, stream_with_context
+from flask_oauthlib.client import OAuth, OAuthException
 from flask_cors import CORS
 
 from flask import jsonify
@@ -9,7 +9,9 @@ from github import Github
 
 from config import config
 
+import json
 
+from requests import get
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -38,6 +40,14 @@ def nav():
     import fs
     return jsonify(fs.get_condensed_tree(['translation']))
 
+@app.route('/api/tm/')
+def tm_get():
+    import tm
+    string = request.args.get('string')
+    source_lang = request.args.get('source_lang')
+    target_lang = request.args.get('target_lang')
+    return jsonify(tm.get_related_strings(string, source_lang, target_lang))
+
 try:
     oauth = OAuth(app)
 
@@ -53,24 +63,22 @@ try:
         authorize_url='https://github.com/login/oauth/authorize'
     )
 
-    @app.route('/')
-    def index():
-        if 'github_token' in session:
-            data = github_auth.get('user').data
-            return jsonify(call_github())
-        return render_template_string('<a href="{{ url_for("login") }}">Login</a>')
-
-
+    # @app.route('/')
+    # def index():
+    #     if 'github_token' in session:
+    #         data = github_auth.get('user').data
+    #         return jsonify(call_github())
+    #     return render_template_string('<a href="{{ url_for("login") }}">Login</a>')
 
     @app.route('/login')
     def login():
-        return github_auth.authorize(callback=url_for('authorized', _external=True))
+        return github_auth.authorize(callback='https://bilara.suttacentral.net/authorized')
 
 
     @app.route('/logout')
     def logout():
         session.pop('github_token', None)
-        return redirect(url_for('index'))
+        return redirect('/')
 
 
     @app.route('/authorized')
@@ -84,7 +92,9 @@ try:
             )
         session['github_token'] = (resp['access_token'], '')
         me = github_auth.get('user')
-        return jsonify(me.data)
+        print(me)
+        return redirect('/')
+        #return jsonify(me.data)
 
 
     @github_auth.tokengetter
@@ -106,6 +116,27 @@ try:
 except Exception as e:
     logging.error(f'An error occured while setting up OAuth app {str(e)}')
 
+@app.route('/user')
+def user():
+    try:
+        user_data = github_auth.get('user').data
+        return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})
+    except OAuthException:
+        return jsonify({'login': None, 'avatar_url': None})
+
+@app.route('/')
+@app.route('/<path:path>')
+def proxy(path=''):
+    print(f'Proxying Path {path}')
+    r = get(f'http://localhost:8088/{path}')
+    resp = Response(r.content, content_type=r.headers['content-type'])
+    
+
+    
+    return resp
+
 if __name__ == '__main__':
     import fs
     app.run()
+
+

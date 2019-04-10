@@ -2,7 +2,7 @@ import {
     REQUEST_SEGMENT_DATA, RECEIVE_SEGMENT_DATA, FAIL_SEGMENT_DATA,
 } from '../actions/segment-data.js';
 import {
-    UPDATE_SEGMENT, QUEUE_SEGMENT
+    UPDATE_SEGMENT, QUEUE_SEGMENT, FOCUS_SEGMENT
 } from '../actions/segment.js';
 import {
     RESOLVE_PUSH
@@ -11,6 +11,7 @@ import {
 const deleteProperty = ({[key]: _, ...newObj}, key) => newObj;
 
 export const segmentData = (state = {uploadQueue: {}}, action) => {
+    console.log('action: ',  action)
     const uid = action.uid;
     switch (action.type) {
         case REQUEST_SEGMENT_DATA:
@@ -35,6 +36,11 @@ export const segmentData = (state = {uploadQueue: {}}, action) => {
                 uid: uid,
                 failure: true,
                 isFetching: false
+            }
+        case FOCUS_SEGMENT:
+            return {
+                ...state,
+                activeSegmentId: action.segmentId
             }
         case UPDATE_SEGMENT:
             return {

@@ -145,21 +145,26 @@ def generate_diff(string_a, string_b):
     Unify operations between two compared strings seqm is a difflib.
     SequenceMatcher instance whose a & b are strings
     """
-    seqm = difflib.SequenceMatcher(None, string_a, string_b)
+
+    seq_a = [s for s in regex.split(r'\b', string_a) if s]
+    seq_b = [s for s in regex.split(r'\b', string_b) if s]
+
+    seqm = difflib.SequenceMatcher(None, seq_a, seq_b)
     opcodes = seqm.get_opcodes()
     output = []
     total_equal = 0
     for opcode, a0, a1, b0, b1 in opcodes:
         if opcode == 'equal':
-            output.append(seqm.a[a0:a1])
-            total_equal += a1 - a0
+            chunk = ''.join(seqm.a[a0:a1])
+            output.append(chunk)
+            total_equal += len(chunk)
         elif opcode == 'insert':
-            output.append(f'<ins>{seqm.b[b0:b1]}</ins>')
+            output.append(f'<ins>{"".join(seqm.b[b0:b1])}</ins>')
         elif opcode == 'delete':
-            output.append(f'<del>{seqm.a[a0:a1]}</del>')
+            output.append(f'<del>{"".join(seqm.a[a0:a1])}</del>')
         elif opcode == 'replace':
             # seqm.a[a0:a1] -> seqm.b[b0:b1]
-            output.append(f'<del>{seqm.a[a0:a1]}</del><ins>{seqm.b[b0:b1]}</ins>')
+            output.append(f'<del>{"".join(seqm.a[a0:a1])}</del><ins>{"".join(seqm.b[b0:b1])}</ins>')
         else:
             raise RuntimeError("unexpected opcode")
     sim = total_equal / max(len(string_a), len(string_b))
@@ -211,10 +216,11 @@ def query_related_strings(string, source_language, target_language):
                 "terms":  { 
                     "field": "source.keyword", 
                     "order": { "max_score": "desc"},
-                    "size": 5
+                    "size": 3,
+                    "min_doc_count": 1
                 }, 
                 "aggs": { 
-                    "translation": {"terms": {"field": f"translation.{target_language}.keyword"}}, 
+                    "translation": {"terms": {"field": f"translation.{target_language}.keyword", "min_doc_count": 1}},
                     "max_score": { "max": { "script": "_score"}}
                 }
             }
@@ -228,66 +234,55 @@ def get_related_strings(string, source_language, target_language, case_sensitive
     es_results = query_related_strings(string, source_language, target_language)
 
     buckets = es_results['aggregations']['by_source']['buckets']
+    hits = es_results['hits']['hits']
+
+    ids = {}
+    translations = {}
+    for hit in hits:
+        _source = hit['_source']
+        key = (_source['source'], _source['translation'][target_language])
+        if key not in ids:
+            ids[key] = hit['_id']
+        if _source['source'] not in translations:
+            translations[_source['source']] = _source['translation'][target_language]
 
     results = []
+
+    best_match_quality = -1
 
     for bucket in buckets:
         source = bucket['key']
         sim, diffed_source_string = generate_diff(string, source)
+
+        best_match_quality = max(best_match_quality, sim)
         results.append({
             'source': source,
             'source_language': source_language,
             'diffed_source': diffed_source_string,
             'match_quality': sim,
             'translations': [
-                {'translation': d['key'], 'count': d['doc_count']} 
+                {
+                    'translation': d['key'],
+                    'count': d['doc_count'],
+                    'id': ids.get( (source, d['key']) )
+                } 
                 for d in bucket['translation']['buckets']
             ]
         })
 
+    results.sort(key=lambda r: r['match_quality'], reverse=True)
+    results = [result for result in results if result['match_quality'] > best_match_quality / 2]
+
+    for result in results:
+        if not result['translations']:
+            key = (result['source'], _source['translation'][target_language])
+            source = result['source']
+            translation = translations[result['source']]
+            result['translations'] = [{
+                'translation': translation,
+                'count': 1,
+                'id': ids.get( (source, translation) )
+            }]
+    
+    
     return results
-
-    hits = es_results['hits']['hits']
-    best_score = hits[0]['_score'] # this will usually be the string itself
-    min_score = best_score * 0.4
-
-    hits = [hit for hit in hits if hit['_score'] > min_score and hit['_id'] != original_id]
-    
-    # results = {}
-
-    # for source_string, group in itertools.groupby(hits, lambda hit: hit['_source']['source']):
-    #     results[source_string] = result_group = {}
-    #     for hit in group:
-    #         translation_string = hit['_source']['translation'][target_language]
-    #         if translation_string not in result_group:
-    #             result_group[translation_string] = [hit['_id']]
-    #         else:
-    #             result_group[translation_string].append(hit['_id'])
-    # for result in results:
-
-    # return {generate_diff(k, string): v for k, v in results.items()}
-
-    out = {}
-    for i, hit in enumerate(hits):
-        if i == 0:
-            print(json.dumps(hit, ensure_ascii=False, indent=2))
-        source_string = hit['_source']['source']        
-        if source_string not in out:
-            sim, diffed_source_string = generate_diff(string, source_string)
-            out[source_string] = {
-                'source_string': source_string,
-                'source_language': source_language,
-                'diffed_source_string': diffed_source_string,
-                'match_quality': sim,
-                'translations': {}
-            }
-            
-        translation_string = hit['_source']['translation'][target_language]
-        if translation_string not in out[source_string]:
-            out[source_string][translation_string] =  []
-        out[source_string]['translations'][translation_string] = {'lang': target_language, 'origin': origin}
-                
-    return out      
-    
-    
-    

@@ -5,6 +5,8 @@ import { PageViewElement } from './page-view-element.js';
 
 import { BilaraSegment } from './bilara-segment.js';
 
+
+
 // These are the shared styles needed by this element.
 import { SharedStyles } from './shared-styles.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -13,12 +15,14 @@ import { store } from '../store.js';
 // This element is connected to the Redux store.
 
 import { segmentData } from '../reducers/segment-data.js';
+import { searchReducer } from '../reducers/search.js';
 
 store.addReducers({
-  segmentData
+  segmentData,
+  search: searchReducer
 });
 
-import {fetchSegmentData} from '../actions/segment-data.js';
+import { fetchSuggestions } from '../actions/search.js';
 
 class TranslationView extends connect(store)(PageViewElement) {
   render(){
@@ -34,17 +38,23 @@ class TranslationView extends connect(store)(PageViewElement) {
       <h2>Translation</h2>
       ${ when(this._fetching, 
         () => html`Fetching Data`, 
-        () => html`${repeat(Object.keys(this._source), (key) => key, (segmentId, index) => {
+        () => html`       
+          ${repeat(Object.keys(this._source), (key) => key, (segmentId, index) => {
           const source = this._source[segmentId];
           const target = this._target[segmentId] || '';
           if (segmentId == '_meta') {
             return html``
           }
-          return html`<bilara-segment _segmentId="${segmentId}"
-                                      _sourceString="${source}"
-                                      _targetString="${target}"
-                                      _sourceFilepath="${this._source._meta.filepath}"
-                                      _targetFilepath="${this._target._meta.filepath}"></bilara-segment>`
+          let suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(source)] : '';
+          return html`<bilara-segment ._segmentId="${segmentId}"
+                                      ._sourceString="${source}"
+                                      ._targetString="${target}"
+                                      ._sourceFilepath="${this._source._meta.filepath}"
+                                      ._targetFilepath="${this._target._meta.filepath}"
+                                      ._suggestions="${suggestions}"
+                                      </bilara-segment>
+                  
+                     `
                    
         })}
           <pre><code>${JSON.stringify(this._segmentData, null, 2)}</code></pre>`
@@ -52,13 +62,25 @@ class TranslationView extends connect(store)(PageViewElement) {
     </section>`
   }
 
+  _suggestionKey(string) {
+    return [string, this._source._meta.language, this._target._meta.language].join('_');
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('_activeSegmentId')) {
+      store.dispatch(fetchSuggestions(this._source[this._activeSegmentId], this._source._meta.language, this._target._meta.language, this._activeSegmentId))
+    }
+  }
+
   static get properties() { 
     return {
       _segmentData: { type: Object },
+      _activeSegmentId: { type: String },
       _fetching: { type: Boolean },
       _failure: { type: Boolean },
       _source: { type: Object },
-      _target: { type: Object }
+      _target: { type: Object },
+      _suggestions: { type: Object }
     }
   }
 
@@ -77,6 +99,8 @@ class TranslationView extends connect(store)(PageViewElement) {
     }
     
     this._failure = state.segmentData.failure;
+    this._activeSegmentId = state.segmentData.activeSegmentId;
+    this._suggestions = state.search.suggestions;
   }
 }
 
