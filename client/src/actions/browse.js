@@ -1,7 +1,8 @@
 export const GET_BROWSE_DATA = "GET_BROWSE_DATA";
+import { getApiUrl } from './app.js';
 
 export const getBrowseData = () => (dispatch) => {
-  return fetch('http://localhost:5000/api/nav/')
+  return fetch(getApiUrl() + '/nav/')
   .then(res => res.json())
   .then(data => {
       dispatch( {
