@@ -1,7 +1,7 @@
+import { stat } from "mz/fs";
+
 export const FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS';
 export const RECEIVE_SUGGESTIONS = 'RECEIVE_SUGGESTIONS'
-
-import { getApiUrl } from './app.js';
 
 export const makeSearchKey = (...args) => {
     return args.join('_');
@@ -10,16 +10,17 @@ export const makeSearchKey = (...args) => {
 export const fetchSuggestions = (string, source_lang, target_lang, exclude_uid) => (dispatch, getState) => {
     let state = getState(),
         key = makeSearchKey(string, source_lang, target_lang);
-
-    console.log('Fetching suggestions for ' + key);
-
-    const apiUrl = getApiUrl(getState);
+    
+    if (key in state.search.suggestions) {
+        return
+    }
+    
     dispatch({
         type: FETCH_SUGGESTIONS,
         key: key
     });
 
-    return fetch(`${apiUrl}/tm/?string=${string}&source_lang=${source_lang}&target_lang=${target_lang}&exclude_uid=${exclude_uid}`, {mode: 'cors'})
+    return fetch(`/api/tm/?string=${string}&source_lang=${source_lang}&target_lang=${target_lang}&exclude_uid=${exclude_uid}`, {mode: 'cors'})
         .then(res => res.json())
         .then(data => {
             dispatch(receiveSuggestions(key, data));

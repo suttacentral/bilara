@@ -43,7 +43,6 @@ function createRange(node, chars, range) {
 
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
-    console.log('Segment: ', JSON.stringify(this._suggestions));
     return html`
     <style>
 
@@ -69,10 +68,12 @@ export class BilaraSegment extends connect(store)(LitElement){
     <span contenteditable="false"
         data-type="source"
         class="string"
+        lang="${this._sourceLang}"
       >${this._sourceString}</span>
     <span contenteditable="true"
         data-type="target"
         class="string"
+        lang="${this._targetLang}"
         @blur="${this._inputEvent}"
         @keypress="${this._keypressEvent}"
         @focus="${this._focusEvent}"
@@ -93,7 +94,9 @@ export class BilaraSegment extends connect(store)(LitElement){
       _targetString: String,
       _sourceFilepath: String,
       _targetFilepath: String,
-      _suggestions: {type: Object}
+      _suggestions: {type: Object},
+      _sourceLang: String,
+      _targetLang: String
     }
   }
 
@@ -123,7 +126,16 @@ export class BilaraSegment extends connect(store)(LitElement){
     const segmentId = this._segmentId;
     store.dispatch(focusSegment(segmentId));
 
-    store.dispatch( fetchSuggestions)
+    this.fetchSuggestions();
+    let nextSibling = this.nextElementSibling;
+    if (nextSibling) {
+      nextSibling.fetchSuggestions();
+    }
+  }
+
+  fetchSuggestions(){
+
+    store.dispatch(fetchSuggestions(this._sourceString, this._sourceLang, this._targetLang, this._segmentId))
   }
 
   _inputEvent(e){

@@ -16,12 +16,6 @@ export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 export const UPDATE_USER = 'UPDATE_USER';
 export const USER_MUST_REVALIDATE = 'USER_MUST_REVALIDATE';
 
-
-export const getApiUrl = (getState) => {
-  const state = getState();
-  return state.app.apiUrl;
-}
-
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
   const pageArray = path.split('/');
@@ -53,8 +47,6 @@ const loadPage = (view, subpath) => (dispatch) => {
       break;
     case 'login':
     case 'logout':
-      //dispatch({type: USER_MUST_REVALIDATE})
-      console.log('Bypassing routing')
       return
     default:
       view = 'view404';
@@ -64,19 +56,22 @@ const loadPage = (view, subpath) => (dispatch) => {
   dispatch(updatePage(view, subpath));
 }
 
-const updatePage = (view, subpath) => (dispatch, getState) => {
-  let state = getState();
-  if (state.app.user.revalidate) {
-    fetch('/user').then(res => res.json())
-    .then(data => {
-      dispatch(updateUser(data.login, data.avatar_url))
-      dispatch({
-        type: UPDATE_PAGE,
-        view,
-        subpath
-      })
+export const fetchUserData = (dispatch, getState) => {
+  let user = getState().app.user;
+  if (user.revalidate) {
+    dispatch({
+      type: USER_MUST_REVALIDATE
     })
+    return fetch('/user')
+      .then(res => res.json())
+      .then(data => {
+        dispatch(updateUser(data.login, data.avatar_url))
+      })
   }
+}
+
+const updatePage = (view, subpath) => async (dispatch, getState) => {
+  await fetchUserData(dispatch, getState);
   dispatch({
     type: UPDATE_PAGE,
     view,

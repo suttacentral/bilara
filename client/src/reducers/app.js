@@ -26,7 +26,6 @@ const INITIAL_STATE = {
     username: null,
     avatar_url: null
   },
-  apiUrl: '/api',
   offline: false,
   drawerOpened: false,
 };

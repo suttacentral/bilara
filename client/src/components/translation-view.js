@@ -26,6 +26,8 @@ import { fetchSuggestions } from '../actions/search.js';
 
 class TranslationView extends connect(store)(PageViewElement) {
   render(){
+    let sourceLang = this._source._meta.language,
+        targetLang = this._target._meta.language;
     return html`
     ${SharedStyles}
     <style>
@@ -52,6 +54,8 @@ class TranslationView extends connect(store)(PageViewElement) {
                                       ._sourceFilepath="${this._source._meta.filepath}"
                                       ._targetFilepath="${this._target._meta.filepath}"
                                       ._suggestions="${suggestions}"
+                                      ._sourceLang="${sourceLang}"
+                                      ._targetLang="${targetLang}"
                                       </bilara-segment>
                   
                      `
@@ -64,12 +68,6 @@ class TranslationView extends connect(store)(PageViewElement) {
 
   _suggestionKey(string) {
     return [string, this._source._meta.language, this._target._meta.language].join('_');
-  }
-
-  updated(changedProperties) {
-    if (changedProperties.has('_activeSegmentId')) {
-      store.dispatch(fetchSuggestions(this._source[this._activeSegmentId], this._source._meta.language, this._target._meta.language, this._activeSegmentId))
-    }
   }
 
   static get properties() { 

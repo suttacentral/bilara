@@ -1,8 +1,7 @@
 export const GET_BROWSE_DATA = "GET_BROWSE_DATA";
-import { getApiUrl } from './app.js';
 
 export const getBrowseData = () => (dispatch) => {
-  return fetch(getApiUrl() + '/nav/')
+  return fetch('/api/nav/')
   .then(res => res.json())
   .then(data => {
       dispatch( {

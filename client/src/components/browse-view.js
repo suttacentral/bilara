@@ -74,7 +74,6 @@ class NavItem extends LitElement {
 
   _navigate(e) {
     const url = e.currentTarget.href;
-    console.log(e.currentTarget,  url);
     e.preventDefault();
     e.stopPropagation();
     history.pushState({page: url}, "Translate " + url, url);

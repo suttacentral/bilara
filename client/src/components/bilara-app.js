@@ -217,12 +217,11 @@ class BilaraApp extends connect(store)(LitElement) {
           : html`<span class="disabled">Translate</span>` }
       </nav>
     </app-drawer>
-    ${
-      this._userMustRevalidate ? '' :
-      html`
+      
         
-        <!-- Main content -->
-        <main role="main" class="main-content">
+      <!-- Main content -->
+      <main role="main" class="main-content">
+        ${ this._userMustRevalidate ? '' : html`
           ${
             this._username ? html`
               <browse-view class="page" ?active="${this._page.view === 'browse'}"></browse-view>
@@ -230,8 +229,9 @@ class BilaraApp extends connect(store)(LitElement) {
               <my-view404 class="page" ?active="${this._page.view === 'view404'}"></my-view404>`
             : html`<login-view></login-view>`
           }
-        </main>
-      `
+      `}
+      </main>
+
     }
 
     <footer>
@@ -247,8 +247,7 @@ class BilaraApp extends connect(store)(LitElement) {
       _offline: { type: Boolean },
       _username: { type: String },
       _avatarUrl: { type: String },
-      _userMustRevalidate: { type: Boolean },
-      ApiUrl: { type: String }
+      _userMustRevalidate: { type: Boolean }
     }
   }
 
@@ -291,6 +290,7 @@ class BilaraApp extends connect(store)(LitElement) {
     this._drawerOpened = state.app.drawerOpened;
     this._username = state.app.user.username;
     this._avatarUrl = state.app.user.avatarUrl;
+    this._userMustRevalidate = state.app.user.revalidate;
   }
 }
 

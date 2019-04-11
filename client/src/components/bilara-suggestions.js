@@ -3,7 +3,6 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
 export class BilaraSuggestions extends LitElement{
     render() {
-      console.log('Segment: ', JSON.stringify(this._suggestions));
       return html`
       <style>
 
