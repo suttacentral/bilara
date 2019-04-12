@@ -1,5 +1,5 @@
 import logging
-from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string, Response, stream_with_context
+from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string, Response, stream_with_context, send_from_directory
 from flask_oauthlib.client import OAuth, OAuthException
 from flask_cors import CORS
 
@@ -12,6 +12,9 @@ from config import config
 import json
 
 from requests import get
+
+import pathlib
+
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -70,18 +73,18 @@ try:
     #         return jsonify(call_github())
     #     return render_template_string('<a href="{{ url_for("login") }}">Login</a>')
 
-    @app.route('/login')
+    @app.route('/auth/login')
     def login():
-        return github_auth.authorize(callback='https://bilara.suttacentral.net/authorized')
+        return github_auth.authorize(callback='https://bilara.suttacentral.net/auth/authorized')
 
 
-    @app.route('/logout')
+    @app.route('/auth/logout')
     def logout():
         session.pop('github_token', None)
         return redirect('/')
 
 
-    @app.route('/authorized')
+    @app.route('/auth/authorized')
     def authorized():
         resp = github_auth.authorized_response()
         if resp is None or resp.get('access_token') is None:
@@ -92,7 +95,6 @@ try:
             )
         session['github_token'] = (resp['access_token'], '')
         me = github_auth.get('user')
-        print(me)
         return redirect('/')
         #return jsonify(me.data)
 
@@ -101,13 +103,13 @@ try:
     def get_github_oauth_token():
         return session.get('github_token')
 
-
+    @app.route('/auth/user')
     def call_github():
         github = Github(session.get('github_token')[0])
         result = []
         for repo in github.get_user().get_repos():
             result.append(repo.name)
-        return result
+        return jsonify(result)
 
     @app.route('/webhook', methods=['POST'])
     def webhook():
@@ -124,11 +126,27 @@ def user():
     except OAuthException:
         return jsonify({'login': None, 'avatar_url': None})
 
+
+build_path = None#pathlib.Path('../client/build/esm-bundled').resolve()
+#if not build_path.exists():
+#    build_path = None
+
 @app.route('/')
 @app.route('/<path:path>')
 def proxy(path=''):
     print(f'Proxying Path {path}')
-    r = get(f'http://localhost:8088/{path}')
+    if build_path:
+        if (not path or path.endswith('/')):
+            path = 'index.html'
+        if '.' in path and not path.split('.')[-1].isalpha():
+            path = 'index.html'
+        print(build_path, path)
+        return send_from_directory(str(build_path), path)
+    
+    if path.split('/')[-1].isalpha():
+        path = 'index.html'
+
+    r = get(f'http://localhost:8081/{path}')
     resp = Response(r.content, content_type=r.headers['content-type'])
     
 

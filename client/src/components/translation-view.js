@@ -1,5 +1,4 @@
-import { html } from '@polymer/lit-element';
-import { when } from 'lit-html/directives/when';
+import { html } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
@@ -28,6 +27,7 @@ class TranslationView extends connect(store)(PageViewElement) {
   render(){
     let sourceLang = this._source._meta.language,
         targetLang = this._target._meta.language;
+    
     return html`
     ${SharedStyles}
     <style>
@@ -38,31 +38,27 @@ class TranslationView extends connect(store)(PageViewElement) {
     </style>
     <section>
       <h2>Translation</h2>
-      ${ when(this._fetching, 
-        () => html`Fetching Data`, 
-        () => html`       
+      ${ this._fetching ? 
+        html`Fetching Data` :
+        html`
           ${repeat(Object.keys(this._source), (key) => key, (segmentId, index) => {
-          const source = this._source[segmentId];
-          const target = this._target[segmentId] || '';
-          if (segmentId == '_meta') {
-            return html``
-          }
-          let suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(source)] : '';
-          return html`<bilara-segment ._segmentId="${segmentId}"
-                                      ._sourceString="${source}"
-                                      ._targetString="${target}"
-                                      ._sourceFilepath="${this._source._meta.filepath}"
-                                      ._targetFilepath="${this._target._meta.filepath}"
-                                      ._suggestions="${suggestions}"
-                                      ._sourceLang="${sourceLang}"
-                                      ._targetLang="${targetLang}"
-                                      </bilara-segment>
-                  
-                     `
-                   
-        })}
-          <pre><code>${JSON.stringify(this._segmentData, null, 2)}</code></pre>`
-      )}
+            const source = this._source[segmentId];
+            const target = this._target[segmentId] || '';
+            if (segmentId == '_meta') {
+              return ''
+            }
+            let suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(source)] : '';
+            return html`<bilara-segment ._segmentId="${segmentId}"
+                                        ._sourceString="${source}"
+                                        ._targetString="${target}"
+                                        ._sourceFilepath="${this._source._meta.filepath}"
+                                        ._targetFilepath="${this._target._meta.filepath}"
+                                        ._suggestions="${suggestions}"
+                                        ._sourceLang="${sourceLang}"
+                                        ._targetLang="${targetLang}"
+                                        </bilara-segment>`       
+        })}`
+      }
     </section>`
   }
 

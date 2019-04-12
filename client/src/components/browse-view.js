@@ -1,5 +1,4 @@
-import { html, LitElement } from '@polymer/lit-element';
-import { when } from 'lit-html/directives/when';
+import { html, LitElement } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
@@ -11,8 +10,6 @@ import { BilaraSegment } from './bilara-segment.js';
 import { SharedStyles } from './shared-styles.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
-
-import '@polymer/paper-progress/paper-progress.js';
 
 // This element is connected to the Redux store.
 

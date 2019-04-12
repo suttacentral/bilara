@@ -12,19 +12,5 @@
       "type": "script",
       "weight": 1
     }
-  },
-  "/redux": {
-    "src/components/bilara.js": {
-      "type": "script",
-      "weight": 1
-    },
-    "src/components/redux-view.js": {
-      "type": "script",
-      "weight": 1
-    },
-    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
-      "type": "script",
-      "weight": 1
-    }
   }
 }

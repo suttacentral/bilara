@@ -1,4 +1,4 @@
-import { LitElement, html } from '@polymer/lit-element';
+import { LitElement, html } from 'lit-element';
 
 import {updateSegment, focusSegment} from '../actions/segment.js';
 import { fetchSuggestions } from '../actions/search.js';
@@ -122,6 +122,13 @@ export class BilaraSegment extends connect(store)(LitElement){
     
   }
 
+  updated(changedProperties) {
+    if (!this._isActive) return
+
+    console.log('Changed Properties: ', changedProperties)
+
+  }
+
   _focusEvent(e) {
     const segmentId = this._segmentId;
     store.dispatch(focusSegment(segmentId));
@@ -134,7 +141,6 @@ export class BilaraSegment extends connect(store)(LitElement){
   }
 
   fetchSuggestions(){
-
     store.dispatch(fetchSuggestions(this._sourceString, this._sourceLang, this._targetLang, this._segmentId))
   }
 

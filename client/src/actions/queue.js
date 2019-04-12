@@ -1,14 +1,12 @@
 export const PUSH_QUEUE_TO_SERVER = "PUSH_QUEUE";
 export const RESOLVE_PUSH = "RESOLVE_PUSH";
 
-import { getApiUrl } from './app.js';
 
 export const pushToServer = () => (dispatch, getState) => {
-    const state = getState(),
-          apiUrl = getApiUrl(getState);
+    const state = getState();
         
     
-    return fetch(`${apiUrl}/segments/`, {
+    return fetch(`/api/segments/`, {
         method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
