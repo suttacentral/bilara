@@ -73,18 +73,18 @@ try:
     #         return jsonify(call_github())
     #     return render_template_string('<a href="{{ url_for("login") }}">Login</a>')
 
-    @app.route('/auth/login')
+    @app.route('/login')
     def login():
-        return github_auth.authorize(callback='https://bilara.suttacentral.net/auth/authorized')
+        return github_auth.authorize(callback='https://bilara.suttacentral.net/authorized')
 
 
-    @app.route('/auth/logout')
+    @app.route('/logout')
     def logout():
         session.pop('github_token', None)
         return redirect('/')
 
 
-    @app.route('/auth/authorized')
+    @app.route('/authorized')
     def authorized():
         resp = github_auth.authorized_response()
         if resp is None or resp.get('access_token') is None:
@@ -148,7 +148,13 @@ def proxy(path=''):
 
     r = get(f'http://localhost:8081/{path}')
     resp = Response(r.content, content_type=r.headers['content-type'])
-    
+    max_age = 60
+    if 'node_modules' in path:
+        max_age = 86400 * 7
+    elif path.endswith('.woff2') or path.endswith('.png') or path.endswith('service-worker.js'):
+        max_age = 86400 * 7
+
+    resp.cache_control.max_age = max_age
 
     
     return resp

@@ -31,6 +31,7 @@ export const navigate = (path) => (dispatch) => {
 };
 
 const loadPage = (view, subpath) => (dispatch) => {
+  console.log(view, subpath)
   switch(view) {
     case 'browse': 
       import('../components/browse-view.js');
