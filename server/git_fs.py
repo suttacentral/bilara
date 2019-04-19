@@ -1,5 +1,4 @@
 from git import Repo, GitCommandError
-from python
 
 import threading
 import time
@@ -7,108 +6,143 @@ import signal
 
 _lock = threading.RLock()
 master = 'master'
-AUTO_COMMIT_DELAY = 60 * 3
+AUTO_COMMIT_DELAY = 30
 
 from config import config
 REPO_DIR = config.REPO_DIR
 repo = Repo(REPO_DIR)
 git = repo.git
 
-_current_branch = None
-def checkout_branch(name):
-    global _current_branch
-    if _current_branch != name:    
+def checkout_branch(branch_name):
+    if repo.active_branch.name == branch_name:
+        return repo.active_branch
+    
+    if branch_name in repo.branches:
         try:
-            git.checkout(name)
+            git.checkout(branch_name)
         except GitCommandError:
-            git.checkout(b=name, master)
-        _current_branch = name
-    return repo.branches[name]
+            git.stash()
+            print(f'Checkout failed for branch {branch_name} : stashing and trying again')
+            try:
+                git.checkout_branch_name
+            except GitCommandError:
+                print(f'Could not check out branch {branch_name}')
+                raise
+    else:
+        git.checkout('-b', branch_name, master)
+    return repo.active_branch
+
+def create_empty_commit(user, branch_name):
+    git.commit(allow_empty=True, m=f'Translations by {user["name"]}', author=f'{user["name"]} <{user["email"]}>')
+    _pending_commits[branch_name] = time.time()
 
 _pending_commits = {}
-def update_file(user, file):
-    with _git_lock:
-        name = user.name
-        checkout_branch(name)
-        branch = repo.branches[name]
-        if name not in _pending_commits:
-            if branch.commit.stats.files:
+def update_file(file, user):
+    file = str(file).lstrip('/')
+    with _lock:
+        branch_name = user['login']
+        
+        checkout_branch(branch_name)
+        branch = repo.branches[branch_name]
+        print(f'Checking out branch {branch_name}')
+        files = branch.commit.stats.files
+        reuse_commit = False
+        if branch_name in _pending_commits:
+            if len(files) == 1 and file in files:
+                reuse_commit = True
+        else:
+            if not files:
                 # If the old commit has no messages we can simply reuse it
                 # otherwise we create a new empty commit
-                git.commit(allow_empty=True, m=f"Translations by {user.name}", author=f'{user.name} <{user.email}>')
-                _pending_commits[name] = time.time()
-        commit = branch.commit
-        files = commit.stats.files
-        if files:
-            if file not in files:
-                finalize_commit(commit)
-            else:
-                git.add(file)
-                git.commit(amend=True, no_edit=True)
+                _pending_commits[branch_name] = time.time()
+                reuse_commit = True
+        
+        if not reuse_commit:
+            if branch_name in _pending_commits:
+                finalize_commit(branch_name)
+            create_empty_commit(user, branch_name)
+
+        print(f'Adding {file} to index')    
+        git.add(file)
+        assert file in repo.active_branch.commit.stats.files
+        print(f'Commiting')
+        git.commit(amend=True, no_edit=True)
 
 
 def update_files(user, files):
     with _lock:
-        name = user.name
-        checkout_branch(name)
-        branch = repo.branches[name]
+        branch_name = user['login']
+        checkout_branch(branch_name)
+        branch = repo.branches[branch_name]
         if branch.commit.files:
-            finalize_commit(name)
+            finalize_commit(branch_name)
         
         git.add(files)
-        git.commit(m=f"Bulk update", author=f'{user.name} <{user.email}>')
-        finalize_commit(name)
+        git.commit(m=f"Bulk update", author=f'{user["name"]} <{user["email"]}>')
+        finalize_commit(branch_name)
 
-def finalize_commit(name):
-    with _lock:
-        branch = git.checkout(name)
-        if not branch.commit.stats.files:
-            _pending_commits.pop(name)
-            return
-        git.push(u='origin', name, force_with_lease=True)
-        git.checkout(master)
-        git.merge(name, rebase=True)
-        _pending_commits.pop(name)
+def finalize_commit(branch_name, push_master=True, push_branch=True):
+    print(f'Finalizing Commit in {branch_name}')
+    branch = checkout_branch(branch_name)
+    if not branch.commit.stats.files:
+        _pending_commits.pop(branch_name)
+        return
+    if push_branch:
+        git.push('-u', 'origin', branch_name, '--force-with-lease')
+    git.checkout(master)
+    print('Merging into master... ', end='')
+    try:
+        git.merge(branch_name)
+        print('Success')
+    except:
+        print('Failure')
+        raise
+    _pending_commits.pop(branch_name)
+    if push_master:
+        print('Pushing to master... ', end='')
         for i in range(0, 2):
             try:
-                git.push(u='origin', master)
+                git.push('-u', 'origin', master)
+                print('Success')
                 break
             except GitCommandError:
                 print('Git push failed, attempting to pull and trying again')
-                git.pull()
+                if i == 0:
+                    git.pull()
         else:
+            print('Failure')
             print('Git push failed multiple times')
             return
+    print('Rebasing to master')
+    git.checkout(branch_name)
+    git.rebase(master)
 
-        git.checkout(name)
-        git.rebase(master)
 
-
-class Finalizer(threading.Thread):
-    def __init__(self, interval):
-        super()
-        self.daemon = False
-        self.stopped = threading.Event()
-        self.interval = interval
+def finalize_commits(force=False):
+    if not _pending_commits:
+        return
     
-    def stop(self):
-        self.stopped.set()
-        self.step(stopped=True)
-        self.join()
-
-    def step(self, stopped=False):
+    with _lock:
         now = time.time()
         for name, commit_time in tuple(_pending_commits.items()):
-            if now - commit_time > AUTO_COMMIT_DELAY or stopped == True:
+            if now - commit_time > AUTO_COMMIT_DELAY or force == True:
                 finalize_commit(name)
-    
-    def run(self):
-        while not self.stopped.wait(30):
-            self.step()
 
-def start_finalizer():
-    finalizer = Finalizer(interval=30)
-    signal.signal(signal.SIGTERM, finalizer.stop)
-    signal.signal(signal.SIGINT, finalizer.stop)
+def finalizer_task_runner(interval):
+    while True:
+        time.sleep(interval)
+        finalize_commits()
+
+
+def stop_finalizer(signum, frame):
+    finalize_commits(force=True)
+    exit(0)
+        
+
+def start_finalizer(interval):
+    finalizer = threading.Thread(target=finalizer_task_runner, args=(interval,))
+    finalizer.daemon = True
     finalizer.start()
-    
+    signal.signal(signal.SIGINT, stop_finalizer)
+
+_finalizer = start_finalizer(10)

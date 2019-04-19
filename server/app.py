@@ -1,5 +1,6 @@
 import logging
 from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string, Response, stream_with_context, send_from_directory
+from flask_session import Session
 from flask_oauthlib.client import OAuth, OAuthException
 from flask_cors import CORS
 
@@ -22,6 +23,8 @@ app.config['JSON_AS_ASCII'] = False
 app.config['JSON_SORT_KEYS'] = False
 app.debug = True
 app.secret_key = 'development'
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
 @app.route('/api/segments/', methods=['GET'])
 def segments():
@@ -36,7 +39,8 @@ def segments():
 @app.route('/api/segments/', methods=['POST'])
 def update():
     import fs
-    return jsonify(fs.update_segments(segments=request.get_json()))
+    user = get_user_details()
+    return jsonify(fs.update_segments(segments=request.get_json(), user=user))
 
 @app.route('/api/nav/')
 def nav():
@@ -46,6 +50,7 @@ def nav():
 @app.route('/api/tm/')
 def tm_get():
     import tm
+    get_user_details()
     string = request.args.get('string')
     source_lang = request.args.get('source_lang')
     target_lang = request.args.get('target_lang')
@@ -58,7 +63,7 @@ try:
         'github',
         consumer_key=config.GIT_APP_KEY,
         consumer_secret=config.GIT_APP_SECRET,
-        request_token_params={'scope': 'repo read:user'},
+        request_token_params={'scope': 'repo read:user user:email'},
         base_url='https://api.github.com/',
         request_token_url=None,
         access_token_method='POST',
@@ -81,6 +86,7 @@ try:
     @app.route('/logout')
     def logout():
         session.pop('github_token', None)
+        session.pop('user', None)
         return redirect('/')
 
 
@@ -94,9 +100,8 @@ try:
                 resp
             )
         session['github_token'] = (resp['access_token'], '')
-        me = github_auth.get('user')
+        user = get_user_details()
         return redirect('/')
-        #return jsonify(me.data)
 
 
     @github_auth.tokengetter
@@ -118,8 +123,33 @@ try:
 except Exception as e:
     logging.error(f'An error occured while setting up OAuth app {str(e)}')
 
+
+def get_user_details():
+    user = session.get('user')
+    if user:
+        return user
+    
+    try:
+        user_data = github_auth.get('user').data
+        email_data = github_auth.get('user/emails').data
+        print(json.dumps(user_data, indent=2))
+        print(json.dumps(email_data, indent=2))
+
+        user = {
+            'login': user_data['login'],
+            'name': user_data['name'],
+            'email': email_data[0]['email']
+        }
+        
+    except OAuthException:
+        user = None
+    
+    session['user'] = user
+    return user
+
 @app.route('/user')
 def user():
+    print(session.get('github_token'))
     try:
         user_data = github_auth.get('user').data
         return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})

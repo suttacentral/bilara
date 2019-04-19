@@ -9,6 +9,7 @@ from itertools import groupby
 from collections import defaultdict, Counter
 
 import tm
+import git_fs
 
 REPO_DIR = config.REPO_DIR
 
@@ -221,35 +222,43 @@ def get_condensed_tree(path):
     sum_counts(tree)
     return tree
 
-def update_segments(segments):
-    try:
-        tm.update_docs(segments)
-    except Exception as e:
-        logging.exception("Could not update TM")
-    
+def update_segments(segments, user):
     results = {}
     for filepath, group in groupby(segments.items(), lambda t: t[1]['filepath']):
         file_segments = list(group)
-        results.update(update_file(filepath, file_segments))
-        pass
+        results.update(update_file(filepath, file_segments, user))
+            
+    try:
+        tm.update_docs(segments)
+    except Exception as e:
+        #logging.exception("Could not update TM")
+        logging.error("Could not update TM")
     return results
 
 
-def update_file(filepath, segments):
-    file = get_file(filepath)
+def update_file(filepath, segments, user):
+    with git_fs._lock:
+        print(f'Updating {filepath} for {user}')
+        file = get_file(filepath)
 
-    file_data = json_load(file)
+        file_data = json_load(file)
 
-    for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
-        file_data[segment['segmentId']] = segment['value']
+        for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
+            file_data[segment['segmentId']] = segment['value']
 
-    sorted_data = dict(sorted(file_data.items(), key=humansortkey))
-    try:
-        json_save(sorted_data, file)
-        return {key: "SUCCESS" for key, segment in segments}
-    except Exception as e:
-        logging.exception(f"error writing json to {filepath}")
-        return {key: "ERROR" for key in segments}
+        sorted_data = dict(sorted(file_data.items(), key=humansortkey))
+        try:
+            json_save(sorted_data, file)
+            result = {key: "SUCCESS" for key, segment in segments}
+            success = True
+        except Exception as e:
+            logging.exception(f"error writing json to {filepath}")
+            result = {key: "ERROR" for key in segments}
+            success = False
+
+        if success:
+            git_fs.update_file(filepath, user)
+        return result
 
 
 make_file_index()
