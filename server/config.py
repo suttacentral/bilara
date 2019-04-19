@@ -15,7 +15,7 @@ config = Config({
     'GIT_PASSWORD': '',
     
     'REPO_URL': 'https://github.com/suttacentral/bilara-data.git',
-    'REPO_DIR':  pathlib.Path(__file__).parent.parent / 'repo',
+    'REPO_DIR':  pathlib.Path(__file__).absolute().parent.parent / 'repo',
     
     'ARANGO_USER': 'root',
     'ARANGO_PASSWORD': 'test',

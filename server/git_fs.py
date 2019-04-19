@@ -2,7 +2,9 @@ from git import Repo, GitCommandError
 
 import threading
 import time
-import signal
+
+
+import atexit
 
 _lock = threading.RLock()
 master = 'master'
@@ -64,7 +66,6 @@ def update_file(file, user):
 
         print(f'Adding {file} to index')    
         git.add(file)
-        assert file in repo.active_branch.commit.stats.files
         print(f'Commiting')
         git.commit(amend=True, no_edit=True)
 
@@ -92,7 +93,7 @@ def finalize_commit(branch_name, push_master=True, push_branch=True):
     git.checkout(master)
     print('Merging into master... ', end='')
     try:
-        git.merge(branch_name)
+        git.merge(branch_name, '-Xtheirs')
         print('Success')
     except:
         print('Failure')
@@ -108,7 +109,7 @@ def finalize_commit(branch_name, push_master=True, push_branch=True):
             except GitCommandError:
                 print('Git push failed, attempting to pull and trying again')
                 if i == 0:
-                    git.pull()
+                    git.pull('-Xtheirs')
         else:
             print('Failure')
             print('Git push failed multiple times')
@@ -133,16 +134,11 @@ def finalizer_task_runner(interval):
         time.sleep(interval)
         finalize_commits()
 
-
-def stop_finalizer(signum, frame):
-    finalize_commits(force=True)
-    exit(0)
-        
+atexit.register(finalize_commits, force=True)
 
 def start_finalizer(interval):
     finalizer = threading.Thread(target=finalizer_task_runner, args=(interval,))
     finalizer.daemon = True
     finalizer.start()
-    signal.signal(signal.SIGINT, stop_finalizer)
 
 _finalizer = start_finalizer(10)

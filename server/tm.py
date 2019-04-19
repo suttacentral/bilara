@@ -88,25 +88,21 @@ def build_tm_if_needed(uid_count):
     else:
         print('Not rebuilding TM')
 
-def yield_update_actions(segments):
-        for segment in segments.values():
-            path = pathlib.Path(segment['filepath'])
-            lang = path.parts[2]
-            if path.parts[1] == 'translation':
-                yield {
-                    '_index': 'tm_db',
-                    '_type': 'segment',
-                    '_id': segment['segmentId'],
-                    'doc': {
-                        'translation': {
-                            lang: segment['value']
-                        }
-                    }
-                }
-
 def update_docs(segments):
-    bulk(es, yield_update_actions(segments))
-
+    for segment in segments.values():
+        path = pathlib.Path(segment['filepath'])
+        lang = path.parts[2]
+        if path.parts[1] == 'translation':
+            es.update('tm_db', 'segment', segment['segmentId'], { 
+                 'script': { 
+                         'source': f'ctx._source.translation[params.lang]= params.value; ctx._source.timestamp = ctx._now', 
+                         'lang': 'painless', 
+                         'params': { 
+                           'lang': lang, 
+                           'value': segment['value']
+                          } 
+                     } 
+                 })
 
 def ensure_index_exists(index_name='tm_db', recreate=False):
     exists = es.indices.exists(index_name)
@@ -115,29 +111,15 @@ def ensure_index_exists(index_name='tm_db', recreate=False):
         exists = False
 
     if not exists:
-        es.indices.create(index_name)
-        # ,
-        # {
-        #     "settings": {
-        #         "index": {
-        #             "number_of_shards": 1,
-        #             "number_of_replicas": 1
-        #         },
-        #         "mappings": {
-        #             "segment": {
-        #                 "properties": {
-        #                     "source": {
-        #                         "type": "text"
-        #                     },
-        #                     "translation": {
-        #                         "type":
-        #                     }
-
-        #                 }
-        #             }
-        #         }
-        #     }
-        # })
+        es.indices.create(index_name,
+            {
+                "settings": {
+                    "index": {
+                        "number_of_shards": 1,
+                        "number_of_replicas": 1
+                    }
+                }
+            })
 
 def generate_diff(string_a, string_b):
     """

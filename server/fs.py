@@ -231,8 +231,8 @@ def update_segments(segments, user):
     try:
         tm.update_docs(segments)
     except Exception as e:
-        #logging.exception("Could not update TM")
-        logging.error("Could not update TM")
+        logging.exception("Could not update TM")
+        #logging.error("Could not update TM")
     return results
 
 
