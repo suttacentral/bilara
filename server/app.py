@@ -26,14 +26,10 @@ app.secret_key = 'development'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
-@app.route('/api/segments/', methods=['GET'])
-def segments():
+@app.route('/api/segments/<filename>', methods=['GET'])
+def segments(filename):
     import fs
-    uid = request.args.get('uid')
-    to_lang = request.args.get('to_lang')
-
-    result = fs.get_data(uid=uid, to_lang=to_lang)
-
+    result = fs.get_data(filename=filename)
     return jsonify(result)
 
 @app.route('/api/segments/', methods=['POST'])

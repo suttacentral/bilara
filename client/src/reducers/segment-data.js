@@ -12,13 +12,13 @@ const deleteProperty = ({[key]: _, ...newObj}, key) => newObj;
 
 export const segmentData = (state = {uploadQueue: {}}, action) => {
     console.log('action: ',  action)
-    const uid = action.uid;
+    const filename = action.filename;
     switch (action.type) {
         case REQUEST_SEGMENT_DATA:
             return {
                 ...state,
                 data: null,
-                uid: uid,
+                filename: filename,
                 failure: false,
                 isFetching: true
             }
@@ -26,14 +26,14 @@ export const segmentData = (state = {uploadQueue: {}}, action) => {
             return {
                 ...state,
                 data: action.data,
-                uid: uid,
+                filename: filename,
                 failure: false,
                 isFetching: false
             }
         case FAIL_SEGMENT_DATA:
             return {
                 ...state,
-                uid: uid,
+                filename: filename,
                 failure: true,
                 isFetching: false
             }

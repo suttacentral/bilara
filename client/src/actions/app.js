@@ -38,9 +38,9 @@ const loadPage = (view, subpath) => (dispatch) => {
       break;
     case 'translation':
       if (subpath.length === 0) {
-        subpath = ['dn1', 'en']
+        subpath = ['dn1_translation-en-sujato']
       }
-      dispatch(fetchSegmentData(subpath[0], subpath[1]));
+      dispatch(fetchSegmentData(subpath[0]));
       import('../components/translation-view.js');
       break;
     case 'redux':

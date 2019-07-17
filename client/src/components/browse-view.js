@@ -26,8 +26,8 @@ class NavItem extends LitElement {
   render(){
     const _translated = this._tree._translated || this._tree._translated_count,
           _source = this._tree._source || this._tree._source_count,
-          isFile = this._name.match(/\.json$/),
-          uid = isFile ? this._name.match(/(.*)\.json$/)[1] : this._name,
+          isFile = this._tree._type == 'document',
+          filename = this._name,
           lang = 'en';
     
     return html`
@@ -49,8 +49,8 @@ class NavItem extends LitElement {
       }
       </style>
 
-      <div class="${isFile ? "file" : "division"}">${ 
-          isFile ? html`<a href="/translation/${uid}/${lang}" @click="${this._navigate}">${this._name}</a>` 
+      <div class="${isFile ? "document" : "division"}">${ 
+          isFile ? html`<a href="/translation/${filename}/${lang}" @click="${this._navigate}">${this._name}</a>` 
                  : html`${ this._name }` }
         ${ _translated ? html`<paper-progress value="${_translated}" max="${_source}"></paper-progress>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">

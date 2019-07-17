@@ -3,37 +3,34 @@ export const RECEIVE_SEGMENT_DATA = 'RECEIVE_SEGMENT_DATA';
 export const FAIL_SEGMENT_DATA = 'FAIL_SEGMENT_DATA';
 
 
-export const fetchSegmentData = (uid, to_lang) => (dispatch, getState) => {
-    dispatch(requestSegmentData(uid, to_lang));
+export const fetchSegmentData = (filename, ) => (dispatch, getState) => {
+    dispatch(requestSegmentData(filename, ));
 
-    return fetch(`/api/segments/?uid=${uid}&to_lang=${to_lang}`, {mode: 'cors'})
+    return fetch(`/api/segments/${filename}`, {mode: 'cors'})
         .then(res => res.json())
         .then(data => {
-            dispatch(receiveSegmentData(uid, to_lang, data));
-        }).catch( (e) => {console.log(e); dispatch(failSegmentData(uid, to_lang))});
+            dispatch(receiveSegmentData(filename, data));
+        }).catch( (e) => {console.log(e); dispatch(failSegmentData(filename))});
 }
 
-const requestSegmentData = (uid, to_lang) => {
+const requestSegmentData = (filename, ) => {
     return {
         type: REQUEST_SEGMENT_DATA,
-        uid,
-        to_lang
+        filename
     }
 }
 
-const receiveSegmentData = (uid, to_lang, data) => {
+const receiveSegmentData = (filename, data) => {
     return {
         type: RECEIVE_SEGMENT_DATA,
-        uid,
-        to_lang,
+        filename,
         data
     }
 }
 
-const failSegmentData = (uid, to_lang) => {
+const failSegmentData = (filename, ) => {
     return {
         type: FAIL_SEGMENT_DATA,
-        uid,
-        to_lang
+        filename
     }
 }

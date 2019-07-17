@@ -2,9 +2,11 @@ import json
 import pathlib
 import logging
 import threading
+import linecache
 from config import config
 from util import humansortkey
 from itertools import groupby
+from copy import copy, deepcopy
 
 from collections import defaultdict, Counter
 
@@ -25,65 +27,114 @@ def strip_suffix(file):
     else:
         return file.stem
 
+def load_json(file):
+    try:
+        with file.open('r') as f:
+            return json.load(f)
+    except json.JSONDecodeError as err:
+        logging.error(file)
+        logging.error(err.doc)
+        raise err
+
+def invert_meta(metadata):
+    new_meta = {}
+    for key, obj in deepcopy(metadata).items():
+        type = obj.pop('type')
+        obj['uid'] = key
+        new_meta[type] = obj
+    return new_meta
+
+def get_uid_and_muids(file):
+    if isinstance(file, str):
+        file = pathlib.Path(file)
+
+    if file.suffix in {'.json', '.html'}:
+        uid, muid_string = file.stem.split('_')
+    else:
+        uid, muid_string = file.name.split('_')
+    return uid, muid_string.split('-')
+
 def make_file_index():
     global _tree_index
-    global _flat_index
+    global _uid_index
+    global _muid_index
+    global _file_index
 
     print('Building file index')
 
-    index = {}
-    def recurse(folder, old_meta=None, names=None):
+    _muid_index = muid_index = {}
+    _uid_index = uid_index = {}
+    _file_index = file_index = {}
+    def recurse(folder, meta_definitions=None):
         subtree = {}
+        meta_definitions = meta_definitions.copy()
 
-        meta = old_meta.copy() if old_meta else {}
-
-        metafile = folder / '_meta.json'
-        if not metafile.exists():
-            metafile = folder / f'_{folder.name}.json'
-
-
-        names = names.copy() if names else {}
-        if metafile.exists():
-            with metafile.open() as f:
-                new_meta = json.load(f)
-            if 'names' in new_meta:
-                names.update(new_meta.pop('names'))
-            meta.update(new_meta)
-
-
+        metafiles = set(folder.glob('_*.json'))
+        if metafiles:
+            for metafile in sorted(metafiles, key=humansortkey):
+                meta_definitions.update(json_load(metafile))
+        
         for file in sorted(folder.glob('*'), key=humansortkey):
+            
             if file.name.startswith('.'):
                 continue
-            if file == metafile:
+            if file in metafiles:
                 continue
+            filename = file.stem
+            meta = {}
+            for part in file.parts:
+                if part.endswith('.json'):
+                    part = part[:-5]
+                if part in meta_definitions:
+                    meta[part] = meta_definitions[part]
             if file.is_dir():
-                subtree[file.name] = recurse(file, old_meta=meta, names=names)
-                _meta = meta.copy()
-                if file.name in names:
-                    _meta['name'] = names[file.name]
-                subtree[file.name]['_meta'] = _meta
-            else:
+                subtree[file.name] = recurse(file, meta_definitions=meta_definitions)
+                subtree[file.name]['_meta'] = meta
+            elif file.suffix == '.json':
+
                 mtime = file.stat().st_mtime_ns
-                obj = subtree[file.name] = {
-                    'path': '/' + str(file.relative_to(REPO_DIR)),
+                path = str(file.relative_to(REPO_DIR))
+                obj = subtree[filename] = {
+                    'path': path,
                     'mtime': mtime,
                     '_meta': meta
                 }
-                uid = file.name if file.is_dir() else file.stem
-                if uid not in index:
-                    index[uid] = []
-                index[uid].append(obj)
+                if '_' in filename:
+                    uid, muids = get_uid_and_muids(file)
+                else:
+                    uid = file.name if file.is_dir() else file.stem
+                    muid = None
+                obj['uid'] = uid
+                if uid not in uid_index:
+                    uid_index[uid] = set()
+                uid_index[uid].add(filename)
+                if filename in file_index:
+                    logging.error('{str(file)} not unique')
+                file_index[filename] = obj
+                if muids:
+                    for muid in muids:
+                        if muid not in muid_index:
+                            muid_index[muid] = set()
+                        muid_index[muid].add(filename)
+
         return subtree
 
-    _tree_index = recurse(REPO_DIR)
-    _flat_index = index
+ 
 
-    build_thread = threading.Thread(target=tm.build_tm_if_needed, args=(len(_flat_index),))
+    _tree_index = recurse(REPO_DIR, {})
+    _uid_index = uid_index
+    _muid_index = muid_index
+    _file_index = file_index
+
+    for v in file_index.values():
+        v['_meta'] = invert_meta(v['_meta'])
+
+    build_thread = threading.Thread(target=tm.build_tm_if_needed, args=(len(_uid_index),))
     build_thread.start()
 
 
 _tree_index = None
-_flat_index = None
+_uid_index = None
 
 class StatsCalculator:
     def __init__(self):
@@ -96,7 +147,7 @@ class StatsCalculator:
         if path not in self._completion:
             self._completion[path] = self.calculate_completion(translation)
 
-        return self._completion[path]
+        return copy(self._completion[path])
 
     def calculate_completion(self, translation):
         translated_count = self.count_strings(translation)
@@ -119,23 +170,33 @@ class StatsCalculator:
 
 stats_calculator = StatsCalculator()
 
-def get_source_entry(translation):
-    name = pathlib.Path(translation['path']).stem
-    query = {'language': translation['_meta']['source_lang'],
-             'edition': translation['_meta']['source_edition']}
-    return get_matching_entry(name, query)
+def get_matching_entries(uid, muids):
+    try:
+        result = _uid_index[uid]
+        for muid in muids:
+            result.intersection_update(_muid_index[muid])
+        return result
+    except KeyError as e:
+        raise ValueError(f'No match for "{e.args[0]} for query {uid}, {muids}')
 
-def get_matching_entry(filename, query):
-    for result in _flat_index[filename]:
-        if not result['path'].endswith('.json'):
-            continue
-        for key, wanted_value in query.items():
-            # all keys in the query must match
-            if result['_meta'].get(key) != wanted_value:
-                break
-        else:
-            return result
-    raise FileNotFoundError(filename)
+def get_matching_entry(uid, muids):
+    result = get_matching_entries(uid, muids)
+    if len(result) == 1:
+        (result, ) = result
+        return result
+    elif len(result) == 0:
+        raise ValueError(f'No matches for {uid}, {muids}')
+    else:
+        raise ValueError(f'Multiple matches for {uid}, {muids}')
+
+def get_source_entry(translation):
+    uid = translation['uid']
+    root_lang = get_child_property_value(translation, 'root_lang')
+    root_edition = get_child_property_value(translation, 'root_edition')
+    
+    return _file_index[get_matching_entry(uid, ['root', root_lang, root_edition] )]
+
+
 
 
 def json_load(file):
@@ -151,37 +212,68 @@ def json_save(data, file):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_json(result):
+    _meta = result.get('_meta', {})
+    _meta['path'] = result.get('path')
     json_file = get_file(result['path'])
-    meta = {'filepath': result['path'], **result['_meta']}
-    return {'_meta': meta, **json_load(json_file)}
+    return {**_meta, 'segments': json_load(json_file)}
 
-def get_data(uid, to_lang, desired={'source_entry', 'translation'}):
-    if not _flat_index:
-        make_file_index()
+def get_child_property_value(obj, name):
+    for child_obj in obj['_meta'].values():
+        if name in child_obj:
+            return child_obj[name]
 
-    translation = None
-    source_entry = None
-    for result in _flat_index[uid]:
-        path = result['path']
-        if path.startswith(f'/translation/{to_lang}/'):
-            translation = result
-            break
 
-    if not translation:
-        raise ValueError(f'{uid} not found')
+def get_match(matches):
+    if len(matches) == 0:
+        raise ValueError('No matches')
+    elif len(matches) > 1:
+        raise ValueError('More than one match')
+    (match,) = matches
+    return match
+    
 
-    source_lang = translation['_meta']['source_lang']
-    for result in _flat_index[uid]:
-        path = result['path']
-        if path.startswith(f'/source/{source_lang}/'):
-            source_entry = result
+def get_data(filename, extra=['root']):
+    result = {}
+    primary_result = load_json(_file_index[filename])
+    primary_type = primary_result['category']['uid']
 
-    result = {
-        'source': load_json(source_entry),
-        'target': load_json(translation)
-    }
+    result[primary_type] = primary_result
 
+    uid, muids = get_uid_and_muids(filename)
+
+    for muid in extra:
+        result[muid] = load_json(_file_index[get_match(_uid_index[uid].intersection(_muid_index[muid]))])
+        
     return result
+        
+
+# def get_data(uid, to_lang, desired={'root', 'translation'}):
+#     if not _uid_index:
+#         make_file_index()
+    
+#     relevant = _uid_index[uid]
+#     preliminary_matches = {}
+#     for k in desired:
+#         matches = relevant.intersection(_muid_index[k])
+#         if k == 'translation':
+#             matches = matches.intersection(_muid_index[to_lang])
+#         preliminary_matches[k] = matches
+    
+#     translation = _file_index[get_match(preliminary_matches['translation'])]
+#     root_edition = get_child_property_value(translation, 'root_edition')
+
+#     root = _file_index[get_match(preliminary_matches['root'].intersection(_muid_index[root_edition]))]
+    
+#     result = {}
+
+#     for k in desired:
+#         if k in locals():
+#             obj = locals()[k]
+#         else:
+#             obj = preliminary_matches[k]
+#         result[k] = load_json(obj)
+
+#     return result
 
 
 def sum_counts(subtree):
@@ -210,12 +302,14 @@ def get_condensed_tree(path):
     def recurse(subtree):
         result = {}
         for key, value in subtree.items():
-            if key.endswith('.json'):
+            if value.get('path', '').endswith('.json'):
                 result[key] = stats_calculator.get_completion(value)
+                result[key]['_type'] = 'document'
             elif key.startswith('_meta'):
                 pass
             else:
                 result[key] = recurse(value)
+                result[key]['_type'] = 'node'
         return result
 
     tree = recurse(tree)
