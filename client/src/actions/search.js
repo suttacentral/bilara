@@ -7,9 +7,9 @@ export const makeSearchKey = (...args) => {
     return args.join('_');
 }
 
-export const fetchSuggestions = (string, source_lang, target_lang, exclude_uid) => (dispatch, getState) => {
+export const fetchSuggestions = (string, root_lang, target_lang, exclude_uid) => (dispatch, getState) => {
     let state = getState(),
-        key = makeSearchKey(string, source_lang, target_lang);
+        key = makeSearchKey(string, root_lang, target_lang);
     
     if (key in state.search.suggestions) {
         return
@@ -20,7 +20,7 @@ export const fetchSuggestions = (string, source_lang, target_lang, exclude_uid) 
         key: key
     });
 
-    return fetch(`/api/tm/?string=${string}&source_lang=${source_lang}&target_lang=${target_lang}&exclude_uid=${exclude_uid}`, {mode: 'cors'})
+    return fetch(`/api/tm/?string=${string}&root_lang=${root_lang}&target_lang=${target_lang}&exclude_uid=${exclude_uid}`, {mode: 'cors'})
         .then(res => res.json())
         .then(data => {
             dispatch(receiveSuggestions(key, data));

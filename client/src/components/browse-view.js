@@ -25,7 +25,7 @@ import { getBrowseData } from '../actions/browse.js';
 class NavItem extends LitElement {
   render(){
     const _translated = this._tree._translated || this._tree._translated_count,
-          _source = this._tree._source || this._tree._source_count,
+          _root = this._tree._root || this._tree._root_count,
           isFile = this._tree._type == 'document',
           filename = this._name,
           lang = 'en';
@@ -50,9 +50,9 @@ class NavItem extends LitElement {
       </style>
 
       <div class="${isFile ? "document" : "division"}">${ 
-          isFile ? html`<a href="/translation/${filename}/${lang}" @click="${this._navigate}">${this._name}</a>` 
+          isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}">${this._name}</a>` 
                  : html`${ this._name }` }
-        ${ _translated ? html`<paper-progress value="${_translated}" max="${_source}"></paper-progress>` : null}
+        ${ _translated ? html`<paper-progress value="${_translated}" max="${_root}"></paper-progress>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
           ${this.open ? repeat(Object.keys(this._tree), (key)=>key, (name, index) => {
             if (name.match(/^_/)) {

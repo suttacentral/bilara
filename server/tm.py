@@ -15,24 +15,23 @@ from tqdm import tqdm
 
 from config import config
 
-
-
+repo_dir = config.REPO_DIR
+root_dir = repo_dir / 'root'
+translation_dir = repo_dir / 'translation'
 
 es = Elasticsearch()
 
 def yield_all_segment_data():
-    repo_dir = config.REPO_DIR
-
-    source_dir = repo_dir / 'source'
-    translation_dir = repo_dir / 'translation'
-
     file_uid_mapping = defaultdict(list)
 
-    for file in itertools.chain(source_dir.glob('**/*.json'), translation_dir.glob('**/*.json')):
-        uid = file.stem
-        if uid.startswith('_'):
+    for file in itertools.chain(root_dir.glob('**/*.json'), translation_dir.glob('**/*.json')):
+        if '_' not in file.stem:
             continue
+        if file.stem.startswith('_'):
+            continue
+        uid = file.stem.split('_')[0]        
         file_uid_mapping[uid].append(file)
+    
     progress = tqdm(sorted(file_uid_mapping.items()))
     for uid, files in progress:
         progress.set_description(f'Indexing {uid}')
@@ -49,9 +48,9 @@ def yield_all_segment_data():
                 for segment_id, string in data.items():
                     doc = composed_docs[segment_id]
                     lang = rel_path.parts[1]
-                    if rel_path.parts[0] == 'source':
+                    if rel_path.parts[0] == 'root':
                         doc['language'] = lang
-                        doc['source'] = string
+                        doc['root'] = string
                     else:
                         doc['translation'][lang] = string
         yield from (
@@ -152,7 +151,7 @@ def generate_diff(string_a, string_b):
     sim = total_equal / max(len(string_a), len(string_b))
     return (sim, ''.join(output))
 
-def query_related_strings(string, source_language, target_language):
+def query_related_strings(string, root_language, target_language):
     clean_string = regex.sub('[\s\p{punct}]+', ' ', string)
     phrase_qs = f'"{clean_string}"'
     fuzzy_qs = ' '.join(f'{s}~' for s in clean_string.split())
@@ -172,21 +171,21 @@ def query_related_strings(string, source_language, target_language):
                     },
                     {
                         "term": {
-                            "language": source_language
+                            "language": root_language
                         }
                     }
                 ],
                 "should" : [
                     {
                         "query_string": {
-                            "default_field": f"source",
+                            "default_field": f"root",
                             "minimum_should_match": "50%", 
                             "query": fuzzy_qs
                         }
                     },
                     {
                         "query_string": {
-                            "default_field": f"source",
+                            "default_field": f"root",
                             "query": phrase_qs
                         }
                     }
@@ -196,7 +195,7 @@ def query_related_strings(string, source_language, target_language):
         "aggs": {
             "by_source" :{ 
                 "terms":  { 
-                    "field": "source.keyword", 
+                    "field": "root.keyword", 
                     "order": { "max_score": "desc"},
                     "size": 3,
                     "min_doc_count": 1
@@ -212,8 +211,8 @@ def query_related_strings(string, source_language, target_language):
     #print(json.dumps(body, ensure_ascii=False, indent=2))
     return es.search(index='tm_db', body=body)
 
-def get_related_strings(string, source_language, target_language, case_sensitive=False, original_id=None):
-    es_results = query_related_strings(string, source_language, target_language)
+def get_related_strings(string, root_language, target_language, case_sensitive=False, original_id=None):
+    es_results = query_related_strings(string, root_language, target_language)
 
     buckets = es_results['aggregations']['by_source']['buckets']
     hits = es_results['hits']['hits']
@@ -222,31 +221,31 @@ def get_related_strings(string, source_language, target_language, case_sensitive
     translations = {}
     for hit in hits:
         _source = hit['_source']
-        key = (_source['source'], _source['translation'][target_language])
+        key = (_source['root'], _source['translation'][target_language])
         if key not in ids:
             ids[key] = hit['_id']
-        if _source['source'] not in translations:
-            translations[_source['source']] = _source['translation'][target_language]
+        if _source['root'] not in translations:
+            translations[_source['root']] = _source['translation'][target_language]
 
     results = []
 
     best_match_quality = -1
 
     for bucket in buckets:
-        source = bucket['key']
-        sim, diffed_source_string = generate_diff(string, source)
+        root = bucket['key']
+        sim, diffed_root_string = generate_diff(string, root)
 
         best_match_quality = max(best_match_quality, sim)
         results.append({
-            'source': source,
-            'source_language': source_language,
-            'diffed_source': diffed_source_string,
+            'root': root,
+            'root_language': root_language,
+            'diffed_root': diffed_root_string,
             'match_quality': sim,
             'translations': [
                 {
                     'translation': d['key'],
                     'count': d['doc_count'],
-                    'id': ids.get( (source, d['key']) )
+                    'id': ids.get( (root, d['key']) )
                 } 
                 for d in bucket['translation']['buckets']
             ]
@@ -257,13 +256,13 @@ def get_related_strings(string, source_language, target_language, case_sensitive
 
     for result in results:
         if not result['translations']:
-            key = (result['source'], _source['translation'][target_language])
-            source = result['source']
-            translation = translations[result['source']]
+            key = (result['root'], _source['translation'][target_language])
+            root = result['root']
+            translation = translations[result['root']]
             result['translations'] = [{
                 'translation': translation,
                 'count': 1,
-                'id': ids.get( (source, translation) )
+                'id': ids.get( (root, translation) )
             }]
     
     

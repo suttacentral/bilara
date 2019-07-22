@@ -89,7 +89,7 @@ def finalize_commit(branch_name, push_master=True, push_branch=True):
         _pending_commits.pop(branch_name)
         return
     if push_branch:
-        git.push('-u', 'origin', branch_name, '--force-with-lease')
+        git.push('-u', 'origin', branch_name, '--force')
     git.checkout(master)
     print('Merging into master... ', end='')
     try:

@@ -19,8 +19,10 @@ config = Config({
     
     'ARANGO_USER': 'root',
     'ARANGO_PASSWORD': 'test',
-    'ARANGO_DB_NAME': 'bilara',
+    'ARANGO_DB_NAME': 'bilara'
 })
+
+print(config.REPO_DIR)
 
 try:
     import local_config

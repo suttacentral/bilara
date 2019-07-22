@@ -24,7 +24,7 @@ export class BilaraSuggestions extends LitElement{
           flex-direction: column;
       }
 
-      .source_string, .translations {
+      .root_string, .translations {
           flex: 1;
           padding: 0 8px;
       }
@@ -47,7 +47,7 @@ export class BilaraSuggestions extends LitElement{
       ${ this._suggestions.map( (item) => html`
       
         <div class="row">
-        <span class="source_string">${unsafeHTML(item.diffed_source)}</span>
+        <span class="root_string">${unsafeHTML(item.diffed_root)}</span>
         
         <span class="translations" class="row">
         <span class="match_quality">${Math.round(100*item.match_quality)}%</span>

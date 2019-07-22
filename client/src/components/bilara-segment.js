@@ -66,10 +66,10 @@ export class BilaraSegment extends connect(store)(LitElement){
     
     <div id="${this._segmentId}">
     <span contenteditable="false"
-        data-type="source"
+        data-type="root"
         class="string"
-        lang="${this._sourceLang}"
-      >${this._sourceString}</span>
+        lang="${this._rootLang}"
+      >${this._rootString}</span>
     <span contenteditable="true"
         data-type="target"
         class="string"
@@ -90,12 +90,12 @@ export class BilaraSegment extends connect(store)(LitElement){
     return {
       _isActive: Boolean,
       _segmentId: String,
-      _sourceString: String,
+      _rootString: String,
       _targetString: String,
-      _sourceFilepath: String,
+      _rootFilepath: String,
       _targetFilepath: String,
       _suggestions: {type: Object},
-      _sourceLang: String,
+      _rootLang: String,
       _targetLang: String
     }
   }
@@ -141,15 +141,15 @@ export class BilaraSegment extends connect(store)(LitElement){
   }
 
   fetchSuggestions(){
-    store.dispatch(fetchSuggestions(this._sourceString, this._sourceLang, this._targetLang, this._segmentId))
+    store.dispatch(fetchSuggestions(this._rootString, this._rootLang, this._targetLang, this._segmentId))
   }
 
   _inputEvent(e){
     const segmentId = this._segmentId,
           value = e.currentTarget.textContent,
           dataType = e.currentTarget.dataset.type,
-          filepath = dataType == 'source' ? this._sourceFilePath : this._targetFilepath,
-          hasChanged = dataType == 'source' ? this._sourceString != value : this._targetString != value;
+          filepath = dataType == 'root' ? this._rootFilePath : this._targetFilepath,
+          hasChanged = dataType == 'root' ? this._rootString != value : this._targetString != value;
     
     if (hasChanged) {
       store.dispatch(updateSegment(filepath, segmentId, dataType, value));

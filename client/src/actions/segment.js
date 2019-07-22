@@ -6,14 +6,14 @@ export const UNQUEUE_SEGMENT = 'UNQUEUE_SEGMENT';
 
 import { pushToServer } from './queue.js';
 
-export const updateSegment = (filename, segmentId, dataType, value) => (dispatch, getState) => {
+export const updateSegment = (filepath, segmentId, dataType, value) => (dispatch, getState) => {
   const timestamp = Date.now();
   dispatch({
     type: QUEUE_SEGMENT,
-    key: [filename, segmentId, timestamp].join('_'),
+    key: [filepath, segmentId, timestamp].join('_'),
     data: {
       timestamp: timestamp,
-      filename,
+      filepath,
       segmentId,
       value
     }

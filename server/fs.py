@@ -4,7 +4,7 @@ import logging
 import threading
 import linecache
 from config import config
-from util import humansortkey
+from util import humansortkey, bilarasortkey
 from itertools import groupby
 from copy import copy, deepcopy
 
@@ -245,35 +245,6 @@ def get_data(filename, extra=['root']):
         result[muid] = load_json(_file_index[get_match(_uid_index[uid].intersection(_muid_index[muid]))])
         
     return result
-        
-
-# def get_data(uid, to_lang, desired={'root', 'translation'}):
-#     if not _uid_index:
-#         make_file_index()
-    
-#     relevant = _uid_index[uid]
-#     preliminary_matches = {}
-#     for k in desired:
-#         matches = relevant.intersection(_muid_index[k])
-#         if k == 'translation':
-#             matches = matches.intersection(_muid_index[to_lang])
-#         preliminary_matches[k] = matches
-    
-#     translation = _file_index[get_match(preliminary_matches['translation'])]
-#     root_edition = get_child_property_value(translation, 'root_edition')
-
-#     root = _file_index[get_match(preliminary_matches['root'].intersection(_muid_index[root_edition]))]
-    
-#     result = {}
-
-#     for k in desired:
-#         if k in locals():
-#             obj = locals()[k]
-#         else:
-#             obj = preliminary_matches[k]
-#         result[k] = load_json(obj)
-
-#     return result
 
 
 def sum_counts(subtree):
@@ -340,7 +311,7 @@ def update_file(filepath, segments, user):
         for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
             file_data[segment['segmentId']] = segment['value']
 
-        sorted_data = dict(sorted(file_data.items(), key=humansortkey))
+        sorted_data = dict(sorted(file_data.items(), key=bilarasortkey))
         try:
             json_save(sorted_data, file)
             result = {key: "SUCCESS" for key, segment in segments}

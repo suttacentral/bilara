@@ -48,9 +48,9 @@ def tm_get():
     import tm
     get_user_details()
     string = request.args.get('string')
-    source_lang = request.args.get('source_lang')
+    root_lang = request.args.get('root_lang')
     target_lang = request.args.get('target_lang')
-    return jsonify(tm.get_related_strings(string, source_lang, target_lang))
+    return jsonify(tm.get_related_strings(string, root_lang, target_lang))
 
 try:
     oauth = OAuth(app)
