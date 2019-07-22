@@ -29,6 +29,10 @@ export class BilaraSuggestions extends LitElement{
           padding: 0 8px;
       }
 
+      .translation {
+        display: block;
+      }
+
       .match_quality {
           padding: 0 1px;
           float: right;
