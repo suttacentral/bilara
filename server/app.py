@@ -52,7 +52,7 @@ def tm_get():
     target_lang = request.args.get('target_lang')
     return jsonify(tm.get_related_strings(string, root_lang, target_lang))
 
-try:
+if config.GITHUB_AUTH_ENABLED:
     oauth = OAuth(app)
 
     github_auth = oauth.remote_app(
@@ -116,46 +116,66 @@ try:
     def webhook():
         data = request.get_json()
         return 'Okay', 200
-except Exception as e:
-    logging.error(f'An error occured while setting up OAuth app {str(e)}')
+else:
+    @app.route('/login')
+    def login():
+        return 'Auth not enabled', 500
+    
+    @app.route('/logout')
+    def logout():
+        return 'Auth not enabled', 500
+    
+    @app.route('/authorized')
+    def authorized():
+        return 'Auth not enabled', 500
+    
+
 
 
 def get_user_details():
     user = session.get('user')
     if user:
         return user
-    
-    try:
-        user_data = github_auth.get('user').data
-        email_data = github_auth.get('user/emails').data
-        print(json.dumps(user_data, indent=2))
-        print(json.dumps(email_data, indent=2))
+    elif not config.GITHUB_AUTH_ENABLED:
+            user = {
+                'login': config.LOCAL_LOGIN,
+                'name': config.LOCAL_USERNAME,
+                'email': config.LOCAL_EMAIL,
+            }        
+    else:
+        try:
+            user_data = github_auth.get('user').data
+            email_data = github_auth.get('user/emails').data
+            print(json.dumps(user_data, indent=2))
+            print(json.dumps(email_data, indent=2))
 
-        user = {
-            'login': user_data['login'],
-            'name': user_data['name'],
-            'email': email_data[0]['email']
-        }
-        
-    except OAuthException:
-        user = None
+            user = {
+                'login': user_data['login'],
+                'name': user_data['name'] or user_data['login'],
+                'email': email_data[0]['email']
+            }
+            
+        except OAuthException:
+            user = None
     
     session['user'] = user
     return user
 
 @app.route('/user')
 def user():
-    print(session.get('github_token'))
-    try:
-        user_data = github_auth.get('user').data
-        return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})
-    except OAuthException:
-        return jsonify({'login': None, 'avatar_url': None})
+    if config.GITHUB_AUTH_ENABLED:
+        print(session.get('github_token'))
+        try:
+            user_data = github_auth.get('user').data
+            return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})
+        except OAuthException:
+            return jsonify({'login': None, 'avatar_url': None})
+    else:
+        user = get_user_details()
+        return jsonify({'login': user['login'], 'avatar_url': None})
 
 
-build_path = None#pathlib.Path('../client/build/esm-bundled').resolve()
-#if not build_path.exists():
-#    build_path = None
+build_path = None
 
 @app.route('/')
 @app.route('/<path:path>')
@@ -185,8 +205,5 @@ def proxy(path=''):
     
     return resp
 
-if __name__ == '__main__':
-    import fs
-    app.run()
-
+import fs
 

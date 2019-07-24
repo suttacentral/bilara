@@ -1,4 +1,5 @@
 from git import Repo, GitCommandError
+from config import config
 
 import threading
 import time
@@ -35,7 +36,7 @@ def checkout_branch(branch_name):
     return repo.active_branch
 
 def create_empty_commit(user, branch_name):
-    git.commit(allow_empty=True, m=f'Translations by {user["name"]}', author=f'{user["name"]} <{user["email"]}>')
+    git.commit(allow_empty=True, m=f'Translations by {user["login"]}', author=f'{user["name"]} <{user["email"]}>')
     _pending_commits[branch_name] = time.time()
 
 _pending_commits = {}

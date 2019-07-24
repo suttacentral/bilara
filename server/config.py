@@ -8,18 +8,34 @@ class Config(dict):
         return self[key]
 
 config = Config({
+    # If GITHUB_AUTH is enabled then git details should be provided
+    'GITHUB_AUTH_ENABLED': False,
+
+    # If disabled, no push/pull is performed.
+    'GIT_SYNC_ENABLED': False,
+
+    # If disabled, the repo dir will be treated as a normal directory
+    'GIT_COMMIT_ENABLED': False,
+
     'GIT_APP_KEY': '',
     'GIT_APP_SECRET': '',
     
     'GIT_USER': '',
     'GIT_PASSWORD': '',
     
-    'REPO_URL': 'https://github.com/suttacentral/bilara-data.git',
+    'REPO_URL': None,
     'REPO_DIR':  pathlib.Path(__file__).absolute().parent.parent / 'repo',
     
     'ARANGO_USER': 'root',
     'ARANGO_PASSWORD': 'test',
-    'ARANGO_DB_NAME': 'bilara'
+    'ARANGO_DB_NAME': 'bilara',
+
+
+    
+
+    'LOCAL_USERNAME': 'Bob',
+    'LOCAL_LOGIN': 'Bob',
+    'LOCAL_EMAIL': 'bob@example.com'
 })
 
 print(config.REPO_DIR)

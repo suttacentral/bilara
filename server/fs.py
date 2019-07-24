@@ -321,7 +321,7 @@ def update_file(filepath, segments, user):
             result = {key: "ERROR" for key in segments}
             success = False
 
-        if success:
+        if success and config.GIT_COMMIT_ENABLED:
             git_fs.update_file(filepath, user)
         return result
 
