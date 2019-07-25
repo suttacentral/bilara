@@ -59,7 +59,7 @@ def yield_all_segment_data():
                 '_index': 'tm_db',
                 '_type': 'segment',
                 **doc
-            } for _id, doc in composed_docs.items() if len(doc) > 1
+            } for _id, doc in composed_docs.items()
         )
 
 def index_bulk(force=False):
@@ -90,8 +90,8 @@ def build_tm_if_needed(uid_count):
 def update_docs(segments):
     for segment in segments.values():
         path = pathlib.Path(segment['filepath'])
-        lang = path.parts[2]
-        if path.parts[1] == 'translation':
+        lang = path.parts[1]
+        if path.parts[0] == 'translation':
             es.update('tm_db', 'segment', segment['segmentId'], { 
                  'script': { 
                          'source': f'ctx._source.translation[params.lang]= params.value; ctx._source.timestamp = ctx._now', 
@@ -100,7 +100,7 @@ def update_docs(segments):
                            'lang': lang, 
                            'value': segment['value']
                           } 
-                     } 
+                     }
                  })
 
 def ensure_index_exists(index_name='tm_db', recreate=False):

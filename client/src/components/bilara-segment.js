@@ -57,7 +57,9 @@ export class BilaraSegment extends connect(store)(LitElement){
         flex: 1;
         padding: 0 8px;
         hyphens: auto;
+        white-space: prewrap;
       }
+    
       .string[contenteditable="true"]{
         font-family:"source serif pro"
       }
@@ -70,16 +72,15 @@ export class BilaraSegment extends connect(store)(LitElement){
         class="string"
         lang="${this._rootLang}"
       >${this._rootString}</span>
-    <span contenteditable="true"
+    <span contenteditable="plaintext-only"
         data-type="target"
-        class="string"
+        class="string ${this._dirtyState}"
         lang="${this._targetLang}"
         @blur="${this._inputEvent}"
         @keypress="${this._keypressEvent}"
         @focus="${this._focusEvent}"
     >${this._targetString}</span>
-    
-   
+    ${this.getDirtyState()}
     </div>
     ${ this._suggestions ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
     
@@ -96,7 +97,23 @@ export class BilaraSegment extends connect(store)(LitElement){
       _targetFilepath: String,
       _suggestions: {type: Object},
       _rootLang: String,
-      _targetLang: String
+      _targetLang: String,
+      _suggestedString: String,
+      _dirtyState: String,
+      _committedString: String,
+    }
+  }
+
+  getDirtyState() {
+    switch(this._dirtyState) {
+      case 'unmodified': 
+      return html`<span class="status unmodified"></span>`;
+    case 'modified':
+      return html`<span class="status modified" title="Not Committed">⚠</span>`;
+    case 'committed':
+      return html`<span class="status committed" title="Committed">✓</span>`;
+    default:
+      return ''
     }
   }
 
@@ -116,10 +133,17 @@ export class BilaraSegment extends connect(store)(LitElement){
   constructor() {
     super()
     this.addEventListener('suggest', (e) => {
-      this._targetString = e.detail.string;
+      let target = this.shadowRoot.querySelector('[data-type=target]');
+      target.innerText = e.detail.string;
+      this._dirtyState = 'modified';
+      this._suggestedString = e.detail.string;
       this.setFocus('target');
     });
-    
+  }
+
+  firstUpdated() {
+    this._dirtyState = 'unmodified';
+    this._committedString = this._targetString;
   }
 
   updated(changedProperties) {
@@ -145,20 +169,33 @@ export class BilaraSegment extends connect(store)(LitElement){
   }
 
   _inputEvent(e){
-    const segmentId = this._segmentId,
-          value = e.currentTarget.textContent,
-          dataType = e.currentTarget.dataset.type,
-          filepath = dataType == 'root' ? this._rootFilePath : this._targetFilepath,
-          hasChanged = dataType == 'root' ? this._rootString != value : this._targetString != value;
-    
-    if (hasChanged) {
-      store.dispatch(updateSegment(filepath, segmentId, dataType, value));
+    console.log(this, this.commitedString, e.currentTarget.textContent);
+    if (this._committedString != e.currentTarget.textContent) {
+      this._dirtyState = 'modified';
     }
+ 
   }
 
   _keypressEvent(e) {
     if (e.key == 'Enter') {
+      console.log('Submitting')
       e.preventDefault();
+      e.stopPropagation();
+
+      const segmentId = this._segmentId,
+      value = e.currentTarget.textContent,
+      dataType = e.currentTarget.dataset.type,
+      filepath = dataType == 'root' ? this._rootFilePath : this._targetFilepath,
+      hasChanged = dataType == 'root' ? this._rootString != value : (this._targetString != value || this._suggestedString);
+
+      if (hasChanged) {
+        this._dirtyState = 'committed';
+        this._committedString = value;
+        store.dispatch(updateSegment(filepath, segmentId, dataType, value));
+      } else {
+        console.log('No change');
+      }
+
       this.blur();
       let nextSegment = this.nextElementSibling;
       if (nextSegment) {
