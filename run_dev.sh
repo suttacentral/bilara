@@ -7,5 +7,5 @@ python app.py &
 
 cd ../client
 
-polymer serve
+npm run serve
 
