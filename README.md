@@ -63,3 +63,7 @@ python app.py
 cd ~/bilara/client
 polymer serve
 ```
+
+## Use the local site
+
+at http://localhost:5000
