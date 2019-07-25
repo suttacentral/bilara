@@ -56,12 +56,12 @@ Otherwise if you wish to get seperate debug feedback from the client and server 
 
 ```
 cd ~/bilara/server
-python app.py
+flask run
 ```
 
 ```
 cd ~/bilara/client
-polymer serve
+npm serve
 ```
 
 ## Use the local site
