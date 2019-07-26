@@ -35,7 +35,6 @@ export const SharedStyles = html`
     font-size: 24px;
     text-align: center;
     color: var(--app-dark-text-color);
-    display:none
   }
 
 a{

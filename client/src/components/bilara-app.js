@@ -266,8 +266,6 @@ class BilaraApp extends connect(store)(LitElement) {
       `}
       </main>
 
-    }
-
     <footer>
       <p>Computer Aided Translation for SuttaCentral</p>
     </footer>`
