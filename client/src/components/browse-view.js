@@ -47,6 +47,9 @@ class NavItem extends LitElement {
         display: inline-block;
         -paper-progress-secondary-color: rgb(200,100,100);
       }
+      a{
+        text-decoration: none
+      }
       </style>
 
       <div class="${isFile ? "document" : "division"}">${ 

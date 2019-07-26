@@ -8,16 +8,24 @@ export class BilaraSuggestions extends LitElement{
 
       #suggestions {
           font-size: 80%;
+          color: var(--sc-secondary-text-color);
           margin: 0 5%;
-          background-color: #eeeeee
-      }
+}
+
+.row{
+          background-color: var(--sc-secondary-background-color);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+          transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+          border-radius: 8px
+}
+
+.row:hover {
+         box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+         cursor:pointer
+}
 
       .row {
           flex-direction: row;
-      }
-
-      .row + .row {
-          border-top: 1px solid #bbbbbb;
       }
 
       .column {
@@ -38,6 +46,7 @@ export class BilaraSuggestions extends LitElement{
           float: right;
           background-color: #e0e0e0;
           border-radius: 4px;
+          display: none
       }
   
         div {

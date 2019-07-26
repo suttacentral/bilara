@@ -15,13 +15,10 @@ export const SharedStyles = html`
   :host {
     display: block;
     box-sizing: border-box;
-    font-family: "source sans pro";
-    color: var(--app-dark-text-color);
   }
 
   section {
     padding: 24px;
-    background: var(--app-section-odd-color);
   }
 
   section > * {
