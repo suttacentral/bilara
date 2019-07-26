@@ -45,14 +45,12 @@ export class BilaraSegment extends connect(store)(LitElement){
   render() {
     return html`
     <style>
+
       div {
         display: flex;
         margin-bottom: 5px;
         border-radius: 4px
       }
-div:hover{
-  background-color: var(--sc-secondary-background-color)
-}
 div:focus-within{
   background-color: var(--sc-secondary-background-color);
 }

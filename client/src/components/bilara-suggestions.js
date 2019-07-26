@@ -21,7 +21,7 @@ export class BilaraSuggestions extends LitElement{
 
 .row:hover {
          box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-         cursor:pointer
+         cursor:pointer;
 }
 
       .row {
@@ -40,6 +40,9 @@ export class BilaraSuggestions extends LitElement{
       .translation {
         display: block;
       }
+      .translation + .translation{
+        border-top: 1px dotted rgba(0,0,0,0.2);
+      }
 
       .match_quality {
           padding: 0 1px;
@@ -51,8 +54,7 @@ export class BilaraSuggestions extends LitElement{
   
         div {
           display: flex;
-  
-          margin-bottom: 5px;
+          margin-bottom: 8px;
         }
       </style>
       

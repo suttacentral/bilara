@@ -63,8 +63,8 @@ class BilaraApp extends connect(store)(LitElement) {
         --app-drawer-text-color: var(--app-light-text-color);
         --app-drawer-selected-color: #78909C;
 
-        --sc-primary-background-color: rgb(250, 249, 248);
-        --sc-secondary-background-color: rgb(255, 255, 255);
+        --sc-primary-background-color: rgb(255, 248, 231);
+        --sc-secondary-background-color: rgba(255,255,255,0.5);
         --sc-secondary-text-color: rgb(116, 115, 114);
       }
 
