@@ -48,10 +48,12 @@ export class BilaraSegment extends connect(store)(LitElement){
 
       div {
         display: flex;
-
         margin-bottom: 5px;
+        border-radius: 4px
       }
-
+div:focus-within{
+  background-color: var(--sc-secondary-background-color);
+}
       .string {
         display: inline-flex;
         flex: 1;
@@ -60,7 +62,7 @@ export class BilaraSegment extends connect(store)(LitElement){
         white-space: prewrap;
       }
     
-      .string[contenteditable="true"]{
+      .string[contenteditable="plaintext-only"]{
         font-family:"source serif pro"
       }
 

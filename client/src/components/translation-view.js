@@ -34,7 +34,6 @@ class TranslationView extends connect(store)(PageViewElement) {
       }
     </style>
     <section>
-      <h2>Translation</h2>
       ${ this._fetching ? 
         html`Fetching Data` :
         html`

@@ -62,6 +62,10 @@ class BilaraApp extends connect(store)(LitElement) {
         --app-drawer-background-color: var(--app-secondary-color);
         --app-drawer-text-color: var(--app-light-text-color);
         --app-drawer-selected-color: #78909C;
+
+        --sc-primary-background-color: rgb(255, 248, 231);
+        --sc-secondary-background-color: rgba(255,255,255,0.5);
+        --sc-secondary-text-color: rgb(116, 115, 114);
       }
 
       app-header {
@@ -70,17 +74,18 @@ class BilaraApp extends connect(store)(LitElement) {
         left: 0;
         width: 100%;
         text-align: center;
-        background-color: var(--app-header-background-color);
+        background-color: var(--sc-primary-background-color);
         color: var(--app-header-text-color);
         border-bottom: 1px solid #eee;
       }
 
       .toolbar-top {
-        background-color: var(--app-header-background-color);
+        background-color: var(--sc-primary-background-color);
       }
 
       [main-title] {
         font-family: 'Pacifico';
+        font-weight: normal;
         text-transform: lowercase;
         font-size: 30px;
         /* In the narrow layout, the toolbar is offset by the width of the
@@ -144,6 +149,7 @@ class BilaraApp extends connect(store)(LitElement) {
       .main-content {
         padding-top: 64px;
         min-height: 100vh;
+        background-color: var(--sc-primary-background-color);
       }
 
       .page {
@@ -186,15 +192,43 @@ class BilaraApp extends connect(store)(LitElement) {
           opacity: 0.7;
         }
       }
+      .app-log{
+        color:var(--app-header-selected-color);
+        font-weight:600;
+        font-size: 0.8rem;
+        text-decoration: none;
+        padding:4px 8px;
+         margin: 0 4px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        display:inline-block;
+        text-transform: uppercase
+      }
+      .app-log:hover{
+        background-color: var(--sc-secondary-background-color)
+      }
+      .user-name{
+      display:inline-block;
+      font-size: 0.8rem;
+      font-style:italic;
+      padding:4px 8px;
+      margin: 0 4px
+    }
+    .user-name::before{
+      content: "user: "
+    }
+        .user-name::after{
+      content: "!"
+    }
     </style>
 
     <!-- Header -->
     <app-header condenses reveals effects="waterfall">
       <app-toolbar class="toolbar-top">
         <button class="menu-btn" title="Menu" @click="${this._menuButtonClicked}">${menuIcon}</button>
-        <div main-title>${this.appTitle}</div>
+        <h1 main-title>${this.appTitle}</h1>
         ${
-          this._username ? html`${this._username} <a href="/logout" target="_top">Logout</a>` : html`<a href="/login"  target="_top">Login</a>` 
+          this._username ? html`<span class="user-name">${this._username}</span> <a href="/logout" target="_top" class="app-log">Logout</a>` : html`<a href="/login"  target="_top" class="app-log">Login</a>` 
         }
       </app-toolbar>
 
@@ -231,8 +265,6 @@ class BilaraApp extends connect(store)(LitElement) {
           }
       `}
       </main>
-
-    }
 
     <footer>
       <p>Computer Aided Translation for SuttaCentral</p>

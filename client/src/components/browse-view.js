@@ -47,6 +47,9 @@ class NavItem extends LitElement {
         display: inline-block;
         -paper-progress-secondary-color: rgb(200,100,100);
       }
+      a{
+        text-decoration: none
+      }
       </style>
 
       <div class="${isFile ? "document" : "division"}">${ 
@@ -100,7 +103,6 @@ class BrowseView extends connect(store)(PageViewElement) {
       }
     </style>
     <section>
-      <h2>Browse</h2>
       ${ this._dataTree ? html`
         <nav-item _name="Browse" ._tree="${this._dataTree}" ?open="${true}"></nav-item>
       ` : html`Loading...`}
