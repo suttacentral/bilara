@@ -2,6 +2,8 @@
 trap "exit" INT TERM
 trap "kill 0" EXIT
 
+docker start sc-elasticsearch
+
 cd server
 python app.py &
 

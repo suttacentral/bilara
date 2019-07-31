@@ -174,36 +174,33 @@ def user():
         user = get_user_details()
         return jsonify({'login': user['login'], 'avatar_url': None})
 
-
-build_path = None
-
-@app.route('/')
-@app.route('/<path:path>')
-def proxy(path=''):
-    print(f'Proxying Path {path}')
-    if build_path:
-        if (not path or path.endswith('/')):
-            path = 'index.html'
-        if '.' in path and not path.split('.')[-1].isalpha():
-            path = 'index.html'
-        print(build_path, path)
-        return send_from_directory(str(build_path), path)
+# @app.route('/')
+# @app.route('/<path:path>')
+# def proxy(path=''):
+#     print(f'Proxying Path {path}')
+#     if build_path:
+#         if (not path or path.endswith('/')):
+#             path = 'index.html'
+#         if '.' in path and not path.split('.')[-1].isalpha():
+#             path = 'index.html'
+#         print(build_path, path)
+#         return send_from_directory(str(build_path), path)
     
-    if path.split('/')[-1].isalpha():
-        path = 'index.html'
+#     if path.split('/')[-1].isalpha():
+#         path = 'index.html'
 
-    r = get(f'http://localhost:8081/{path}')
-    resp = Response(r.content, content_type=r.headers['content-type'])
-    max_age = 60
-    if 'node_modules' in path:
-        max_age = 86400 * 7
-    elif path.endswith('.woff2') or path.endswith('.png') or path.endswith('service-worker.js'):
-        max_age = 86400 * 7
+#     r = get(f'http://localhost:8081/{path}')
+#     resp = Response(r.content, content_type=r.headers['content-type'])
+#     max_age = 1
+#     if 'node_modules' in path:
+#         max_age = 86400 * 7
+#     elif path.endswith('.woff2') or path.endswith('.png') or path.endswith('service-worker.js'):
+#         max_age = 86400 * 7
 
-    resp.cache_control.max_age = max_age
+#     resp.cache_control.max_age = max_age
 
     
-    return resp
+#     return resp
 
 import fs
 

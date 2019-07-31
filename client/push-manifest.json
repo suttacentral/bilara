@@ -1,14 +1,6 @@
 {
   "/": {
-    "src/components/bilara.js": {
-      "type": "script",
-      "weight": 1
-    },
-    "src/components/my-view1.js": {
-      "type": "script",
-      "weight": 1
-    },
-    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+    "src/components/bilara-app.js": {
       "type": "script",
       "weight": 1
     }

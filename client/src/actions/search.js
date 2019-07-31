@@ -1,5 +1,3 @@
-import { stat } from "mz/fs";
-
 export const FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS';
 export const RECEIVE_SUGGESTIONS = 'RECEIVE_SUGGESTIONS'
 
