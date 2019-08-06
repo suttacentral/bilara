@@ -22,7 +22,8 @@ app.use(['/api', '/auth', '/authorized', '/user', '/login', '/logout', '/webhook
     proxyReqPathResolver: function (req) {
         //console.log(req, req.url);
         return req.originalUrl;
-    }
+    },
+    preserveHostHdr: true
 }));
 
 // app.get('/api/launch', (req, res, next) => res.send('boom'));

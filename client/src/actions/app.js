@@ -63,7 +63,7 @@ export const fetchUserData = (dispatch, getState) => {
     dispatch({
       type: USER_MUST_REVALIDATE
     })
-    return fetch('/user')
+    return fetch('/api/user')
       .then(res => res.json())
       .then(data => {
         dispatch(updateUser(data.login, data.avatar_url))

@@ -52,6 +52,19 @@ def tm_get():
     target_lang = request.args.get('target_lang')
     return jsonify(tm.get_related_strings(string, root_lang, target_lang))
 
+@app.route('/api/user')
+def user():
+    if config.GITHUB_AUTH_ENABLED:
+        print(session.get('github_token'))
+        try:
+            user_data = github_auth.get('user').data
+            return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})
+        except OAuthException:
+            return jsonify({'login': None, 'avatar_url': None})
+    else:
+        user = get_user_details()
+        return jsonify({'login': user['login'], 'avatar_url': None})
+
 if config.GITHUB_AUTH_ENABLED:
     oauth = OAuth(app)
 
@@ -66,13 +79,7 @@ if config.GITHUB_AUTH_ENABLED:
         access_token_url='https://github.com/login/oauth/access_token',
         authorize_url='https://github.com/login/oauth/authorize'
     )
-
-    # @app.route('/')
-    # def index():
-    #     if 'github_token' in session:
-    #         data = github_auth.get('user').data
-    #         return jsonify(call_github())
-    #     return render_template_string('<a href="{{ url_for("login") }}">Login</a>')
+    
 
     @app.route('/login')
     def login():
@@ -160,47 +167,6 @@ def get_user_details():
     
     session['user'] = user
     return user
-
-@app.route('/user')
-def user():
-    if config.GITHUB_AUTH_ENABLED:
-        print(session.get('github_token'))
-        try:
-            user_data = github_auth.get('user').data
-            return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})
-        except OAuthException:
-            return jsonify({'login': None, 'avatar_url': None})
-    else:
-        user = get_user_details()
-        return jsonify({'login': user['login'], 'avatar_url': None})
-
-# @app.route('/')
-# @app.route('/<path:path>')
-# def proxy(path=''):
-#     print(f'Proxying Path {path}')
-#     if build_path:
-#         if (not path or path.endswith('/')):
-#             path = 'index.html'
-#         if '.' in path and not path.split('.')[-1].isalpha():
-#             path = 'index.html'
-#         print(build_path, path)
-#         return send_from_directory(str(build_path), path)
-    
-#     if path.split('/')[-1].isalpha():
-#         path = 'index.html'
-
-#     r = get(f'http://localhost:8081/{path}')
-#     resp = Response(r.content, content_type=r.headers['content-type'])
-#     max_age = 1
-#     if 'node_modules' in path:
-#         max_age = 86400 * 7
-#     elif path.endswith('.woff2') or path.endswith('.png') or path.endswith('service-worker.js'):
-#         max_age = 86400 * 7
-
-#     resp.cache_control.max_age = max_age
-
-    
-#     return resp
 
 import fs
 
