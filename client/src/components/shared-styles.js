@@ -27,18 +27,14 @@ export const SharedStyles = html`
     margin-left: auto;
   }
 
-  section:nth-of-type(even) {
-    background: var(--app-section-even-color);
-  }
 
   h2 {
     font-size: 24px;
     text-align: center;
-    color: var(--app-dark-text-color);
   }
 
 a{
- color: var(--app-primary-color);
+ color: var(--bilara-primary-color);
 }
 
   @media (min-width: 460px) {
@@ -54,7 +50,7 @@ a{
     margin: 0 auto;
     text-align: center;
     border-radius: 50%;
-    background: var(--app-primary-color);
+    background: var(--bilara-primary-color);
     color: var(--app-light-text-color);
     font-size: 30px;
     line-height: 64px;

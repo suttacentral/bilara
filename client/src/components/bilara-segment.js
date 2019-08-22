@@ -52,7 +52,8 @@ export class BilaraSegment extends connect(store)(LitElement){
         border-radius: 4px
       }
 div:focus-within{
-  background-color: var(--sc-secondary-background-color);
+  background-color: var(--bilara-secondary-background-color);
+  color: var(--bilara-empasized-text-color);
 }
       .string {
         display: inline-flex;
