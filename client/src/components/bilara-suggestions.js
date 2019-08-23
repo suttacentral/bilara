@@ -12,6 +12,13 @@ export class BilaraSuggestions extends LitElement{
           margin: 0 5%;
 }
 
+del{
+  color: var(--bilara-orange)
+}
+ins{
+  color: var(--bilara-blue)
+}
+
 .row{
           background-color: var(--bilara-secondary-background-color);
           box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);

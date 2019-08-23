@@ -47,6 +47,14 @@ class BilaraApp extends connect(store)(LitElement) {
     --bilara-primary-text-color: #657b83;
     --bilara-emphasized-text-color: #586e75;
     --bilara-secondary-text-color: #93a1a1;
+    --bilara-yellow: #b58900;
+    --bilara-orange: #cb4b16;
+    --bilara-red: #dc322f;
+    --bilara-magenta: #d33682;
+    --bilara-violet: #6c71c4;
+    --bilara-blue: #268bd2;
+    --bilara-cyan: #2aa198;
+    --bilara-green: #859900;
     --bilara-black: #002b36;
     color: var(--bilara-primary-text-color)
 }

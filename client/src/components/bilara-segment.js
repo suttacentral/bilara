@@ -67,6 +67,26 @@ div:focus-within{
         font-family:"source serif pro"
       }
 
+      .status{
+        font-size: 12px;
+        color: white;
+        height: 1.2em;
+        line-height: 1.2em;
+        width: 1.2em;
+        margin-right: -1.2em;
+        text-align: center;
+        border-radius: 50%;
+
+      }
+     .status.committed{
+        background-color:var(--bilara-green);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      }
+      .status.modified{
+        background-color:var(--bilara-red);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      }
+
     </style>
     
     <div id="${this._segmentId}">
