@@ -48,7 +48,7 @@ def update_file(file, user):
     with _lock:
         branch = checkout_branch(working_branch)
 
-        commit_message = 'Translations by {user["login"]}'
+        commit_message = f'Translations by {user["login"]}'
 
         if _pending_commit:
             if branch.commit.commit_message == commit_message:
@@ -75,7 +75,7 @@ def update_files(user, files):
         finalize_commit(branch_name)
 
 def pull_if_needed(webhook_payload, branch_name=working_branch):
-    ref = webhook_payload['refs'].split('/')[-1]
+    ref = webhook_payload['ref'].split('/')[-1]
     if ref != branch_name:
         return
     for commit in webhook_payload['commits']:
