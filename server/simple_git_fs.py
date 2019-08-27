@@ -79,7 +79,7 @@ def pull_if_needed(webhook_payload, branch_name=working_branch):
     if ref != branch_name:
         return
     for commit in webhook_payload['commits']:
-        if commit['id'] == git.active_branch.commit.hexsha:
+        if commit['id'] == repo.active_branch.commit.hexsha:
             return 
     with _lock:
         
