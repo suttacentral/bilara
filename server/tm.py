@@ -88,20 +88,29 @@ def build_tm_if_needed(uid_count):
         print('Not rebuilding TM')
 
 def update_docs(segments):
+    print(segments)
     for segment in segments.values():
         path = pathlib.Path(segment['filepath'])
         lang = path.parts[1]
         if path.parts[0] == 'translation':
             es.update('tm_db', 'segment', segment['segmentId'], { 
-                 'script': { 
-                         'source': f'ctx._source.translation[params.lang]= params.value; ctx._source.timestamp = ctx._now', 
-                         'lang': 'painless', 
-                         'params': { 
-                           'lang': lang, 
-                           'value': segment['value']
-                          } 
-                     }
-                 })
+                'doc': {
+                    'translation': {
+                        lang: segment['value'],
+                        'timestamp': segment['timestamp']
+                    }
+                }
+            })
+            # es.update('tm_db', 'segment', segment['segmentId'], { 
+            #      'script': { 
+            #              'source': f'ctx._source.translation[params.lang]= params.value; ctx._source.timestamp = ctx._now', 
+            #              'lang': 'painless', 
+            #              'params': { 
+            #                'lang': lang, 
+            #                'value': segment['value']
+            #               } 
+            #          }
+            #      })
 
 def ensure_index_exists(index_name='tm_db', recreate=False):
     exists = es.indices.exists(index_name)

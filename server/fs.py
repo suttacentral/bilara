@@ -11,7 +11,7 @@ from copy import copy, deepcopy
 from collections import defaultdict, Counter
 
 import tm
-import git_fs
+import simple_git_fs as git_fs
 
 REPO_DIR = config.REPO_DIR
 
@@ -170,16 +170,17 @@ class StatsCalculator:
 
 stats_calculator = StatsCalculator()
 
-def get_matching_entries(uid, muids):
+def get_matching_entries(uid, muids=None):
     try:
         result = _uid_index[uid]
-        for muid in muids:
-            result.intersection_update(_muid_index[muid])
+        if muids:
+            for muid in muids:
+                result.intersection_update(_muid_index[muid])
         return result
     except KeyError as e:
         raise ValueError(f'No match for "{e.args[0]} for query {uid}, {muids}')
 
-def get_matching_entry(uid, muids):
+def get_matching_entry(uid, muids=None):
     result = get_matching_entries(uid, muids)
     if len(result) == 1:
         (result, ) = result
@@ -239,10 +240,10 @@ def get_data(filename, extra=['root']):
 
     result[primary_type] = primary_result
 
-    uid, muids = get_uid_and_muids(filename)
-
-    for muid in extra:
-        result[muid] = load_json(_file_index[get_match(_uid_index[uid].intersection(_muid_index[muid]))])
+    if extra:
+        uid, _ = get_uid_and_muids(filename)
+        for muid in extra:
+            result[muid] = load_json(_file_index[get_match(_uid_index[uid].intersection(_muid_index[muid]))])
         
     return result
 
@@ -324,6 +325,7 @@ def update_file(filepath, segments, user):
         if success and config.GIT_COMMIT_ENABLED:
             git_fs.update_file(filepath, user)
         return result
+
 
 
 make_file_index()

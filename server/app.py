@@ -16,8 +16,13 @@ from requests import get
 
 import pathlib
 
+import import_export
+
 
 app = Flask(__name__)
+
+app.register_blueprint(import_export.import_export)
+
 cors = CORS(app)
 app.config['JSON_AS_ASCII'] = False
 app.config['JSON_SORT_KEYS'] = False
@@ -28,19 +33,16 @@ Session(app)
 
 @app.route('/api/segments/<filename>', methods=['GET'])
 def segments(filename):
-    import fs
     result = fs.get_data(filename=filename)
     return jsonify(result)
 
 @app.route('/api/segments/', methods=['POST'])
 def update():
-    import fs
     user = get_user_details()
     return jsonify(fs.update_segments(segments=request.get_json(), user=user))
 
 @app.route('/api/nav/')
 def nav():
-    import fs
     return jsonify(fs.get_condensed_tree(['translation']))
 
 @app.route('/api/tm/')
@@ -122,6 +124,7 @@ if config.GITHUB_AUTH_ENABLED:
     @app.route('/webhook', methods=['POST'])
     def webhook():
         data = request.get_json()
+        fs.git_fs.pull_if_needed(data)
         return 'Okay', 200
 else:
     @app.route('/login')
