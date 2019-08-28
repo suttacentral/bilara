@@ -151,22 +151,28 @@ def get_user_details():
                 'login': config.LOCAL_LOGIN,
                 'name': config.LOCAL_USERNAME,
                 'email': config.LOCAL_EMAIL,
-            }        
+            }
     else:
+        
         try:
             user_data = github_auth.get('user').data
-            email_data = github_auth.get('user/emails').data
             print(json.dumps(user_data, indent=2))
-            print(json.dumps(email_data, indent=2))
-
             user = {
                 'login': user_data['login'],
-                'name': user_data['name'] or user_data['login'],
-                'email': email_data[0]['email']
+                'name': user_data['name'] or user_data['login']
             }
+        except OAuthException as e:
+            logging.exception(e)
+            raise
+        
+        try:
+            email_data = github_auth.get('user/emails').data
+            print(json.dumps(email_data, indent=2))
+            user['email'] = email_data[0]['email']
             
-        except OAuthException:
-            user = None
+        except OAuthException as e:
+            logging.exception(e)
+            user['email'] = ''
     
     session['user'] = user
     return user
