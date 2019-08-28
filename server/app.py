@@ -18,6 +18,8 @@ import pathlib
 
 import import_export
 
+from log import segments_logger
+
 
 app = Flask(__name__)
 
@@ -38,8 +40,10 @@ def segments(filename):
 
 @app.route('/api/segments/', methods=['POST'])
 def update():
+    segments = request.get_json()
+    segments_logger.debug(segments)
     user = get_user_details()
-    return jsonify(fs.update_segments(segments=request.get_json(), user=user))
+    return jsonify(fs.update_segments(segments=segments, user=user))
 
 @app.route('/api/nav/')
 def nav():
