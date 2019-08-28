@@ -46,8 +46,12 @@ const loadPage = (view, subpath) => (dispatch) => {
     case 'redux':
       import('../components/redux-view.js');
       break;
-    case 'login':
     case 'logout':
+      dispatch(updateUser(null, null));
+      dispatch({type: USER_MUST_REVALIDATE});
+    case 'login':
+    case 'import':
+    case 'export':
       return
     default:
       view = 'view404';
@@ -63,7 +67,9 @@ export const fetchUserData = (dispatch, getState) => {
     dispatch({
       type: USER_MUST_REVALIDATE
     })
-    return fetch('/api/user')
+    return fetch('/api/user', {
+        cache: 'no-cache'
+    })
       .then(res => res.json())
       .then(data => {
         dispatch(updateUser(data.login, data.avatar_url))
