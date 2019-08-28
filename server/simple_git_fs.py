@@ -51,7 +51,7 @@ def update_file(file, user):
         commit_message = f'Translations by {user["login"]}'
 
         if _pending_commit:
-            if branch.commit.commit_message == commit_message:
+            if branch.commit.message == commit_message:
                 # We can add onto this commit
                 git.add(file)
                 git.commit(amend=True, no_edit=True)
