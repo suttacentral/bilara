@@ -102,14 +102,13 @@ if config.GITHUB_AUTH_ENABLED:
     @app.route('/authorized')
     def authorized():
         resp = github_auth.authorized_response()
-        if resp is None or resp.get('access_token') is None:
+        if resp is None or not resp.get('access_token'):
             return 'Access denied: reason=%s error=%s resp=%s' % (
                 request.args['error'],
                 request.args['error_description'],
                 resp
             )
         session['github_token'] = (resp['access_token'], '')
-        user = get_user_details()
         return redirect('/')
 
 
@@ -155,6 +154,7 @@ def get_user_details():
                 'login': config.LOCAL_LOGIN,
                 'name': config.LOCAL_USERNAME,
                 'email': config.LOCAL_EMAIL,
+                'avatar_url': ''
             }
     else:
         
@@ -163,10 +163,13 @@ def get_user_details():
             print(json.dumps(user_data, indent=2))
             user = {
                 'login': user_data['login'],
-                'name': user_data['name'] or user_data['login']
+                'name': user_data['name'] or user_data['login'],
+                'avatar_url': user_data['avatar_url']
             }
         except OAuthException as e:
             logging.exception(e)
+            session.pop('github_token', None)
+            session.pop('user', None)
             raise
         
         try:
