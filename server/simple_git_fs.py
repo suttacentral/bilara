@@ -50,16 +50,15 @@ def update_file(file, user):
 
         commit_message = f'Translations by {user["login"]}'
 
-        if _pending_commit:
-            if branch.commit.message == commit_message:
-                # We can add onto this commit
-                git.add(file)
-                git.commit(amend=True, no_edit=True)
+        if _pending_commit and branch.commit.message == commit_message:
+            # We can add onto this commit
+            git.add(file)
+            git.commit(amend=True, no_edit=True)
         else:
             finalize_commit(working_branch)
 
             git.add(file)
-            git.commit(m=commit_message, author=f'{user["name"] or user["login"]} <{user["email"]}>')
+            git.commit(m=commit_message, author=f'{user.get("name") or user["login"]} <{user["email"]}>')
             _pending_commit = branch.commit
 
 def update_files(user, files):
@@ -131,5 +130,6 @@ def start_finalizer(interval):
     finalizer = threading.Thread(target=finalizer_task_runner, args=(interval,))
     finalizer.daemon = True
     finalizer.start()
+    return finalizer
 
 _finalizer = start_finalizer(5)
