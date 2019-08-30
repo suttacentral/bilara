@@ -298,19 +298,22 @@ def update_segments(segments, user):
         tm.update_docs(segments)
     except Exception as e:
         logging.exception("Could not update TM")
-        #logging.error("Could not update TM")
     return results
 
 
 def update_file(filepath, segments, user):
     with git_fs._lock:
+        
         print(f'Updating {filepath} for {user}')
+        changes = False
         file = get_file(filepath)
 
         file_data = json_load(file)
 
         for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
-            file_data[segment['segmentId']] = segment['value']
+            if file_data[segment['segmentId']] != segment['value']:
+                file_data[segment['segmentId']] = segment['value']
+                changes = True
 
         sorted_data = dict(sorted(file_data.items(), key=bilarasortkey))
         try:
@@ -322,7 +325,7 @@ def update_file(filepath, segments, user):
             result = {key: "ERROR" for key in segments}
             success = False
 
-        if success and config.GIT_COMMIT_ENABLED:
+        if config.GIT_COMMIT_ENABLED and success and changes:
             git_fs.update_file(filepath, user)
         return result
 
