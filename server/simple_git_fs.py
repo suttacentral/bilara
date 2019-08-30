@@ -58,8 +58,15 @@ def update_file(file, user):
             finalize_commit(working_branch)
 
             git.add(file)
-            git.commit(m=commit_message, author=f'{user.get("name") or user["login"]} <{user["email"]}>')
-            _pending_commit = branch.commit
+            try:
+                git.commit(m=commit_message, author=f'{user.get("name") or user["login"]} <{user["email"]}>')
+                _pending_commit = branch.commit
+            except GitCommandError as e:
+                if e.status == 1 and ('nothing to commit' in e.stdout or 'nothing added to commit' in e.stdout):
+                    # This is unusual but fine
+                    pass
+                else:
+                    raise
 
 def update_files(user, files):
     global _pending_commit
