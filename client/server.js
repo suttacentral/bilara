@@ -18,12 +18,12 @@ console.log(program);
 console.log(program.port, program.proxyPort);
 
 // These endpoints are currently delegated to python
-app.use(['/api', '/auth', '/authorized', '/user', '/login', '/logout', '/webhook'], proxy(`http://localhost:${program.proxyPort}`, {
+app.use(['/api', '/auth', '/authorized', '/import', '/export', '/user', '/login', '/logout', '/webhook'], proxy(`http://localhost:${program.proxyPort}`, {
     proxyReqPathResolver: function (req) {
-        //console.log(req, req.url);
         return req.originalUrl;
     },
-    preserveHostHdr: true
+    preserveHostHdr: true,
+    limit: '100mb'
 }));
 
 // app.get('/api/launch', (req, res, next) => res.send('boom'));

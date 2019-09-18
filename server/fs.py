@@ -109,7 +109,7 @@ def make_file_index():
                     uid_index[uid] = set()
                 uid_index[uid].add(filename)
                 if filename in file_index:
-                    logging.error('{str(file)} not unique')
+                    logging.error(f'{str(file)} not unique')
                 file_index[filename] = obj
                 if muids:
                     for muid in muids:
@@ -311,7 +311,8 @@ def update_file(filepath, segments, user):
         file_data = json_load(file)
 
         for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
-            if file_data[segment['segmentId']] != segment['value']:
+            old_value = file_data[segment['segmentId']]
+            if old_value != segment['value']:
                 file_data[segment['segmentId']] = segment['value']
                 changes = True
 
@@ -326,7 +327,8 @@ def update_file(filepath, segments, user):
             success = False
 
         if config.GIT_COMMIT_ENABLED and success and changes:
-            git_fs.update_file(filepath, user)
+            git_fs.update_file(filepath, user)            
+            
         return result
 
 
