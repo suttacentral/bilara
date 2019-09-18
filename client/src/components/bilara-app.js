@@ -27,11 +27,6 @@ import {
 } from '../actions/app.js';
 
 // These are the elements needed by this element.
-import '@polymer/app-layout/app-drawer/app-drawer.js';
-import '@polymer/app-layout/app-header/app-header.js';
-import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
-import '@polymer/app-layout/app-toolbar/app-toolbar.js';
-import { menuIcon } from './my-icons.js';
 
 import './login-view.js';
 
@@ -44,213 +39,135 @@ class BilaraApp extends connect(store)(LitElement) {
     // Anything that's related to rendering should be done in here.
     return html`
     <style>
-      :host {
-        --app-drawer-width: 256px;
-        display: block;
+     :host {
+    --bilara-primary-color: #dc322f;
+    --bilara-secondary-color: #6c71c4;
+    --bilara-primary-background-color: #fdf6e3;
+    --bilara-secondary-background-color: #eee8d5;
+    --bilara-primary-text-color: #657b83;
+    --bilara-emphasized-text-color: #586e75;
+    --bilara-secondary-text-color: #93a1a1;
+    --bilara-yellow: #b58900;
+    --bilara-orange: #cb4b16;
+    --bilara-red: #dc322f;
+    --bilara-magenta: #d33682;
+    --bilara-violet: #6c71c4;
+    --bilara-blue: #268bd2;
+    --bilara-cyan: #2aa198;
+    --bilara-green: #859900;
+    --bilara-black: #002b36;
+    color: var(--bilara-primary-text-color)
+}
 
-        --app-primary-color: #E91E63;
-        --app-secondary-color: #293237;
-        --app-dark-text-color: var(--app-secondary-color);
-        --app-light-text-color: white;
-        --app-section-even-color: #f7f7f7;
-        --app-section-odd-color: white;
+header {
+    position: fixed;
+    width: 100%;
+    background-color: var(--bilara-black);
+    color: var(--bilara-secondary-text-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
 
-        --app-header-background-color: white;
-        --app-header-text-color: var(--app-dark-text-color);
-        --app-header-selected-color: var(--app-primary-color);
+header div {
+    margin: 4px 16px
+}
 
-        --app-drawer-background-color: var(--app-secondary-color);
-        --app-drawer-text-color: var(--app-light-text-color);
-        --app-drawer-selected-color: #78909C;
+[main-title] {
+    font-weight: 900;
+    font-size: 1rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    color: var(--bilara-secondary-color);
+}
 
-        --sc-primary-background-color: rgb(255, 248, 231);
-        --sc-secondary-background-color: rgba(255,255,255,0.5);
-        --sc-secondary-text-color: rgb(116, 115, 114);
-      }
+[main-title]:hover{
+	background-color: var(--bilara-secondary-color);
+    color: var(--bilara-secondary-background-color);
+}
 
-      app-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        text-align: center;
-        background-color: var(--sc-primary-background-color);
-        color: var(--app-header-text-color);
-        border-bottom: 1px solid #eee;
-      }
+a {
+    text-decoration: none;
+}
+/* Workaround for IE11 displaying <main> as inline */
+main {
+    display: block;
+}
 
-      .toolbar-top {
-        background-color: var(--sc-primary-background-color);
-      }
+.main-content {
+    padding-top: 64px;
+    min-height: 100vh;
+    background-color: var(--bilara-primary-background-color);
+}
 
-      [main-title] {
-        font-family: 'Pacifico';
-        font-weight: normal;
-        text-transform: lowercase;
-        font-size: 30px;
-        /* In the narrow layout, the toolbar is offset by the width of the
-        drawer button, and the text looks not centered. Add a padding to
-        match that button */
-        padding-right: 44px;
-      }
+.page {
+    display: none;
+}
 
-      .toolbar-list {
-        display: none;
-      }
+.page[active] {
+    display: block;
+}
 
-      .toolbar-list > a {
-        display: inline-block;
-        color: var(--app-header-text-color);
-        text-decoration: none;
-        line-height: 30px;
-        padding: 4px 24px;
-      }
+footer {
+    padding: 24px;
+    background-color: var(--bilara-black);
+    color: var(--bilara-secondary-text-color);
+    text-align: center;
+}
 
-      .toolbar-list > a[selected] {
-        color: var(--app-header-selected-color);
-        border-bottom: 4px solid var(--app-header-selected-color);
-      }
 
-      .menu-btn {
-        background: none;
-        border: none;
-        fill: var(--app-header-text-color);
-        cursor: pointer;
-        height: 44px;
-        width: 44px;
-      }
 
-      .drawer-list {
-        box-sizing: border-box;
-        width: 100%;
-        height: 100%;
-        padding: 24px;
-        background: var(--app-drawer-background-color);
-        position: relative;
-      }
+.disabled {
+    opacity: 0.7;
+}
 
-      .drawer-list > a {
-        display: block;
-        text-decoration: none;
-        color: var(--app-drawer-text-color);
-        line-height: 40px;
-        padding: 0 24px;
-      }
-
-      .drawer-list > a[selected] {
-        color: var(--app-drawer-selected-color);
-      }
-
-      /* Workaround for IE11 displaying <main> as inline */
-      main {
-        display: block;
-      }
-
-      .main-content {
-        padding-top: 64px;
-        min-height: 100vh;
-        background-color: var(--sc-primary-background-color);
-      }
-
-      .page {
-        display: none;
-      }
-
-      .page[active] {
-        display: block;
-      }
-
-      footer {
-        padding: 24px;
-        background: var(--app-drawer-background-color);
-        color: var(--app-drawer-text-color);
-        text-align: center;
-      }
-
-      /* Wide layout: when the viewport width is bigger than 460px, layout
-      changes to a wide layout. */
-      @media (min-width: 460px) {
-        .toolbar-list {
-          display: block;
-        }
-
-        .menu-btn {
-          display: none;
-        }
-
-        .main-content {
-          padding-top: 107px;
-        }
-
-        /* The drawer button isn't shown in the wide layout, so we don't
-        need to offset the title */
-        [main-title] {
-          padding-right: 0px;
-        }
-
-        .disabled {
-          opacity: 0.7;
-        }
-      }
-      .app-log{
-        color:var(--app-header-selected-color);
-        font-weight:600;
-        font-size: 0.8rem;
-        text-decoration: none;
-        padding:4px 8px;
-         margin: 0 4px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        display:inline-block;
-        text-transform: uppercase
-      }
-      .app-log:hover{
-        background-color: var(--sc-secondary-background-color)
-      }
-      .user-name{
-      display:inline-block;
-      font-size: 0.8rem;
-      font-style:italic;
-      padding:4px 8px;
-      margin: 0 4px
-    }
-    .user-name::before{
-      content: "user: "
-    }
-        .user-name::after{
-      content: "!"
-    }
+.app-log {
+    color: var(--bilara-secondary-color);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    margin: 0 4px;
+    border: 1px solid var(--bilara-secondary-text-color);
+    border-radius: 8px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: .05em
+}
+.app-log:hover {
+    background-color: var(--bilara-secondary-color);
+    color: var(--bilara-secondary-background-color);
+}
+.user-name {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-style: italic;
+    padding: 4px 8px;
+    margin: 0 4px
+}
+.user-name::before {
+    content: "user: "
+}
+.user-name::after {
+    content: "!"
+}
     </style>
 
     <!-- Header -->
-    <app-header condenses reveals effects="waterfall">
-      <app-toolbar class="toolbar-top">
-        <button class="menu-btn" title="Menu" @click="${this._menuButtonClicked}">${menuIcon}</button>
-        <h1 main-title>${this.appTitle}</h1>
+    <header class="app-header">
+    <div class="app-header-left">
+       <a href="/browse"><h1 main-title>${this.appTitle}</h1></a>
+       </div>
+       <div class="app-header-right">
         ${
           this._username ? html`<span class="user-name">${this._username}</span> <a href="/logout" target="_top" class="app-log">Logout</a>` : html`<a href="/login"  target="_top" class="app-log">Login</a>` 
         }
-      </app-toolbar>
+        </div>
+    </header>
 
-      <!-- This gets hidden on a small screen-->
-      <nav class="toolbar-list">
-        <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
-        ${ translationUrl ? 
-        html`<a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>`
-        : html`<span class="disabled">Translate</span>` }
-      </nav>
-    </app-header>
 
-    <!-- Drawer content -->
-    <app-drawer .opened="${this._drawerOpened}"
-        @opened-changed="${this._drawerOpenedChanged}">
-      <nav class="drawer-list">
-        <a ?selected="${this._page.view === 'browse'}" href="/browse">Browse</a>
-        ${ translationUrl ? 
-          html`<a ?selected="${this._page.view === 'translation'}" href=${translationUrl}>Translate</a>`
-          : html`<span class="disabled">Translate</span>` }
-      </nav>
-    </app-drawer>
       
         
       <!-- Main content -->

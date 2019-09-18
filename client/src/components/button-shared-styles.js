@@ -20,7 +20,7 @@ export const ButtonSharedStyles = html`
     cursor: pointer;
   }
   button:hover svg {
-    fill: var(--app-primary-color);
+    fill: var(--bilara-primary-color);
   }
 </style>
 `;
