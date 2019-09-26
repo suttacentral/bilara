@@ -8,12 +8,19 @@ export class BilaraSuggestions extends LitElement{
 
       #suggestions {
           font-size: 80%;
-          color: var(--sc-secondary-text-color);
+          color: var(--bilara-empasized-text-color);
           margin: 0 5%;
 }
 
+del{
+  color: var(--bilara-orange)
+}
+ins{
+  color: var(--bilara-blue)
+}
+
 .row{
-          background-color: var(--sc-secondary-background-color);
+          background-color: var(--bilara-secondary-background-color);
           box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
           transition: all 0.3s cubic-bezier(.25,.8,.25,1);
           border-radius: 8px
