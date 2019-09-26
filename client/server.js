@@ -18,7 +18,7 @@ console.log(program);
 console.log(program.port, program.proxyPort);
 
 // These endpoints are currently delegated to python
-app.use(['/api', '/auth', '/authorized', '/import', '/export', '/user', '/login', '/logout', '/webhook'], proxy(`http://localhost:${program.proxyPort}`, {
+app.use(['/api', '/import', '/export', '/authorized', '/user', '/login', '/webhook'], proxy(`http://localhost:${program.proxyPort}`, {
     proxyReqPathResolver: function (req) {
         return req.originalUrl;
     },

@@ -12,20 +12,33 @@ import {
   UPDATE_PAGE,
   UPDATE_OFFLINE,
   UPDATE_DRAWER_STATE,
-  UPDATE_USER,
-  USER_MUST_REVALIDATE
+  SET_USER_AUTH_TOKEN,
 } from '../actions/app.js';
+
+const INITIAL_USER_STATE = {
+    username: null,
+    avatarUrl: null,
+    authToken: null,
+}
+
+function getInitialUserState(){
+    let user = INITIAL_USER_STATE;
+    try {
+        user = JSON.parse(localStorage.getItem('state.user'));
+    } catch (err) {
+        console.log(err.message);
+        localStorage.removeItem('state.user');
+    }
+    return user
+}
+
 
 const INITIAL_STATE = {
   page: {
     view: 'browse',
     subpath: []
   },
-  user: {
-    revalidate: true,
-    username: null,
-    avatar_url: null
-  },
+  user: getInitialUserState(),
   offline: false,
   drawerOpened: false,
 };
@@ -50,23 +63,15 @@ const app = (state = INITIAL_STATE, action) => {
         ...state,
         drawerOpened: action.opened
       };
-    case UPDATE_USER:
+    case SET_USER_AUTH_TOKEN:
     return {
-      ...state,
-      user: {
-        revalidate: false,
-        username: action.username,
-        avatar_url: action.avatar_url
-      }
-    }
-    case USER_MUST_REVALIDATE:
-      return {
         ...state,
         user: {
-          ...state.user,
-          revalidate: true
+            authToken: action.authToken,
+            username: action.username,
+            avatarUrl: action.avatarUrl
         }
-      }
+    };
 
     default:
       return state;

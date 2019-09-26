@@ -4,6 +4,8 @@ config = {
     
     'GIT_USER': '',
     'GIT_PASSWORD': '',
+
+    'SECRET': 'CHANGE ME TO SOMETHING LONG AND FULL OF ENTROPY',
     
     'REPO_URL': 'https://github.com/suttacentral/bilara-data.git',
     'REPO_DIR':  pathlib.Path(__file__).parent.parent / 'repo',

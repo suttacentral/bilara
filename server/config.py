@@ -25,6 +25,8 @@ config = Config({
     
     'REPO_URL': None,
     'REPO_DIR':  pathlib.Path(__file__).absolute().parent.parent / 'repo',
+
+    'SECRET': 'CHANGE ME',
     
     'ARANGO_USER': 'root',
     'ARANGO_PASSWORD': 'test',

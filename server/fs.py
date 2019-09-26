@@ -311,7 +311,7 @@ def update_file(filepath, segments, user):
         file_data = json_load(file)
 
         for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
-            old_value = file_data[segment['segmentId']]
+            old_value = file_data.get(segment['segmentId'], None)
             if old_value != segment['value']:
                 file_data[segment['segmentId']] = segment['value']
                 changes = True

@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlencode
 from flask import Flask, redirect, url_for, session, request, jsonify, render_template_string, Response, stream_with_context, send_from_directory
 from flask_session import Session
 from flask_oauthlib.client import OAuth, OAuthException
@@ -6,7 +7,7 @@ from flask_cors import CORS
 
 from flask import jsonify
 
-from github import Github
+from github import Github, BadCredentialsException
 
 from config import config
 
@@ -19,6 +20,8 @@ import pathlib
 import import_export
 
 from log import segments_logger
+
+import auth
 
 
 app = Flask(__name__)
@@ -52,7 +55,6 @@ def nav():
 @app.route('/api/tm/')
 def tm_get():
     import tm
-    get_user_details()
     string = request.args.get('string')
     root_lang = request.args.get('root_lang')
     target_lang = request.args.get('target_lang')
@@ -61,15 +63,18 @@ def tm_get():
 @app.route('/api/user')
 def user():
     if config.GITHUB_AUTH_ENABLED:
-        print(session.get('github_token'))
+        github_token = session.get('github_token')
+        if not github_token:
+            return jsonify({'login': None, 'avatar_url': None})
         try:
             user_data = github_auth.get('user').data
-            return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url']})
+            auth_token = (user_data['login'], github_token)
+            return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url'], 'auth_token': auth.encrypt(auth_token)})
         except OAuthException:
             return jsonify({'login': None, 'avatar_url': None})
     else:
         user = get_user_details()
-        return jsonify({'login': user['login'], 'avatar_url': None})
+        return jsonify({'login': user['login'], 'avatar_url': None, 'auth_token': 'DUMMY_AUTH_TOKEN'})
 
 if config.GITHUB_AUTH_ENABLED:
     oauth = OAuth(app)
@@ -108,8 +113,14 @@ if config.GITHUB_AUTH_ENABLED:
                 request.args['error_description'],
                 resp
             )
-        session['github_token'] = (resp['access_token'], '')
-        return redirect('/')
+        github_token = resp['access_token']
+        print(github_token)
+        auth_token = auth.encrypt(github_token).decode()
+        user = get_user_details(github_token=github_token, auth_token=auth_token, bypass_cache=True)
+        params = {'token': auth_token, 'login': user['login'], 'avatar_url': user['avatar_url']}
+
+        response = redirect(f'/auth?{urlencode(params)}')
+        return response
 
 
     @github_auth.tokengetter
@@ -118,7 +129,7 @@ if config.GITHUB_AUTH_ENABLED:
 
     @app.route('/auth/user')
     def call_github():
-        github = Github(session.get('github_token')[0])
+        github = Github(session.get('github_token').encode())
         result = []
         for repo in github.get_user().get_repos():
             result.append(repo.name)
@@ -143,45 +154,54 @@ else:
         return 'Auth not enabled', 500
     
 
+def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _cache={}):
 
+    """ auth_token is simply github_token encrypted """
 
-def get_user_details():
-    user = session.get('user')
-    if user:
-        return user
-    elif not config.GITHUB_AUTH_ENABLED:
-            user = {
-                'login': config.LOCAL_LOGIN,
-                'name': config.LOCAL_USERNAME,
-                'email': config.LOCAL_EMAIL,
-                'avatar_url': ''
-            }
-    else:
-        
+    if not config.GITHUB_AUTH_ENABLED:
+        return {
+            'login': config.LOCAL_LOGIN,
+            'name': config.LOCAL_USERNAME,
+            'email': config.LOCAL_EMAIL,
+            'avatar_url': ''
+        }
+    
+    if auth_token and auth_token in _cache:
+        return _cache[auth_token]
+
+    if not github_token:
+        if not auth_token:
+            auth_token = request.headers.get('x-bilara-auth-token')
+            print(auth_token)
+                
+        github_token = auth.decrypt(auth_token)
+
+    if github_token:
         try:
-            user_data = github_auth.get('user').data
-            print(json.dumps(user_data, indent=2))
+            gh = Github(github_token)
+            gh_user = gh.get_user()
             user = {
-                'login': user_data['login'],
-                'name': user_data['name'] or user_data['login'],
-                'avatar_url': user_data['avatar_url']
+                'login': gh_user.login,
+                'name': gh_user.name or gh_user.login,
+                'avatar_url': gh_user.avatar_url
             }
-        except OAuthException as e:
+        except BadCredentialsException as e:
             logging.exception(e)
-            session.pop('github_token', None)
-            session.pop('user', None)
             raise
         
         try:
-            email_data = github_auth.get('user/emails').data
-            print(json.dumps(email_data, indent=2))
-            user['email'] = email_data[0]['email']
+            gh_emails = gh_user.get_emails()
+            if gh_emails:
+                user['email'] = gh_emails[0]['email']
             
-        except OAuthException as e:
+        except BadCredentialsException as e:
             logging.exception(e)
             user['email'] = ''
+    else:
+        raise ValueError('No github token but GITHUB_AUTH_ENABLED is True')
     
-    session['user'] = user
+    if auth_token:
+        _cache[auth_token] = user
     return user
 
 import fs

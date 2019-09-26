@@ -89,7 +89,6 @@ class NavItem extends LitElement {
   }
 }
 
-
 window.customElements.define('nav-item', NavItem);
 
 class BrowseView extends connect(store)(PageViewElement) {

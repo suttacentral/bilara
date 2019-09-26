@@ -1,4 +1,5 @@
 import { fetchSegmentData } from './segment-data.js';
+import { query } from 'lit-element';
 
 /**
 @license
@@ -13,8 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 export const UPDATE_PAGE = 'UPDATE_PAGE';
 export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
-export const UPDATE_USER = 'UPDATE_USER';
-export const USER_MUST_REVALIDATE = 'USER_MUST_REVALIDATE';
+export const SET_USER_AUTH_TOKEN = 'SET_USER_AUTH_TOKEN';
 
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
@@ -30,9 +30,25 @@ export const navigate = (path) => (dispatch) => {
   dispatch(updateDrawerState(false));
 };
 
-const loadPage = (view, subpath) => (dispatch) => {
-  console.log(view, subpath)
+function parseQuery(queryString) {
+    var query = {};
+    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+    }
+    return query;
+}
+
+const loadPage = (view, subpath, queryParams) => (dispatch) => {
+  console.log(view, subpath, queryParams);
   switch(view) {
+    case 'auth':
+      let queryParams = parseQuery(location.search);
+      console.log('queryParams: ', JSON.stringify(queryParams));
+      dispatch(setAuthToken(queryParams.token, queryParams.login, queryParams.avatarUrl));
+      history.replaceState(null, null, '/browse');
+      view = 'browse';
     case 'browse': 
       import('../components/browse-view.js');
       break;
@@ -43,12 +59,11 @@ const loadPage = (view, subpath) => (dispatch) => {
       dispatch(fetchSegmentData(subpath[0]));
       import('../components/translation-view.js');
       break;
-    case 'redux':
-      import('../components/redux-view.js');
-      break;
     case 'logout':
-      dispatch(updateUser(null, null));
-      dispatch({type: USER_MUST_REVALIDATE});
+      console.log('Logging out');
+      dispatch(setAuthToken(null, null, null));
+      history.replaceState(null, null, '/');
+      view = 'browse';
     case 'login':
     case 'import':
     case 'export':
@@ -61,24 +76,16 @@ const loadPage = (view, subpath) => (dispatch) => {
   dispatch(updatePage(view, subpath));
 }
 
-export const fetchUserData = (dispatch, getState) => {
-  let user = getState().app.user;
-  if (user.revalidate) {
-    dispatch({
-      type: USER_MUST_REVALIDATE
-    })
-    return fetch('/api/user', {
-        cache: 'no-cache'
-    })
-      .then(res => res.json())
-      .then(data => {
-        dispatch(updateUser(data.login, data.avatar_url))
-      })
-  }
+const setAuthToken = (authToken, username, avatarUrl) => (dispatch, getState) => {
+    if (authToken) {
+        localStorage.setItem('state.user', JSON.stringify({authToken, username, avatarUrl}));
+    } else {
+        localStorage.removeItem('state.user');
+    }
+    dispatch({type: SET_USER_AUTH_TOKEN, authToken, username, avatarUrl});
 }
 
 const updatePage = (view, subpath) => async (dispatch, getState) => {
-  await fetchUserData(dispatch, getState);
   dispatch({
     type: UPDATE_PAGE,
     view,
@@ -97,13 +104,5 @@ export const updateDrawerState = (opened) => {
   return {
     type: UPDATE_DRAWER_STATE,
     opened
-  }
-}
-
-export const updateUser = (username, avatarUrl) => {
-  return {
-    type: UPDATE_USER,
-    username,
-    avatarUrl
   }
 }
