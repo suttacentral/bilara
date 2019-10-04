@@ -164,7 +164,7 @@ footer {
        </div>
        <div class="app-header-right">
         ${
-          this._username ? html`<span class="user-name">${this._username}</span> <a href="/logout" target="_top" class="app-log">Logout</a>` : html`<a href="/login"  target="_top" class="app-log">Login</a>` 
+          this._username ? html`<span class="user-name">${this._username}</span> <a href="/logout" target="_top" class="app-log">Logout</a>` : html`<a href="/api/login"  target="_top" class="app-log">Login</a>` 
         }
         </div>
     </header>

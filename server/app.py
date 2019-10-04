@@ -60,22 +60,6 @@ def tm_get():
     target_lang = request.args.get('target_lang')
     return jsonify(tm.get_related_strings(string, root_lang, target_lang))
 
-@app.route('/api/user')
-def user():
-    if config.GITHUB_AUTH_ENABLED:
-        github_token = session.get('github_token')
-        if not github_token:
-            return jsonify({'login': None, 'avatar_url': None})
-        try:
-            user_data = github_auth.get('user').data
-            auth_token = (user_data['login'], github_token)
-            return jsonify({'login': user_data['login'], 'avatar_url': user_data['avatar_url'], 'auth_token': auth.encrypt(auth_token)})
-        except OAuthException:
-            return jsonify({'login': None, 'avatar_url': None})
-    else:
-        user = get_user_details()
-        return jsonify({'login': user['login'], 'avatar_url': None, 'auth_token': 'DUMMY_AUTH_TOKEN'})
-
 if config.GITHUB_AUTH_ENABLED:
     oauth = OAuth(app)
 
@@ -92,19 +76,11 @@ if config.GITHUB_AUTH_ENABLED:
     )
     
 
-    @app.route('/login')
+    @app.route('/api/login')
     def login():
-        return github_auth.authorize(callback='https://bilara.suttacentral.net/authorized')
+        return github_auth.authorize(callback='https://bilara.suttacentral.net/api/authorized')
 
-
-    @app.route('/logout')
-    def logout():
-        session.pop('github_token', None)
-        session.pop('user', None)
-        return redirect('/')
-
-
-    @app.route('/authorized')
+    @app.route('/api/authorized')
     def authorized():
         resp = github_auth.authorized_response()
         if resp is None or not resp.get('access_token'):
@@ -127,29 +103,17 @@ if config.GITHUB_AUTH_ENABLED:
     def get_github_oauth_token():
         return session.get('github_token')
 
-    @app.route('/auth/user')
-    def call_github():
-        github = Github(session.get('github_token').encode())
-        result = []
-        for repo in github.get_user().get_repos():
-            result.append(repo.name)
-        return jsonify(result)
-
-    @app.route('/webhook', methods=['POST'])
+    @app.route('/api/webhook', methods=['POST'])
     def webhook():
         data = request.get_json()
         fs.git_fs.pull_if_needed(data)
         return 'Okay', 200
 else:
-    @app.route('/login')
+    @app.route('/api/login')
     def login():
-        return redirect('/authorized')
+        return redirect('/api/authorized')
     
-    @app.route('/logout')
-    def logout():
-        return 'Auth not enabled', 500
-    
-    @app.route('/authorized')
+    @app.route('/api/authorized')
     def authorized():
         user = get_user_details()
         params = {'token': '__DEVELOPMENT__', 'login': user['login'], 'avatar_url': user['avatar_url']}
