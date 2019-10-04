@@ -24,11 +24,14 @@ import { getBrowseData } from '../actions/browse.js';
 
 class NavItem extends LitElement {
   render(){
-    const _translated = this._tree._translated || this._tree._translated_count,
-          _root = this._tree._root || this._tree._root_count,
+    const translated = this._tree._translated || this._tree._translated_count,
+          root = this._tree._source || this._tree._source_count,
           isFile = this._tree._type == 'document',
           filename = this._name,
-          lang = 'en';
+          lang = 'en',
+          progressPercent = this._calculateProgressPercent(translated, root);
+
+    
     
     return html`
       ${SharedStyles}
@@ -50,12 +53,38 @@ class NavItem extends LitElement {
       a{
         text-decoration: none
       }
+      
+      .progress-track {
+          position: relative;
+          display: inline-block;
+          width: 5em;
+          height: 0.7em;
+          margin-top: 0.1em;
+          background-color: #cccccc;
+          border-radius: 4px;
+      }
+
+      .progress-bar {
+          position: absolute;
+          display: inline-block;
+          height: 100%;
+          background-color: green;
+          border-radius: 4px;
+          
+      }
+
+      .percent {
+          font-size: 0.75em;
+          vertical-align: middle;
+          margin-left: 0.5em;
+      }
+
       </style>
 
       <div class="${isFile ? "document" : "division"}">${ 
           isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}">${this._name}</a>` 
                  : html`${ this._name }` }
-        ${ _translated ? html`<paper-progress value="${_translated}" max="${_root}"></paper-progress>` : null}
+        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%"></span></span><span class="percent">${progressPercent}%</span>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
           ${this.open ? repeat(Object.keys(this._tree), (key)=>key, (name, index) => {
             if (name.match(/^_/)) {
@@ -86,6 +115,14 @@ class NavItem extends LitElement {
       _tree: {type: Object},
       open: {type: Boolean, reflect: true}
     }
+  }
+
+  _calculateProgressPercent(a, b) {
+      let result = 100 * a / b;
+      if (result > 0 && result < 1) {
+          return 1;
+      }
+      return Math.floor(result);
   }
 }
 

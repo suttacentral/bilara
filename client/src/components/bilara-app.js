@@ -61,6 +61,8 @@ class BilaraApp extends connect(store)(LitElement) {
 
 header {
     position: fixed;
+    top: 0;
+    z-index: 1;
     width: 100%;
     background-color: var(--bilara-black);
     color: var(--bilara-secondary-text-color);

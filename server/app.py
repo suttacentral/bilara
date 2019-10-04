@@ -143,7 +143,7 @@ if config.GITHUB_AUTH_ENABLED:
 else:
     @app.route('/login')
     def login():
-        return 'Auth not enabled', 500
+        return redirect('/authorized')
     
     @app.route('/logout')
     def logout():
@@ -151,8 +151,10 @@ else:
     
     @app.route('/authorized')
     def authorized():
-        return 'Auth not enabled', 500
-    
+        user = get_user_details()
+        params = {'token': '__DEVELOPMENT__', 'login': user['login'], 'avatar_url': user['avatar_url']}
+        response = redirect(f'/auth?{urlencode(params)}')
+        return response    
 
 def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _cache={}):
 
