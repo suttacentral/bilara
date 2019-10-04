@@ -37,7 +37,10 @@ class NavItem extends LitElement {
         margin-left: 1em;
         display: block;
       }
-      .division {
+      nav-item {
+        display: inline-block;
+        margin: 2px 0;
+        padding: 2px 0;
         cursor: pointer;
       }
       .more:after {
