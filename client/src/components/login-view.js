@@ -13,7 +13,7 @@ class LoginView extends LitElement {
       </style>
 
       <div>
-      <p>A Github Account is required for using Bilara, your submissions will be comitted under your Github username.</p>
+      <ul><li>A Github account is required to use Bilara. <li>Your submissions will be committed under your Github username. <li>Preferably, use your real name for your Github account.</ul>
       <p><a href="/api/login" target="_self">Login using Github</a>.</p>
       
       </div>
