@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit-element';
 
+
 import {updateSegment, focusSegment} from '../actions/segment.js';
 import { fetchSuggestions } from '../actions/search.js';
 import { store } from '../store.js';
@@ -76,11 +77,15 @@ div:focus-within{
         margin-right: -1.2em;
         text-align: center;
         border-radius: 50%;
-
+        
       }
-     .status.committed{
-        background-color:var(--bilara-green);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+     .status.pending{
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);        
+      }
+      .status.finalized{
+          background-color: green;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
       }
       .status.modified{
         background-color:var(--bilara-red);
@@ -96,14 +101,14 @@ div:focus-within{
         lang="${this._rootLang}"
       >${this._rootString}</span>
     <span contenteditable="plaintext-only"
-        data-type="target"
+        data-type="translation"
         class="string ${this._dirtyState}"
-        lang="${this._targetLang}"
+        lang="${this._translationLang}"
         @blur="${this._inputEvent}"
         @keypress="${this._keypressEvent}"
         @focus="${this._focusEvent}"
-    >${this._targetString}</span>
-    ${this.getDirtyState()}
+    >${this._translationString}</span>
+    ${this.getPushState()}
     </div>
     ${ this._suggestions ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
     
@@ -115,29 +120,28 @@ div:focus-within{
       _isActive: Boolean,
       _segmentId: String,
       _rootString: String,
-      _targetString: String,
+      _translationString: String,
       _rootFilepath: String,
-      _targetFilepath: String,
+      _translationFilepath: String,
       _suggestions: {type: Object},
       _rootLang: String,
-      _targetLang: String,
+      _translationLang: String,
       _suggestedString: String,
-      _dirtyState: String,
       _committedString: String,
+      _pushState: {type: String},
+      _dirty: {type: Boolean}
     }
   }
 
-  getDirtyState() {
-    switch(this._dirtyState) {
-      case 'unmodified': 
-      return html`<span class="status unmodified"></span>`;
-    case 'modified':
-      return html`<span class="status modified" title="Not Committed">⚠</span>`;
-    case 'committed':
-      return html`<span class="status committed" title="Committed">✓</span>`;
-    default:
-      return ''
+  getPushState() {
+    if (this._dirty) return html`<span class="status modified" title="Not Committed">⚠</span>`;
+    switch(this._pushState) {
+      case 'pending':
+        return html`<span class="status pending" title="Pending">✓</span>`;
+      case 'finalized':
+        return html`<span class="status finalized" title="Finalized">✓</span>`;        
     }
+    return html`<span class="status unmodified"></span>`;
   }
 
   setFocus(dataType) {
@@ -156,24 +160,23 @@ div:focus-within{
   constructor() {
     super()
     this.addEventListener('suggest', (e) => {
-      let target = this.shadowRoot.querySelector('[data-type=target]');
-      target.innerText = e.detail.string;
-      this._dirtyState = 'modified';
+      let translation = this.shadowRoot.querySelector('[data-type=translation]');
+      translation.innerText = e.detail.string;
+      this._dirty = false;
       this._suggestedString = e.detail.string;
-      this.setFocus('target');
+      this.setFocus('translation');
     });
   }
 
   firstUpdated() {
-    this._dirtyState = 'unmodified';
-    this._committedString = this._targetString;
+    this._committedString = this._translationString;
   }
 
   updated(changedProperties) {
-    if (!this._isActive) return
-
-    console.log('Changed Properties: ', changedProperties)
-
+    console.log(changedProperties);
+    if (changedProperties.get('_pushState')) {
+      this._dirty = false;
+    }
   }
 
   _focusEvent(e) {
@@ -188,31 +191,32 @@ div:focus-within{
   }
 
   fetchSuggestions(){
-    store.dispatch(fetchSuggestions(this._rootString, this._rootLang, this._targetLang, this._segmentId))
+    store.dispatch(fetchSuggestions(this._rootString, this._rootLang, this._translationLang, this._segmentId))
   }
 
   _inputEvent(e){
-    console.log(this, this.commitedString, e.currentTarget.textContent);
-    if (this._committedString != e.currentTarget.textContent) {
-      this._dirtyState = 'modified';
+    console.log('Input: ', e);
+    console.log(this, this._translationString, e.currentTarget.textContent);
+
+    if (this._translationString != e.currentTarget.textContent) {
+      this._dirty = true;
     }
- 
   }
 
   _keypressEvent(e) {
+    console.log('Keypress: ', e);
     if (e.key == 'Enter') {
-      console.log('Submitting')
+      this._dirty = false;
       e.preventDefault();
       e.stopPropagation();
 
       const segmentId = this._segmentId,
       value = e.currentTarget.textContent,
       dataType = e.currentTarget.dataset.type,
-      filepath = dataType == 'root' ? this._rootFilePath : this._targetFilepath,
-      hasChanged = dataType == 'root' ? this._rootString != value : (this._targetString != value || this._suggestedString);
-
+      filepath = dataType == 'root' ? this._rootFilePath : this._translationFilepath,
+      hasChanged = dataType == 'root' ? this._rootString != value : (this._translationString != value || this._suggestedString);
+      
       if (hasChanged) {
-        this._dirtyState = 'committed';
         this._committedString = value;
         store.dispatch(updateSegment(filepath, segmentId, dataType, value));
       } else {

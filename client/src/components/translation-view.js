@@ -21,11 +21,9 @@ store.addReducers({
   search: searchReducer
 });
 
-import { fetchSuggestions } from '../actions/search.js';
-
 class TranslationView extends connect(store)(PageViewElement) {
   render(){
-    return this._root.length == 0 ? html`...` : html`
+    return html`
     ${SharedStyles}
     <style>
       :host {
@@ -34,29 +32,30 @@ class TranslationView extends connect(store)(PageViewElement) {
       }
     </style>
     <section>
-      ${ this._fetching ? 
-        html`Fetching Data` :
+      ${ this._root.length == 0 || !this._root.segments ? 
+        html`Fetching Data ${JSON.stringify(this._root)}` :
         html`
-          ${repeat(Object.keys(this._root.segments), (key) => key, (segmentId, index) => {
+          ${Object.keys(this._root.segments).map(segmentId => {
             const root = this._root.segments[segmentId];
-            const target = this._target.segments[segmentId] || '';
+            const translation = this._translation.segments[segmentId] || '';
             let suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(root)] : '';
             return html`<bilara-segment ._segmentId="${segmentId}"
                                         ._rootString="${root}"
-                                        ._targetString="${target}"
+                                        ._translationString="${translation}"
                                         ._rootFilepath="${this._root.path}"
-                                        ._targetFilepath="${this._target.path}"
+                                        ._translationFilepath="${this._translation.path}"
                                         ._suggestions="${suggestions}"
                                         ._rootLang="${this._root.language.uid}"
-                                        ._targetLang="${this._target.language.uid}"
-                                        </bilara-segment>`       
+                                        ._translationLang="${this._translation.language.uid}"
+                                        ._pushState="${this._pushState[segmentId]}">
+                                        </bilara-segment>`
         })}`
       }
     </section>`
   }
 
   _suggestionKey(string) {
-    return [string, this._root.language.uid, this._target.language.uid].join('_');
+    return [string, this._root.language.uid, this._translation.language.uid].join('_');
   }
 
   static get properties() { 
@@ -66,24 +65,23 @@ class TranslationView extends connect(store)(PageViewElement) {
       _fetching: { type: Boolean },
       _failure: { type: Boolean },
       _root: { type: Object },
-      _target: { type: Object },
-      _suggestions: { type: Object }
+      _translation: { type: Object },
+      _suggestions: { type: Object },
+      _pushState: { type: Object }
     }
   }
-
-  //firstUpdated() {
-//    store.dispatch(fetchSegmentData());
-//  }
 
   stateChanged(state) {
     this._fetching = state.segmentData.isFetching;
     if (state.segmentData.data) {
       this._root = state.segmentData.data.root;
-      this._target = state.segmentData.data.translation;
+      this._translation = state.segmentData.data.translation;
     } else {
       this._root = {};
-      this._target = {};
+      this._translation = {};
     }
+
+    this._pushState = state.segmentData.pushState || {};
     
     this._failure = state.segmentData.failure;
     this._activeSegmentId = state.segmentData.activeSegmentId;

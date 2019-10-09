@@ -25,7 +25,7 @@ import { getBrowseData } from '../actions/browse.js';
 class NavItem extends LitElement {
   render(){
     const translated = this._tree._translated || this._tree._translated_count,
-          root = this._tree._source || this._tree._source_count,
+          root = this._tree._root || this._tree._root_count,
           isFile = this._tree._type == 'document',
           filename = this._name,
           lang = 'en',
@@ -40,8 +40,8 @@ class NavItem extends LitElement {
         margin-left: 1em;
         display: block;
       }
-      nav-item {
-        display: inline-block;
+      .division {
+        display: block;
         margin: 2px 0;
         padding: 2px 0;
         cursor: pointer;

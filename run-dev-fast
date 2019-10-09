@@ -1,0 +1,5 @@
+#bin/env bash
+
+export FLASK_ENV=development
+
+(trap 'kill 0' SIGINT; ( cd server; flask run --port 5000 ) & (cd client; npm run dev ) )

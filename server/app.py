@@ -57,8 +57,9 @@ def tm_get():
     import tm
     string = request.args.get('string')
     root_lang = request.args.get('root_lang')
-    target_lang = request.args.get('target_lang')
-    return jsonify(tm.get_related_strings(string, root_lang, target_lang))
+    translation_lang = request.args.get('translation_lang')
+    exclude_id = request.args.get('exclude_uid')
+    return jsonify(tm.get_related_strings(string, root_lang, translation_lang, exclude_id=exclude_id))
 
 if config.GITHUB_AUTH_ENABLED:
     oauth = OAuth(app)

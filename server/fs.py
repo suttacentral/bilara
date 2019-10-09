@@ -152,10 +152,10 @@ class StatsCalculator:
     def calculate_completion(self, translation):
         translated_count = self.count_strings(translation)
 
-        source_entry = get_source_entry(translation)
-        source_count = self.count_strings(source_entry)
+        root_entry = get_root_entry(translation)
+        root_count = self.count_strings(root_entry)
 
-        return {'_translated': translated_count, '_source': source_count}
+        return {'_translated': translated_count, '_root': root_count}
 
     def count_strings(self, entry):
         json_file = get_file(entry['path'])
@@ -190,7 +190,7 @@ def get_matching_entry(uid, muids=None):
     else:
         raise ValueError(f'Multiple matches for {uid}, {muids}')
 
-def get_source_entry(translation):
+def get_root_entry(translation):
     uid = translation['uid']
     root_lang = get_child_property_value(translation, 'root_lang')
     root_edition = get_child_property_value(translation, 'root_edition')
@@ -249,17 +249,17 @@ def get_data(filename, extra=['root']):
 
 
 def sum_counts(subtree):
-    counts = {'_translated_count': 0, '_source_count': 0}
+    counts = {'_translated_count': 0, '_root_count': 0}
 
     for key, child in subtree.items():
-        if '_source' in child:
-            counts['_source_count'] += child['_source']
+        if '_root' in child:
+            counts['_root_count'] += child['_root']
             counts['_translated_count'] += child.get('_translated', 0)
         else:
             if key.startswith('_'):
                 continue
             child_counts = sum_counts(child)
-            for prop in ['_translated_count', '_source_count']:
+            for prop in ['_translated_count', '_root_count']:
                 counts[prop] += child_counts[prop]
     subtree.update(counts)
     return counts

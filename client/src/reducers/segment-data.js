@@ -10,8 +10,7 @@ import {
 
 const deleteProperty = ({[key]: _, ...newObj}, key) => newObj;
 
-export const segmentData = (state = {uploadQueue: {}}, action) => {
-    console.log('action: ',  action)
+export const segmentData = (state = {uploadQueue: {}, pushState: {}}, action) => {
     const filename = action.filename;
     switch (action.type) {
         case REQUEST_SEGMENT_DATA:
@@ -54,8 +53,13 @@ export const segmentData = (state = {uploadQueue: {}}, action) => {
                 }
             }
         case QUEUE_SEGMENT:
+            console.log('Queue Segment', action);
             return {
                 ...state,
+                pushState: {
+                    ...state.pushState,
+                    [action.data.segmentId]: 'pending'
+                },
                 uploadQueue: {
                     ...state.uploadQueue, 
                     [action.key]: action.data
@@ -64,11 +68,23 @@ export const segmentData = (state = {uploadQueue: {}}, action) => {
         case RESOLVE_PUSH:
             return {
                 ...state,
-                uploadQueue:  Object.keys(action.segmentData).reduce((obj, key) => {
-                    if (action.segmentData[key] == 'SUCCESS') return obj
-                    obj[key] = state.uploadQueue[key];
-                    return obj
-                }, {})
+                pushState: Object.keys(action.segmentData).reduce((pushState, key) => {
+                    if (action.segmentData[key] == 'SUCCESS') {
+                        let segment = state.uploadQueue[key],
+                            dataType = segment.filepath.split('_')[1].split('-')[0];
+                        pushState[segment.segmentId] = 'finalized';
+                    }
+                    return pushState
+                }, {...state.pushState}),
+                uploadQueue: Object.keys(action.segmentData).reduce((uploadQueue, key) => {
+                    let segment = state.uploadQueue[key];
+                    if (action.segmentData[key] == 'SUCCESS') {
+                        // This no longer needs to be in the queue
+                        return uploadQueue
+                    }
+                    uploadQueue[key] = segment;
+                    return uploadQueue
+                }, {...state.uploadQueue})
             }
         default:
             return state;

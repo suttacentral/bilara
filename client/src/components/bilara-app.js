@@ -198,7 +198,7 @@ footer {
       _offline: { type: Boolean },
       _username: { type: String },
       _avatarUrl: { type: String },
-      _userMustRevalidate: { type: Boolean }
+      _activeSegmentId: { type: String }
     }
   }
 
@@ -217,8 +217,9 @@ footer {
   }
 
   updated(changedProps) {
-    if (changedProps.has('_page')) {
-      const pageTitle = this.appTitle + ' - ' + this._page;
+    if (changedProps.has('_page') || changedProps.has('_activeSegmentId')) {
+      
+      const pageTitle = this._activeSegmentId ? this._activeSegmentId : this.appTitle;
       updateMetadata({
         title: pageTitle,
         description: pageTitle
@@ -242,6 +243,7 @@ footer {
     this._username = state.app.user.username;
     this._avatarUrl = state.app.user.avatarUrl;
     this._userMustRevalidate = state.app.user.revalidate;
+    this._activeSegmentId = state.segmentData ? state.segmentData.activeSegmentId : '';
   }
 }
 
