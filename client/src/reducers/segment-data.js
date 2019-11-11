@@ -10,7 +10,20 @@ import {
 
 const deleteProperty = ({[key]: _, ...newObj}, key) => newObj;
 
-export const segmentData = (state = {uploadQueue: {}, pushState: {}}, action) => {
+const getSavedQueue = () => {
+  try {
+    return JSON.parse(localStorage.getItem('uploadQueue'));
+  } catch {}
+
+  return undefined
+}
+
+const defaultState = {
+  uploadQueue: getSavedQueue() || {}, 
+  pushState: {}
+}
+
+export const segmentData = (state = defaultState, action) => {
     const filename = action.filename;
     switch (action.type) {
         case REQUEST_SEGMENT_DATA:
@@ -53,7 +66,6 @@ export const segmentData = (state = {uploadQueue: {}, pushState: {}}, action) =>
                 }
             }
         case QUEUE_SEGMENT:
-            console.log('Queue Segment', action);
             return {
                 ...state,
                 pushState: {
@@ -84,7 +96,7 @@ export const segmentData = (state = {uploadQueue: {}, pushState: {}}, action) =>
                     }
                     uploadQueue[key] = segment;
                     return uploadQueue
-                }, {...state.uploadQueue})
+                }, {})
             }
         default:
             return state;

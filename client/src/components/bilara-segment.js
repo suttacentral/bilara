@@ -80,7 +80,7 @@ div:focus-within{
         
       }
      .status.pending{
-        background-color: white;
+        background-color: rgb(125,125,125);
         box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);        
       }
       .status.finalized{
@@ -102,7 +102,7 @@ div:focus-within{
       >${this._rootString}</span>
     <span contenteditable="plaintext-only"
         data-type="translation"
-        class="string ${this._dirtyState}"
+        class="string"
         lang="${this._translationLang}"
         @blur="${this._inputEvent}"
         @keypress="${this._keypressEvent}"
@@ -173,7 +173,6 @@ div:focus-within{
   }
 
   updated(changedProperties) {
-    console.log(changedProperties);
     if (changedProperties.get('_pushState')) {
       this._dirty = false;
     }
@@ -195,16 +194,12 @@ div:focus-within{
   }
 
   _inputEvent(e){
-    console.log('Input: ', e);
-    console.log(this, this._translationString, e.currentTarget.textContent);
-
     if (this._translationString != e.currentTarget.textContent) {
       this._dirty = true;
     }
   }
 
   _keypressEvent(e) {
-    console.log('Keypress: ', e);
     if (e.key == 'Enter') {
       this._dirty = false;
       e.preventDefault();
@@ -218,9 +213,10 @@ div:focus-within{
       
       if (hasChanged) {
         this._committedString = value;
+        this._translationString = value;
         store.dispatch(updateSegment(filepath, segmentId, dataType, value));
       } else {
-        console.log('No change');
+
       }
 
       this.blur();

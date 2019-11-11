@@ -48,7 +48,7 @@ def update_file(file, user):
     with _lock:
         branch = checkout_branch(working_branch)
 
-        commit_message = f'Translations by {user["login"]}'
+        commit_message = f'Translations by {user["login"]} to {file}'
 
         if _pending_commit and branch.commit.message == commit_message:
             # We can add onto this commit

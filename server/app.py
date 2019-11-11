@@ -118,7 +118,7 @@ else:
     def authorized():
         user = get_user_details()
         params = {'token': '__DEVELOPMENT__', 'login': user['login'], 'avatar_url': user['avatar_url']}
-        response = redirect(f'/auth?{urlencode(params)}')
+        response = redirect(f'http://localhost:3000/auth?{urlencode(params)}')
         return response    
 
 def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _cache={}):
