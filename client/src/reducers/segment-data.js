@@ -13,7 +13,7 @@ const deleteProperty = ({[key]: _, ...newObj}, key) => newObj;
 const getSavedQueue = () => {
   try {
     return JSON.parse(localStorage.getItem('uploadQueue'));
-  } catch {}
+  } catch (e) {console.log('Could not parse saved uploadQueue', e)}
 
   return undefined
 }
