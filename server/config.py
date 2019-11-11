@@ -32,6 +32,9 @@ config = Config({
     'ARANGO_PASSWORD': 'test',
     'ARANGO_DB_NAME': 'bilara',
 
+    'PUSHOVER_TOKEN': '',
+    'PUSHOVER_ADMIN_KEY': '',
+
 
     
 

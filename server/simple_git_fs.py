@@ -4,6 +4,8 @@ from config import config
 import threading
 import time
 
+import notify
+
 
 import atexit
 
@@ -116,6 +118,7 @@ def finalize_commit(branch_name=working_branch):
     else:
         print('Failure')
         print('Git push failed multiple times')
+        notify.send_message_to_admin('Bilara failed to push to Github, this requires manual intervention', title='Bilara Push Fail')
         return
     _pending_commit = None
 
