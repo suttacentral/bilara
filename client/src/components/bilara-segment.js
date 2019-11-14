@@ -92,14 +92,19 @@ div:focus-within{
         box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
       }
 
+      .string.empty:after {
+        content: "[ ]";
+        opacity: 0.6;
+      }
+
     </style>
     
     <div id="${this._segmentId}">
     <span contenteditable="false"
         data-type="root"
-        class="string"
+        class="string${this._rootString === false ? ' empty' : ''}"
         lang="${this._rootLang}"
-      >${this._rootString}</span>
+      >${this._rootString === false ? '' : this._rootString}</span>
     <span contenteditable="plaintext-only"
         data-type="translation"
         class="string"

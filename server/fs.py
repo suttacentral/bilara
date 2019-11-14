@@ -155,7 +155,9 @@ class StatsCalculator:
         root_entry = get_root_entry(translation)
         root_count = self.count_strings(root_entry)
 
-        return {'_translated': translated_count, '_root': root_count}
+        total_count = max(root_count, translated_count)
+
+        return {'_translated': translated_count, '_root': total_count}
 
     def count_strings(self, entry):
         json_file = get_file(entry['path'])
@@ -244,7 +246,21 @@ def get_data(filename, extra=['root']):
         uid, _ = get_uid_and_muids(filename)
         for muid in extra:
             result[muid] = load_json(_file_index[get_match(_uid_index[uid].intersection(_muid_index[muid]))])
-        
+      
+    if 'root' in result:
+        root = result['root']['segments']
+        all_keys = set()
+        for value in result.values():
+            all_keys.update(value['segments'])
+        if all_keys != set(root): 
+            merged_root = {}
+            for key in sorted(all_keys, key=bilarasortkey):
+                if key in root:
+                    merged_root[key] = root[key]
+                else:
+                    merged_root[key] = False
+            result['root']['segments'] = merged_root
+
     return result
 
 
