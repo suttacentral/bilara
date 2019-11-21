@@ -109,7 +109,7 @@ div:focus-within{
         data-type="translation"
         class="string"
         lang="${this._translationLang}"
-        @blur="${this._inputEvent}"
+        @blur="${this._blurEvent}"
         @keypress="${this._keypressEvent}"
         @focus="${this._focusEvent}"
     >${this._translationString}</span>
@@ -183,6 +183,13 @@ div:focus-within{
     }
   }
 
+  shouldUpdate(changedProperties) {
+    if (changedProperties.size == 1 && changedProperties.has('_translationString')) {
+      return false
+    }
+    return true
+  }
+
   _focusEvent(e) {
     const segmentId = this._segmentId;
     store.dispatch(focusSegment(segmentId));
@@ -198,37 +205,47 @@ div:focus-within{
     store.dispatch(fetchSuggestions(this._rootString, this._rootLang, this._translationLang, this._segmentId))
   }
 
+  _blurEvent(e) {
+    this._inputEvent(e);
+  }
+
   _inputEvent(e){
     if (this._translationString != e.currentTarget.textContent) {
       this._dirty = true;
     }
   }
 
+  _commit(e) {
+    this._dirty = false;
+    e.preventDefault();
+    e.stopPropagation();
+    this._suggestions = null;
+
+    const segmentId = this._segmentId,
+    value = e.currentTarget.textContent,
+    dataType = e.currentTarget.dataset.type,
+    filepath = dataType == 'root' ? this._rootFilePath : this._translationFilepath,
+    hasChanged = dataType == 'root' ? this._rootString != value : (this._translationString != value || this._suggestedString);
+    
+    if (hasChanged) {
+      this._committedString = value;
+      this._translationString = value;
+      store.dispatch(updateSegment(filepath, segmentId, dataType, value));
+    } else {
+
+    }
+
+    this.blur();
+    let nextSegment = this.nextElementSibling;
+    if (nextSegment) {
+      nextSegment.setFocus(e.path[0].getAttribute('data-type'));
+    }
+  }
+
   _keypressEvent(e) {
     if (e.key == 'Enter') {
-      this._dirty = false;
-      e.preventDefault();
-      e.stopPropagation();
-
-      const segmentId = this._segmentId,
-      value = e.currentTarget.textContent,
-      dataType = e.currentTarget.dataset.type,
-      filepath = dataType == 'root' ? this._rootFilePath : this._translationFilepath,
-      hasChanged = dataType == 'root' ? this._rootString != value : (this._translationString != value || this._suggestedString);
+      this._commit(e)
       
-      if (hasChanged) {
-        this._committedString = value;
-        this._translationString = value;
-        store.dispatch(updateSegment(filepath, segmentId, dataType, value));
-      } else {
-
-      }
-
-      this.blur();
-      let nextSegment = this.nextElementSibling;
-      if (nextSegment) {
-        nextSegment.setFocus(e.path[0].getAttribute('data-type'));
-      }
     }
   }
 }

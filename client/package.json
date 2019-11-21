@@ -13,7 +13,7 @@
     "build:static": "polymer build",
     "serve": "prpl-server --root server/build",
     "serve:static": "polymer serve --port 5000 build/es5-bundled",
-    "watch": "browser-sync start --proxy localhost:8081 --files \"**/*.js\"",
+    "watch": "browser-sync start --proxy localhost:8081 --port 3003 --files \"**/*.js\"",
     "test": "npm run test:unit && npm run test:integration",
     "test:integration": "mocha test/integration --timeout=10000",
     "test:unit": "polymer test --module-resolution=node --npm",
