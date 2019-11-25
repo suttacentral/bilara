@@ -104,7 +104,7 @@ div:focus-within{
         data-type="root"
         class="string${this._rootString === false ? ' empty' : ''}"
         lang="${this._rootLang}"
-      >${this._rootString === false ? '' : this._rootString}</span>
+      ></span>
     <span contenteditable="plaintext-only"
         data-type="translation"
         class="string"
@@ -112,7 +112,7 @@ div:focus-within{
         @blur="${this._blurEvent}"
         @keypress="${this._keypressEvent}"
         @focus="${this._focusEvent}"
-    >${this._translationString}</span>
+    ></span>
     ${this.getPushState()}
     </div>
     ${ this._suggestions ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
@@ -174,6 +174,12 @@ div:focus-within{
   }
 
   firstUpdated() {
+    let translation = this.shadowRoot.querySelector('[data-type=translation]'),
+    root = this.shadowRoot.querySelector('[data-type=root]');
+  
+    translation.innerText = this._translationString;
+    root.innerText = this._rootString === false ? '' : this._rootString;
+
     this._committedString = this._translationString;
   }
 
@@ -181,13 +187,6 @@ div:focus-within{
     if (changedProperties.get('_pushState')) {
       this._dirty = false;
     }
-  }
-
-  shouldUpdate(changedProperties) {
-    if (changedProperties.size == 1 && changedProperties.has('_translationString')) {
-      return false
-    }
-    return true
   }
 
   _focusEvent(e) {
@@ -215,36 +214,32 @@ div:focus-within{
     }
   }
 
-  _commit(e) {
-    this._dirty = false;
-    e.preventDefault();
-    e.stopPropagation();
-    this._suggestions = null;
-
-    const segmentId = this._segmentId,
-    value = e.currentTarget.textContent,
-    dataType = e.currentTarget.dataset.type,
-    filepath = dataType == 'root' ? this._rootFilePath : this._translationFilepath,
-    hasChanged = dataType == 'root' ? this._rootString != value : (this._translationString != value || this._suggestedString);
-    
-    if (hasChanged) {
-      this._committedString = value;
-      this._translationString = value;
-      store.dispatch(updateSegment(filepath, segmentId, dataType, value));
-    } else {
-
-    }
-
-    this.blur();
-    let nextSegment = this.nextElementSibling;
-    if (nextSegment) {
-      nextSegment.setFocus(e.path[0].getAttribute('data-type'));
-    }
-  }
-
   _keypressEvent(e) {
     if (e.key == 'Enter') {
-      this._commit(e)
+      this._dirty = false;
+      e.preventDefault();
+      e.stopPropagation();
+      this._suggestions = null;
+  
+      const segmentId = this._segmentId,
+      value = e.currentTarget.textContent,
+      dataType = e.currentTarget.dataset.type,
+      filepath = dataType == 'root' ? this._rootFilePath : this._translationFilepath,
+      hasChanged = dataType == 'root' ? this._rootString != value : (this._translationString != value || this._suggestedString);
+      
+      if (hasChanged) {
+        this._committedString = value;
+        this._translationString = value;
+        store.dispatch(updateSegment(filepath, segmentId, dataType, value));
+      } else {
+  
+      }
+  
+      this.blur();
+      let nextSegment = this.nextElementSibling;
+      if (nextSegment) {
+        nextSegment.setFocus(e.path[0].getAttribute('data-type'));
+      }
       
     }
   }
