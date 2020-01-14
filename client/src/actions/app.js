@@ -40,11 +40,12 @@ function parseQuery(queryString) {
     return query;
 }
 
-const loadPage = (view, subpath, queryParams) => (dispatch) => {
+const loadPage = (view, subpath) => (dispatch) => {
+  let queryParams = parseQuery(location.search);
   console.log(view, subpath, queryParams);
   switch(view) {
     case 'auth':
-      let queryParams = parseQuery(location.search);
+      
       console.log('queryParams: ', JSON.stringify(queryParams));
       dispatch(setAuthToken(queryParams.token, queryParams.login, queryParams.avatarUrl));
       history.replaceState(null, null, '/browse');
@@ -56,7 +57,8 @@ const loadPage = (view, subpath, queryParams) => (dispatch) => {
       if (subpath.length === 0) {
         subpath = ['dn1_translation-en-sujato']
       }
-      dispatch(fetchSegmentData(subpath[0]));
+      
+      dispatch(fetchSegmentData(subpath[0], queryParams.root, queryParams.tertiary));
       import('../components/translation-view.js');
       break;
     case 'logout':
@@ -106,3 +108,4 @@ export const updateDrawerState = (opened) => {
     opened
   }
 }
+

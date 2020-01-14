@@ -36,17 +36,19 @@ app.secret_key = 'development'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
-@app.route('/api/segments/<filename>', methods=['GET'])
-def segments(filename):
-    result = fs.get_data(filename=filename)
+@app.route('/api/segments/<long_id>', methods=['GET'])
+def segments(long_id):
+    root = request.args.get('root')
+    tertiary = request.args.get('tertiary')
+    result = fs.get_data(long_id, root=root, tertiary=tertiary)
     return jsonify(result)
 
-@app.route('/api/segments/', methods=['POST'])
+@app.route('/api/segment/', methods=['POST'])
 def update():
-    segments = request.get_json()
-    segments_logger.debug(segments)
+    segment = request.get_json()
+    segments_logger.debug(segment)
     user = get_user_details()
-    return jsonify(fs.update_segments(segments=segments, user=user))
+    return jsonify(fs.update_segment(segment=segment, user=user))
 
 @app.route('/api/nav/')
 def nav():

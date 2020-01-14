@@ -15,6 +15,9 @@ import simple_git_fs as git_fs
 
 REPO_DIR = config.REPO_DIR
 
+class NoMatchingEntry(Exception):
+    pass
+
 def get_file(filepath):
     if filepath.startswith('/'):
         filepath = filepath[1:]
@@ -26,15 +29,6 @@ def strip_suffix(file):
         return file.name
     else:
         return file.stem
-
-def load_json(file):
-    try:
-        with file.open('r') as f:
-            return json.load(f)
-    except json.JSONDecodeError as err:
-        logging.error(file)
-        logging.error(err.doc)
-        raise err
 
 def invert_meta(metadata):
     new_meta = {}
@@ -54,11 +48,19 @@ def get_uid_and_muids(file):
         uid, muid_string = file.name.split('_')
     return uid, muid_string.split('-')
 
+
+def get_long_id(path):
+    return pathlib.Path(path).name
+
+
+
+
 def make_file_index():
     global _tree_index
     global _uid_index
     global _muid_index
     global _file_index
+    global _meta_definitions
 
     print('Building file index')
 
@@ -72,7 +74,14 @@ def make_file_index():
         metafiles = set(folder.glob('_*.json'))
         if metafiles:
             for metafile in sorted(metafiles, key=humansortkey):
-                meta_definitions.update(json_load(metafile))
+                file_data = json_load(metafile)
+                meta_definitions.update(file_data)
+
+                for k, v in file_data.items():
+                    if k not in _meta_definitions:
+                        _meta_definitions[k] = v
+
+
         
         for file in sorted(folder.glob('*'), key=humansortkey):
             
@@ -80,7 +89,7 @@ def make_file_index():
                 continue
             if file in metafiles:
                 continue
-            filename = file.stem
+            long_id = file.stem
             meta = {}
             for part in file.parts:
                 if part.endswith('.json'):
@@ -94,12 +103,12 @@ def make_file_index():
 
                 mtime = file.stat().st_mtime_ns
                 path = str(file.relative_to(REPO_DIR))
-                obj = subtree[filename] = {
+                obj = subtree[long_id] = {
                     'path': path,
                     'mtime': mtime,
                     '_meta': meta
                 }
-                if '_' in filename:
+                if '_' in long_id:
                     uid, muids = get_uid_and_muids(file)
                 else:
                     uid = file.name if file.is_dir() else file.stem
@@ -107,20 +116,20 @@ def make_file_index():
                 obj['uid'] = uid
                 if uid not in uid_index:
                     uid_index[uid] = set()
-                uid_index[uid].add(filename)
-                if filename in file_index:
+                uid_index[uid].add(long_id)
+                if long_id in file_index:
                     logging.error(f'{str(file)} not unique')
-                file_index[filename] = obj
+                file_index[long_id] = obj
                 if muids:
                     for muid in muids:
                         if muid not in muid_index:
                             muid_index[muid] = set()
-                        muid_index[muid].add(filename)
+                        muid_index[muid].add(long_id)
 
         return subtree
 
  
-
+    _meta_definitions = {}
     _tree_index = recurse(REPO_DIR, {})
     _uid_index = uid_index
     _muid_index = muid_index
@@ -151,8 +160,11 @@ class StatsCalculator:
 
     def calculate_completion(self, translation):
         translated_count = self.count_strings(translation)
+        uid, _ = get_uid_and_muids(translation['path'])
+        root_lang = get_child_property_value(translation, 'root_lang')
+        root_edition = get_child_property_value(translation, 'root_edition')
+        root_entry = get_matching_entry(uid, ['root', root_lang, root_edition])
 
-        root_entry = get_root_entry(translation)
         root_count = self.count_strings(root_entry)
 
         total_count = max(root_count, translated_count)
@@ -172,35 +184,25 @@ class StatsCalculator:
 
 stats_calculator = StatsCalculator()
 
-def get_matching_entries(uid, muids=None):
+def get_matching_ids(uid, muids=None):
     try:
-        result = _uid_index[uid]
+        result = _uid_index[uid].copy()
         if muids:
             for muid in muids:
                 result.intersection_update(_muid_index[muid])
         return result
     except KeyError as e:
-        raise ValueError(f'No match for "{e.args[0]} for query {uid}, {muids}')
+        raise NoMatchingEntry(f'No match for "{e.args[0]} for query {uid}, {muids}')
 
-def get_matching_entry(uid, muids=None):
-    result = get_matching_entries(uid, muids)
+def get_matching_id(uid, muids=None):
+    result = get_matching_ids(uid, muids)
     if len(result) == 1:
         (result, ) = result
         return result
     elif len(result) == 0:
-        raise ValueError(f'No matches for {uid}, {muids}')
+        raise NoMatchingEntry(f'No matches for {uid}, {muids}')
     else:
         raise ValueError(f'Multiple matches for {uid}, {muids}')
-
-def get_root_entry(translation):
-    uid = translation['uid']
-    root_lang = get_child_property_value(translation, 'root_lang')
-    root_edition = get_child_property_value(translation, 'root_edition')
-    
-    return _file_index[get_matching_entry(uid, ['root', root_lang, root_edition] )]
-
-
-
 
 def json_load(file):
     with file.open('r') as f:
@@ -217,49 +219,155 @@ def json_save(data, file):
 def load_json(result):
     _meta = result.get('_meta', {})
     _meta['path'] = result.get('path')
+    
     json_file = get_file(result['path'])
     return {**_meta, 'segments': json_load(json_file)}
 
+def load_entry(long_id):
+    entry = _file_index[long_id]
+    result = load_json(entry)
+    return deepcopy(result)
+
 def get_child_property_value(obj, name):
-    for child_obj in obj['_meta'].values():
+    if '_meta' in obj:
+        obj = obj['_meta']
+    for child_obj in obj.values():
         if name in child_obj:
             return child_obj[name]
 
 
 def get_match(matches):
     if len(matches) == 0:
-        raise ValueError('No matches')
+        raise NoMatchingEntry('No matches')
     elif len(matches) > 1:
         raise ValueError('More than one match')
     (match,) = matches
     return match
+
+
+
+def get_matching_entry(uid, muids):
+    long_id = get_matching_id(uid, muids)
+    return _file_index[long_id]
+
+
+def update_result(result, long_id, entry, role=None):
+    segments = entry.pop('segments')
+    uid, muids = get_uid_and_muids(long_id)
+    field = '-'.join(muids)
+    entry['editable'] = True if role == 'target' else False
+    entry = deepcopy(entry)
+    result['fields'][field] = entry
+    result['fields'][field]['role'] = role or muids[0]
+    for segment_id, segment_value in segments.items():
+        if segment_id not in result['segments']:
+            result['segments'][segment_id] = {}
+        result['segments'][segment_id][field] = segment_value
+    
+    return result
+
+def get_data(primary_long_id, root=None, tertiary=None):
+    """
+
+    Returns a result that looks like this:
+
+    {
+      "uid": "",
+      "filedata": {
+        "mn1_root-pli-ms": { 
+           "category": "root",
+           "language": "pli",
+           "edition": "ms",
+           "path": "translation/en/sujato/mn/mn1_translation-en-sujato.json",
+           "segments": { ... }
+        },
+        "mn1_translation-en-sujato": { ... },
+      },
+      "fields": {
+        "root": "mn1_root-pli-ms",
+        "translation": "mn1_translation-en-sujato"
+      }
+    }
+
+    or
+
+    {
+      "uid": "",
+      "filedata": {
+        "mn1_root-pli-ms": { ... },
+        "mn1_translation-en-sujato": { ... },
+        "mn1_translation-de-whoever": { ... }
+      },
+      "fields": {
+        "root": "mn1_root-pli-ms",
+        "translation": "mn1_translation-de-whoever",
+        "extra_translations": ["mn1_translation-en-sujato"]
+      }
+    }
+
+    {
+      "segments": {
+        "dn1:1.1": {
+          "root-pli-ms": "...",
+          "translation-en-sujato": "...",
+          "comment-en-sujato": "..."
+        },
+        "dn1:1.2": { ... }
+      },
+      "fields": {
+        "root-pli-ms": "source",
+        "translation-en-sujato": "target",
+        "comment-en-sujato": "comment"
+      }
+    }
+
+    What is the fields field?
+
+    "fields": {
+      "root-pli-ms": "source",
+      "translation-de-whoever": "target",
+      "translation-en-sujato": "secondary-source",
+    }
+
+
+
+    """
+
+    if not root:
+        root = 'root'
+
+    entries = []
+    result = {'segments':{}, 'fields': {}}
+    primary_entry = load_entry(primary_long_id)
+    primary_type = primary_entry['category']['uid']
+
+    update_result(result, primary_long_id, primary_entry, role='target')
+    result['targetField'] = primary_long_id.split('_')[1]
+
+    uid, _ = get_uid_and_muids(primary_long_id)
+    root_lang = get_child_property_value(primary_entry, 'root_lang')
+    root_edition = get_child_property_value(primary_entry, 'root_edition')
+    for muid in root.split(','):
+        try:
+            root_long_id = get_matching_id(uid, [muid, root_lang, root_edition])
+            root_entry = load_entry(root_long_id)
+            role = 'source' if muid == 'root' else muid
+            update_result(result, root_long_id, root_entry, role=role)
+            if role == 'source':
+                result['sourceField'] = root_long_id.split('_')[1]
+        except NoMatchingEntry:
+            pass
+
+    if tertiary:
+        for muids_string in tertiary.split(','):
+            muids = muids_string.split('-')
+            matches = get_matching_ids(uid, muids)
+            if matches:
+                for long_id in matches:
+                    entry = load_entry(long_id)
+                    update_result(result, long_id, entry, role='tertiary')
     
 
-def get_data(filename, extra=['root']):
-    result = {}
-    primary_result = load_json(_file_index[filename])
-    primary_type = primary_result['category']['uid']
-
-    result[primary_type] = primary_result
-
-    if extra:
-        uid, _ = get_uid_and_muids(filename)
-        for muid in extra:
-            result[muid] = load_json(_file_index[get_match(_uid_index[uid].intersection(_muid_index[muid]))])
-      
-    if 'root' in result:
-        root = result['root']['segments']
-        all_keys = set()
-        for value in result.values():
-            all_keys.update(value['segments'])
-        if all_keys != set(root): 
-            merged_root = {}
-            for key in sorted(all_keys, key=bilarasortkey):
-                if key in root:
-                    merged_root[key] = root[key]
-                else:
-                    merged_root[key] = False
-            result['root']['segments'] = merged_root
 
     return result
 
@@ -304,17 +412,77 @@ def get_condensed_tree(path):
     sum_counts(tree)
     return tree
 
-def update_segments(segments, user):
-    results = {}
-    for filepath, group in groupby(segments.items(), lambda t: t[1]['filepath']):
-        file_segments = list(group)
-        results.update(update_file(filepath, file_segments, user))
+# def update_segment(segments, user):
+#     results = {}
+#     for filepath, group in groupby(segments.items(), lambda t: t[1]['filepath']):
+#         file_segments = list(group)
+#         results.update(update_file(filepath, file_segments, user))
             
-    try:
-        tm.update_docs(segments)
-    except Exception as e:
-        logging.exception("Could not update TM")
-    return results
+#     try:
+#         tm.update_docs(segments)
+#     except Exception as e:
+#         logging.exception("Could not update TM")
+#     return results
+
+
+def get_parent_uid(uid):
+    if uid in _uid_index:
+        return uid
+    
+    uids = sorted([uid] + list(_uid_index), key=bilarasortkey)
+    return uids[uids.index(uid)-1]
+
+
+def update_segment(segment, user):
+    """
+    segment looks like:
+    {"segmentId": "dn1:1.1", "field": "translation-en-sujato", "value": "..", "oldValue": "..."}
+    """
+
+    segment_id = segment['segmentId']
+
+    uid, _ = segment_id.split(':')
+    parent_uid = get_parent_uid(uid)
+
+    long_id = f'{parent_uid}_{segment["field"]}'
+
+    if long_id not in _file_index:
+        logging.error('f"{long_id}" not found, {segment}')
+        return {"error": "file not found"}
+    
+    filepath = _file_index[long_id]['path']
+    file = get_file(filepath)
+    
+    with git_fs._lock:
+        file_data = json_load(file)
+        current_value = file_data.get(segment_id)
+        result = {}
+        if current_value and current_value != segment['oldValue']:
+            result['clobbered'] = current_value
+            
+        if current_value != segment['value']:
+            result['changed'] = True
+            
+        file_data[segment_id] = segment['value']
+        
+        sorted_data = dict(sorted(file_data.items(), key=bilarasortkey))
+        
+        try:
+            json_save(sorted_data, file)
+            result['success'] = True
+            if config.GIT_COMMIT_ENABLED :
+                git_fs.update_file(filepath, user)
+        except:
+            logging.error(f'could not write segment: {segment}')
+            return {"error": "could not write file"}
+        
+        return result
+
+
+        
+
+
+
 
 
 def update_file(filepath, segments, user):

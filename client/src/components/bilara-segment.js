@@ -8,6 +8,7 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 
 import { BilaraSuggestions } from './bilara-suggestions.js';
 
+import { BilaraCell } from './bilara-cell.js';
 
 function createRange(node, chars, range) {
   if (!range) {
@@ -68,43 +69,58 @@ div:focus-within{
         font-family:"source serif pro"
       }
 
-      .status{
-        font-size: 12px;
-        color: white;
-        height: 1.2em;
-        line-height: 1.2em;
-        width: 1.2em;
-        margin-right: -1.2em;
-        text-align: center;
-        border-radius: 50%;
-        
-      }
-     .status.pending{
-        background-color: rgb(125,125,125);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);        
-      }
-      .status.finalized{
-          background-color: green;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-      }
-      .status.modified{
-        background-color:var(--bilara-red);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-      }
-
       .string.empty:after {
         content: "[ ]";
         opacity: 0.6;
       }
 
+      .field-title {
+        padding: 0.5em;
+        font-size: 80%;
+      }
+
     </style>
-    
-    <div id="${this._segmentId}">
+    ${ this._segmentId ? 
+      html`<div class="row" id="${this._segmentId}">
+      ${this._sortedFields.map(field => {
+          const fieldData = this._fields[field],
+                language = fieldData['language'];
+          return html`
+            <bilara-cell class="string"
+              lang="${language ? language['uid'] : undefined}"
+              _segmentId="${this._segmentId}"
+              _field="${field}"
+              _editable="${fieldData['editable']}"
+              _value="${this._segment[field] || ''}"
+              @focus="${this._focusEvent}"
+            ></bilara-cell>`
+        })
+      }
+      
+      ${this.getPushState()}
+      </div>
+      ${ this._suggestions ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
+    ` : html `<div class="row" id="fields">${this._sortedFields.map(field => {
+      return html`<span class="field-title">${field}</span>`
+    })
+  }</div>` }
+    `
+  }
+
+  
+  /*
+
     <span contenteditable="false"
         data-type="root"
         class="string${this._rootString === false ? ' empty' : ''}"
         lang="${this._rootLang}"
       ></span>
+    ${this._tertiaryString ? html`
+    <span contenteditable="false"
+      data-type="tertiary"
+      class="string"
+      lang="${this._tertiaryLang}">${this._tertiaryString}</span>
+    `: html``}
     <span contenteditable="plaintext-only"
         data-type="translation"
         class="string"
@@ -113,28 +129,21 @@ div:focus-within{
         @keypress="${this._keypressEvent}"
         @focus="${this._focusEvent}"
     ></span>
-    ${this.getPushState()}
-    </div>
-    ${ this._suggestions ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
-    
-    `
-  }
+  */
 
   static get properties(){
     return {
       _isActive: Boolean,
       _segmentId: String,
-      _rootString: String,
-      _translationString: String,
-      _rootFilepath: String,
-      _translationFilepath: String,
+      _segment: { type: Object },
+      _fields: { type: Object },
+      _sourceField: String,
+      _targetField: String,
+      _sortedFields: String,
       _suggestions: {type: Object},
       _rootLang: String,
       _translationLang: String,
-      _suggestedString: String,
-      _committedString: String,
-      _pushState: {type: String},
-      _dirty: {type: Boolean}
+      _tertiaryLang: String
     }
   }
 
@@ -173,16 +182,6 @@ div:focus-within{
     });
   }
 
-  firstUpdated() {
-    let translation = this.shadowRoot.querySelector('[data-type=translation]'),
-    root = this.shadowRoot.querySelector('[data-type=root]');
-  
-    translation.innerText = this._translationString;
-    root.innerText = this._rootString === false ? '' : this._rootString;
-
-    this._committedString = this._translationString;
-  }
-
   updated(changedProperties) {
     if (changedProperties.get('_pushState')) {
       this._dirty = false;
@@ -201,48 +200,15 @@ div:focus-within{
   }
 
   fetchSuggestions(){
-    store.dispatch(fetchSuggestions(this._rootString, this._rootLang, this._translationLang, this._segmentId))
+    const sourceString = this._segment[this._sourceField],
+          targetString = this._segment[this._targetField],
+          rootLang = this._fields[this._sourceField].language.uid,
+          targetLang = this._fields[this._targetField].language.uid,
+          segmentId = this._segmentId;
+
+    store.dispatch(fetchSuggestions(sourceString, rootLang, targetString, targetLang, segmentId));
   }
 
-  _blurEvent(e) {
-    this._inputEvent(e);
-  }
-
-  _inputEvent(e){
-    if (this._translationString != e.currentTarget.textContent) {
-      this._dirty = true;
-    }
-  }
-
-  _keypressEvent(e) {
-    if (e.key == 'Enter') {
-      this._dirty = false;
-      e.preventDefault();
-      e.stopPropagation();
-      this._suggestions = null;
-  
-      const segmentId = this._segmentId,
-      value = e.currentTarget.textContent,
-      dataType = e.currentTarget.dataset.type,
-      filepath = dataType == 'root' ? this._rootFilePath : this._translationFilepath,
-      hasChanged = dataType == 'root' ? this._rootString != value : (this._translationString != value || this._suggestedString);
-      
-      if (hasChanged) {
-        this._committedString = value;
-        this._translationString = value;
-        store.dispatch(updateSegment(filepath, segmentId, dataType, value));
-      } else {
-  
-      }
-  
-      this.blur();
-      let nextSegment = this.nextElementSibling;
-      if (nextSegment) {
-        nextSegment.setFocus(e.path[0].getAttribute('data-type'));
-      }
-      
-    }
-  }
 }
 
 window.customElements.define('bilara-segment', BilaraSegment);

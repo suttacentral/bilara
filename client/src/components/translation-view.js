@@ -16,13 +16,21 @@ import { store } from '../store.js';
 import { segmentData } from '../reducers/segment-data.js';
 import { searchReducer } from '../reducers/search.js';
 
+import { getChildMatchingKey } from '../util.js';
+import { sortByKeyFn } from '../util.js';
+
 store.addReducers({
   segmentData,
   search: searchReducer
 });
 
+
+
+
 class TranslationView extends connect(store)(PageViewElement) {
   render(){
+    let fields = this._fields;
+    
     return html`
     ${SharedStyles}
     <style>
@@ -32,10 +40,25 @@ class TranslationView extends connect(store)(PageViewElement) {
       }
     </style>
     <section>
-      ${ this._root.length == 0 || !this._root.segments ? 
-        html`Fetching Data ${JSON.stringify(this._root)}` :
+      ${ this._segments.length == 0 ? 
+        html`Fetching Data` :
         html`
-          ${Object.keys(this._root.segments).map(segmentId => {
+          <bilara-segment ._sortedFields="${this._sortedFields}"></bilara-segment>
+          ${Object.keys(this._segments).map(segmentId => {
+            const segment = this._segments[segmentId],
+                  rootString = segment[this._sourceField],
+                  suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(rootString)] : '';
+
+            return html`<bilara-segment ._segmentId="${segmentId}"
+                                        ._segment="${segment}"
+                                        ._fields="${this._fields}"
+                                        ._sourceField="${this._sourceField}"
+                                        ._targetField="${this._targetField}"
+                                        ._sortedFields ="${this._sortedFields}"
+                                        ._suggestions="${suggestions}"
+                                        ._pushState="${this._pushState[segmentId]}">
+                                        </bilara-segment>`}
+/*
             const root = this._root.segments[segmentId];
             const translation = this._translation.segments[segmentId] || '';
             let suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(root)] : '';
@@ -48,25 +71,27 @@ class TranslationView extends connect(store)(PageViewElement) {
                                         ._rootLang="${this._root.language.uid}"
                                         ._translationLang="${this._translation.language.uid}"
                                         ._pushState="${this._pushState[segmentId]}">
-                                        </bilara-segment>`
-        })}`
+                                        </bilara-segment>`}*/
+        )}`
       }
     </section>`
   }
 
   _suggestionKey(string) {
-    return [string, this._root.language.uid, this._translation.language.uid].join('_');
+    return [string, this._fields[this._sourceField].language.uid, this._fields[this._targetField].language.uid].join('_');
   }
 
   static get properties() { 
     return {
-      _segmentData: { type: Object },
+      _segments: { type: Object },
+      _fields: { type: Object},
       _activeSegmentId: { type: String },
       _fetching: { type: Boolean },
       _failure: { type: Boolean },
-      _root: { type: Object },
-      _translation: { type: Object },
+      _sourceField: { type: String },
+      _targetField: { type: String },
       _suggestions: { type: Object },
+      _sortedFields: { type: String },
       _pushState: { type: Object }
     }
   }
@@ -74,11 +99,19 @@ class TranslationView extends connect(store)(PageViewElement) {
   stateChanged(state) {
     this._fetching = state.segmentData.isFetching;
     if (state.segmentData.data) {
-      this._root = state.segmentData.data.root;
-      this._translation = state.segmentData.data.translation;
+      this._segments = state.segmentData.data.segments;
+      this._fields = state.segmentData.data.fields;
+      this._sourceField = state.segmentData.data.sourceField;
+      this._targetField = state.segmentData.data.targetField;
+      this._sortedFields = sortByKeyFn(Object.keys(this._fields), field => {
+        if (field == this._sourceField) return '\u0001' + field;
+        if (field == this._targetField) return '\u0002' + field;
+        return field;
+      })
+      
     } else {
-      this._root = {};
-      this._translation = {};
+      this._segments = {};
+      this._fields = {};
     }
 
     this._pushState = state.segmentData.pushState || {};
