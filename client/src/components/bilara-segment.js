@@ -10,41 +10,11 @@ import { BilaraSuggestions } from './bilara-suggestions.js';
 
 import { BilaraCell } from './bilara-cell.js';
 
-function createRange(node, chars, range) {
-  if (!range) {
-      range = document.createRange()
-      range.selectNode(node);
-      range.setStart(node, 0);
-  }
-
-  if (chars.count === 0) {
-      range.setEnd(node, chars.count);
-  } else if (node && chars.count >0) {
-      if (node.nodeType === Node.TEXT_NODE) {
-          if (node.textContent.length < chars.count) {
-              chars.count -= node.textContent.length;
-          } else {
-               range.setEnd(node, chars.count);
-               chars.count = 0;
-          }
-      } else {
-          for (let lp = 0; lp < node.childNodes.length; lp++) {
-              range = createRange(node.childNodes[lp], chars, range);
-
-              if (chars.count === 0) {
-                 break;
-              }
-          }
-      }
- } 
-
- return range;
-};
-
-
-
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
+    if (this._suggestions) {
+      console.log(this._suggestions)
+    }
     return html`
     <style>
 
@@ -97,39 +67,14 @@ div:focus-within{
         })
       }
       
-      ${this.getPushState()}
       </div>
-      ${ this._suggestions ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
+      ${ (this._isActive && this._suggestions) ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
     ` : html `<div class="row" id="fields">${this._sortedFields.map(field => {
       return html`<span class="field-title">${field}</span>`
     })
   }</div>` }
     `
   }
-
-  
-  /*
-
-    <span contenteditable="false"
-        data-type="root"
-        class="string${this._rootString === false ? ' empty' : ''}"
-        lang="${this._rootLang}"
-      ></span>
-    ${this._tertiaryString ? html`
-    <span contenteditable="false"
-      data-type="tertiary"
-      class="string"
-      lang="${this._tertiaryLang}">${this._tertiaryString}</span>
-    `: html``}
-    <span contenteditable="plaintext-only"
-        data-type="translation"
-        class="string"
-        lang="${this._translationLang}"
-        @blur="${this._blurEvent}"
-        @keypress="${this._keypressEvent}"
-        @focus="${this._focusEvent}"
-    ></span>
-  */
 
   static get properties(){
     return {
@@ -147,44 +92,53 @@ div:focus-within{
     }
   }
 
-  getPushState() {
-    if (this._dirty) return html`<span class="status modified" title="Not Committed">⚠</span>`;
-    switch(this._pushState) {
-      case 'pending':
-        return html`<span class="status pending" title="Pending">✓</span>`;
-      case 'finalized':
-        return html`<span class="status finalized" title="Finalized">✓</span>`;        
-    }
-    return html`<span class="status unmodified"></span>`;
-  }
-
-  setFocus(dataType) {
-    let el = this.shadowRoot.querySelector(`[data-type=${dataType}]`);
-    el.focus();
-    setTimeout(()=>{   
-      for (let node of Array.from(el.childNodes).reverse()) {
-        if (node.type == 3) {
-          let sel = el.getRootNode().getSelection();
-          sel.collapse(node, 10);
-      }
-    }
-    }, 20)
-  }
-
   constructor() {
     super()
+
+  }
+
+  firstUpdated(changedProperties) {
     this.addEventListener('suggest', (e) => {
-      let translation = this.shadowRoot.querySelector('[data-type=translation]');
-      translation.innerText = e.detail.string;
-      this._dirty = false;
-      this._suggestedString = e.detail.string;
-      this.setFocus('translation');
+      const suggestedString = e.detail.string;
+      let cell = this.shadowRoot.querySelector(`bilara-cell[_field=${this._targetField}`);
+
+      cell._suggestValue(suggestedString);
+
     });
+
+    this.addEventListener('navigation-event', (e) => {
+      this.navigate(e.detail.steps, e.detail.field)
+    })
+
   }
 
   updated(changedProperties) {
     if (changedProperties.get('_pushState')) {
       this._dirty = false;
+    }
+  }
+
+  navigate(steps, field) {
+    let segment = this;
+    while (steps > 0) {
+      segment = segment.nextElementSibling;
+      steps -= 1;
+    }
+    while (steps < 0) {
+      segment = segment.previousElementSibling;
+      steps += 1;
+    }
+
+    if (segment != this) {
+      segment.setFocus(field);
+    }
+
+  }
+
+  setFocus(field) {
+    let cell = this.shadowRoot.querySelector(`[_field=${field}]`);
+    if (cell) {
+      cell.focus();
     }
   }
 
@@ -199,14 +153,21 @@ div:focus-within{
     }
   }
 
+
+
   fetchSuggestions(){
+    if (this._suggestions)  return
+
     const sourceString = this._segment[this._sourceField],
-          targetString = this._segment[this._targetField],
           rootLang = this._fields[this._sourceField].language.uid,
           targetLang = this._fields[this._targetField].language.uid,
           segmentId = this._segmentId;
-
-    store.dispatch(fetchSuggestions(sourceString, rootLang, targetString, targetLang, segmentId));
+      
+      let request = fetch(`/api/tm/?string=${sourceString}&root_lang=${rootLang}&translation_lang=${targetLang}&exclude_uid=${segmentId}`, {mode: 'cors'})
+          .then(res => res.json())
+          .then(data => {
+              this._suggestions = data;
+          }).catch( (e) => {console.log(e)});
   }
 
 }

@@ -36,10 +36,12 @@ export class BilaraCell extends LitElement{
 
     </style>
     <div>
-    <span   class="string"
+    <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
                   contenteditable="${this._editable == 'true' ? 'plaintext-only' : 'false'}"
-                  @keypress="${this._keypressEvent}"
+                  @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"
+                  @input="${this._inputEvent}"
+                  @blur="${this._blur}"
                 ></span>
     ${this.getStatus()}
                 </div>`
@@ -59,8 +61,8 @@ export class BilaraCell extends LitElement{
   }
   getStatus(){
     return {
-      error: html`<span class="status error" title="${this._error}">❌</error>`,
-      modified: html`<span class="status modified">⚠</error>`,
+      error: html`<span class="status error" title="${this._error}">❌</span>`,
+      modified: html`<span class="status modified" title="String not committed">⚠</span>`,
       pending: html`<span class="status pending" title="Pending">✓</span>`,
       committed: html`<span class="status committed" title="Committed">✓</span>`,
     }[this._status] || html`<span class="status"></span>`;
@@ -68,12 +70,45 @@ export class BilaraCell extends LitElement{
   }
   firstUpdated() {
     this._setValue(this._value);
-    this._committedString = this._value;
+    this._committedValue = this._value;
     this._pendingValue = null;
+    if (!this._editable) {
+      this.setAttribute('tabindex', -1);
+
+    }
+    
   }
+
+  focus() {
+    let el = this.shadowRoot.querySelector('.string');
+    el.focus();
+    setTimeout(function(){ 
+      let sel = window.getSelection();
+      if (el.lastChild) {
+        sel.collapse(el.lastChild, el.lastChild.length);
+      }
+    }, 0);
+  }
+
+  _blur(e) {
+    if (e.inputType != 'insertLinkBreak') {
+      if (e.currentTarget.textContent != this._committedValue) {
+        if (this._status != 'pending' && this._status != 'error') {
+          this._status = 'modified';
+        }
+      }
+    }
+  }
+
+
 
   _setValue(value) {
     this.shadowRoot.querySelector('.string').innerText = value || '';
+  }
+
+  _suggestValue(value) {
+    this._setValue(value);
+    this.focus();
   }
 
   _updateValue(value) {
@@ -82,7 +117,7 @@ export class BilaraCell extends LitElement{
     let data = {
       segmentId: this._segmentId,
       field: this._field,
-      oldValue: this._committedString,
+      oldValue: this._committedValue,
       value: value,
       user: user.username
     }
@@ -121,29 +156,41 @@ export class BilaraCell extends LitElement{
             this._pendingValue = null;
         })
  }
+
+ _emitNavigationEvent() {
+   let event = new CustomEvent('navigation-event', {
+      detail: { field: this._field, steps: 1 },
+      bubbles: true,
+      composed: true
+     
+   });
+
+   this.dispatchEvent(event);
+ }
   
 
-  _keypressEvent(e) {
-    this._status = 'modified';
+  _keydownEvent(e) {
     if (e.key == 'Enter') {
-      this._dirty = false;
       e.preventDefault();
       e.stopPropagation();
       this._suggestions = null;
   
       const value = e.currentTarget.textContent;
       
-      if (value != this._pendingValue) {
+      if (value != this._pendingValue && value != this._committedValue) {
           this._updateValue(value);
       }
-        
-      // this.blur()
-      // let nextSegment = this.nextElementSibling;
-      // if (nextSegment) {
-      //   nextSegment.setFocus(e.path[0].getAttribute('data-type'));
-      // }
-      
+
+      this._emitNavigationEvent();
+    } else {
+      this._status = null;
     }
+  }
+
+  
+
+  _inputEvent(e) {
+    console.log(e);
   }
 }
 

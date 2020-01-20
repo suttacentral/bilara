@@ -24,9 +24,6 @@ store.addReducers({
   search: searchReducer
 });
 
-
-
-
 class TranslationView extends connect(store)(PageViewElement) {
   render(){
     let fields = this._fields;
@@ -46,39 +43,20 @@ class TranslationView extends connect(store)(PageViewElement) {
           <bilara-segment ._sortedFields="${this._sortedFields}"></bilara-segment>
           ${Object.keys(this._segments).map(segmentId => {
             const segment = this._segments[segmentId],
-                  rootString = segment[this._sourceField],
-                  suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(rootString)] : '';
+                  rootString = segment[this._sourceField];
 
-            return html`<bilara-segment ._segmentId="${segmentId}"
+            return html`<bilara-segment ._isActive="${segmentId == this._activeSegmentId}"
+                                        ._segmentId="${segmentId}"
                                         ._segment="${segment}"
                                         ._fields="${this._fields}"
                                         ._sourceField="${this._sourceField}"
                                         ._targetField="${this._targetField}"
                                         ._sortedFields ="${this._sortedFields}"
-                                        ._suggestions="${suggestions}"
                                         ._pushState="${this._pushState[segmentId]}">
                                         </bilara-segment>`}
-/*
-            const root = this._root.segments[segmentId];
-            const translation = this._translation.segments[segmentId] || '';
-            let suggestions = segmentId == this._activeSegmentId ? this._suggestions[this._suggestionKey(root)] : '';
-            return html`<bilara-segment ._segmentId="${segmentId}"
-                                        ._rootString="${root}"
-                                        ._translationString="${translation}"
-                                        ._rootFilepath="${this._root.path}"
-                                        ._translationFilepath="${this._translation.path}"
-                                        ._suggestions="${suggestions}"
-                                        ._rootLang="${this._root.language.uid}"
-                                        ._translationLang="${this._translation.language.uid}"
-                                        ._pushState="${this._pushState[segmentId]}">
-                                        </bilara-segment>`}*/
         )}`
       }
     </section>`
-  }
-
-  _suggestionKey(string) {
-    return [string, this._fields[this._sourceField].language.uid, this._fields[this._targetField].language.uid].join('_');
   }
 
   static get properties() { 
@@ -118,7 +96,6 @@ class TranslationView extends connect(store)(PageViewElement) {
     
     this._failure = state.segmentData.failure;
     this._activeSegmentId = state.segmentData.activeSegmentId;
-    this._suggestions = state.search.suggestions;
   }
 }
 
