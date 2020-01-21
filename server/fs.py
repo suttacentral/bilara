@@ -367,7 +367,7 @@ def get_data(primary_long_id, root=None, tertiary=None):
                     entry = load_entry(long_id)
                     update_result(result, long_id, entry, role='tertiary')
     
-
+    result['segments'] = dict(sorted(result['segments'].items(), key=lambda t: bilarasortkey(t[0])))
 
     return result
 
