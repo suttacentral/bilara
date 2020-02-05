@@ -10,8 +10,8 @@ from copy import copy, deepcopy
 
 from collections import defaultdict, Counter
 
-import tm
 import simple_git_fs as git_fs
+from search import search
 
 REPO_DIR = config.REPO_DIR
 
@@ -138,7 +138,7 @@ def make_file_index():
     for v in file_index.values():
         v['_meta'] = invert_meta(v['_meta'])
 
-    build_thread = threading.Thread(target=tm.build_tm_if_needed, args=(len(_uid_index),))
+    build_thread = threading.Thread(target=search.index)
     build_thread.start()
 
 

@@ -1,0 +1,1 @@
+from .arango_search import search
