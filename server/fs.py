@@ -533,7 +533,4 @@ def update_file(filepath, segments, user):
         return result
 
 
-print("WERKZEUG_RUN_MAIN : ", os.environ.get('WERKZEUG_RUN_MAIN'))
-print('__name__', __name__)
-if os.environ.get('WERKZEUG_RUN_MAIN'):
-    make_file_index()
+make_file_index()
