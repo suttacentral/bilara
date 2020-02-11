@@ -10,16 +10,6 @@ def humansortkey(string, _split=regex.compile(r'(\d+(?:[.-]\d+)*)').split):
     return [numericsortkey(s) if i % 2 else s
             for i, s in enumerate(_split(str(string)))]
 
-def alpha_to_numeric(string):
-    m = 1
-    result = 0
-    for c in reversed(string):
-        result += m * (ord(c) - 96)
-        m *= 26
-    return result
-        
-
-
 def bilarasortkey(string):
     subresult = humansortkey(string)
 
@@ -31,7 +21,7 @@ def bilarasortkey(string):
             result.append(obj)
     
     if len(result) > 1 and result[-1].isalpha():
-        result[-1] = alpha_to_numeric(result[-1])
+        result[-1] = result[-1].zfill(4)
     return result
     
             
