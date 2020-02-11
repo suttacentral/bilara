@@ -12,20 +12,20 @@ def common_prefix(a, b):
     return ''.join(result)
 
 def highlight_matching(a, b):
-    a_words = regex.findall(r'\w+', a)
+    a_words = [w.casefold() for w in regex.findall(r'\w+', a)]
 
     def repl_fn(m):
         word = m[0]
-        if word in a_words:
+        if word.casefold() in a_words:
             return f'<mark>{word}</mark>'
         else:
-            longest_match = ''
+            longest_match = 0
             for other_word in a_words:
-                prefix = common_prefix(word, other_word)
-                if len(prefix) > len(longest_match):
-                    longest_match = prefix
-            if len(longest_match) > 5:
-                return f'<mark>{prefix}</mark>{word[len(prefix):]}'
+                prefix = common_prefix(word.casefold(), other_word.casefold())
+                if len(prefix) > longest_match:
+                    longest_match = len(prefix)
+            if longest_match >= 5:
+                return f'<mark>{word[:longest_match]}</mark>{word[longest_match:]}'
         return word
 
-    return regex.sub(r'\w+', repl_fn, b)
+    return regex.sub(r'\w+', repl_fn, b).replace('</mark> <mark>', ' ')

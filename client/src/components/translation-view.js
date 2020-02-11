@@ -46,7 +46,7 @@ class TranslationView extends connect(store)(PageViewElement) {
                   rootString = segment[this._sourceField];
 
             return html`<bilara-segment ._isActive="${segmentId == this._activeSegmentId}"
-                                        ._segmentId="${segmentId}"
+                                        .segmentId="${segmentId}"
                                         ._segment="${segment}"
                                         ._fields="${this._fields}"
                                         ._sourceField="${this._sourceField}"

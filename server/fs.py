@@ -1,3 +1,5 @@
+import os
+import sys
 import json
 import pathlib
 import logging
@@ -138,7 +140,7 @@ def make_file_index():
     for v in file_index.values():
         v['_meta'] = invert_meta(v['_meta'])
 
-    build_thread = threading.Thread(target=search.index)
+    build_thread = threading.Thread(target=search.index, kwargs={'force': True})
     build_thread.start()
 
 
@@ -367,7 +369,20 @@ def get_data(primary_long_id, root=None, tertiary=None):
                     entry = load_entry(long_id)
                     update_result(result, long_id, entry, role='tertiary')
     
-    result['segments'] = dict(sorted(result['segments'].items(), key=lambda t: bilarasortkey(t[0])))
+    try:
+        sorted_results = sorted(result['segments'].items(), key=lambda t: bilarasortkey(t[0]))
+    except TypeError as e:
+        print('Sort failure ', file=sys.stderr)
+        for k in result['segments'].keys():
+            for k2 in result['segments'].keys():
+                try:
+                    sorted([k, k2], key= lambda t: bilarasortkey(t))
+                except TypeError:
+                    
+                    print(f'{k} > {k2}', file=sys.stderr)
+
+        raise
+    result['segments'] = dict(sorted_results)
 
     return result
 
@@ -501,6 +516,8 @@ def update_file(filepath, segments, user):
                 changes = True
 
         sorted_data = dict(sorted(file_data.items(), key=bilarasortkey))
+
+
         try:
             json_save(sorted_data, file)
             result = {key: "SUCCESS" for key, segment in segments}
@@ -516,5 +533,7 @@ def update_file(filepath, segments, user):
         return result
 
 
-
-make_file_index()
+print("WERKZEUG_RUN_MAIN : ", os.environ.get('WERKZEUG_RUN_MAIN'))
+print('__name__', __name__)
+if os.environ.get('WERKZEUG_RUN_MAIN'):
+    make_file_index()

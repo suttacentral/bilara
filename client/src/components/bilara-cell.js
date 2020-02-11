@@ -49,8 +49,8 @@ export class BilaraCell extends LitElement{
 
   static get properties(){
     return {
-      _segmentId: String,
-      _field: String,
+      segmentId: String,
+      field: String,
       _editable: Boolean,
       _value: String,
       _pendingValue: String,
@@ -115,8 +115,8 @@ export class BilaraCell extends LitElement{
     const user = store.getState().app.user;   
 
     let data = {
-      segmentId: this._segmentId,
-      field: this._field,
+      segmentId: this.segmentId,
+      field: this.field,
       oldValue: this._committedValue,
       value: value,
       user: user.username
@@ -159,7 +159,7 @@ export class BilaraCell extends LitElement{
 
  _emitNavigationEvent() {
    let event = new CustomEvent('navigation-event', {
-      detail: { field: this._field, steps: 1 },
+      detail: { field: this.field, steps: 1 },
       bubbles: true,
       composed: true
      

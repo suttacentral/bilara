@@ -127,10 +127,19 @@ class Search:
             kwargs['count'] = True
         return self.db.aql.execute(query, **kwargs)
 
-    def index(self):
+    def index(self, force=False):
         self._build_complete.clear()
+        print('TM Indexing Started')
         db = self.db
         collection_names = set()
+
+        if force:
+            for doc in db.collections():
+                if doc['name'].startswith('_'):
+                    continue
+                if doc['name'] in {'meta'}:
+                    continue
+                db.delete_collection(doc['name'])
 
         for collection_name, group in itertools.groupby(
             self.yield_strings(), lambda t: t[0]
@@ -150,6 +159,8 @@ class Search:
         )
 
         self.create_search_view()
+
+        print('TM Indexing Complete')
 
         self._build_complete.set()
 
@@ -275,7 +286,8 @@ class Search:
                 ANALYZER(MIN_MATCH({minmatch_inner_query}, {max(1, len(tokens) / 3)}), "text_edge_ngrams") OR
                 BOOST(PHRASE(a_doc.string, @query, 'normalizer'), 3)
             FILTER a_doc.segment_id != @exclude_id
-            LET a_score = BM25(a_doc)
+            LET length_factor = ABS(LENGTH(@query) - LENGTH(a_doc.string)) / LENGTH(@query)
+            LET a_score = BM25(a_doc) * 10 / (10 + length_factor)
             FOR b_doc IN strings_view
                 SEARCH 
                     b_doc.segment_id == a_doc.segment_id AND

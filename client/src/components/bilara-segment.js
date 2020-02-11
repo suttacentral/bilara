@@ -50,18 +50,18 @@ div:focus-within{
       }
 
     </style>
-    ${ this._segmentId ? 
-      html`<div class="row" id="${this._segmentId}">
+    ${ this.segmentId ? 
+      html`<div class="row" id="${this.segmentId}">
       ${this._sortedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'];
           return html`
             <bilara-cell class="string"
               lang="${language ? language['uid'] : undefined}"
-              _segmentId="${this._segmentId}"
-              _field="${field}"
-              _editable="${fieldData['editable']}"
-              _value="${this._segment[field] || ''}"
+              segmentId="${this.segmentId}"
+              field="${field}"
+              ._editable="${fieldData['editable']}"
+              ._value="${this._segment[field] || ''}"
               @focus="${this._focusEvent}"
             ></bilara-cell>`
         })
@@ -79,7 +79,7 @@ div:focus-within{
   static get properties(){
     return {
       _isActive: Boolean,
-      _segmentId: String,
+      segmentId: String,
       _segment: { type: Object },
       _fields: { type: Object },
       _sourceField: String,
@@ -100,7 +100,7 @@ div:focus-within{
   firstUpdated(changedProperties) {
     this.addEventListener('suggest', (e) => {
       const suggestedString = e.detail.string;
-      let cell = this.shadowRoot.querySelector(`bilara-cell[_field=${this._targetField}`);
+      let cell = this.shadowRoot.querySelector(`bilara-cell[field=${this._targetField}`);
 
       cell._suggestValue(suggestedString);
 
@@ -136,14 +136,14 @@ div:focus-within{
   }
 
   setFocus(field) {
-    let cell = this.shadowRoot.querySelector(`[_field=${field}]`);
+    let cell = this.shadowRoot.querySelector(`[field=${field}]`);
     if (cell) {
       cell.focus();
     }
   }
 
   _focusEvent(e) {
-    const segmentId = this._segmentId;
+    const segmentId = this.segmentId;
     store.dispatch(focusSegment(segmentId));
 
     this.fetchSuggestions();
@@ -161,7 +161,7 @@ div:focus-within{
     const sourceString = this._segment[this._sourceField],
           rootLang = this._fields[this._sourceField].language.uid,
           targetLang = this._fields[this._targetField].language.uid,
-          segmentId = this._segmentId;
+          segmentId = this.segmentId;
       
       let request = fetch(`/api/tm/?string=${sourceString}&root_lang=${rootLang}&translation_lang=${targetLang}&exclude_uid=${segmentId}`, {mode: 'cors'})
           .then(res => res.json())

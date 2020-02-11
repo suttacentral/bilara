@@ -39,15 +39,12 @@ ins{
           flex-direction: column;
       }
 
-      .root_string, .translations {
+      .root_string, .translation {
           flex: 1;
           padding: 0 8px;
+          display: block;
       }
-
-      .translation {
-        display: block;
-      }
-      .translation + .translation{
+      .row + .row {
         border-top: 1px dotted rgba(0,0,0,0.2);
       }
 
@@ -69,16 +66,13 @@ ins{
       ${ this._suggestions.map( (item) => html`
       
         <div class="row">
-        <span class="root_string">${unsafeHTML(item.diffed_root)}</span>
+        <span class="root_string">${unsafeHTML(item.highlighted)}</span>
         
-        <span class="translations" class="row">
-        <span class="match_quality">${Math.round(100*item.match_quality)}%</span>
-        ${ item.translations.map( (translation) => html`
-            <span class="translation" 
+        <span class="translation" 
                   @click="${this._clickEvent}"
-                  title="${translation.count}: ${translation.id}">${translation.translation}</span>
-        `)}
-        </span>`)}        
+                  title="${item.segment_ids.length}"
+                  >${item.translation}</span>
+        `)}        
         </div>`
     }
   
