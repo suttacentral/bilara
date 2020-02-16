@@ -12,9 +12,6 @@ import { BilaraCell } from './bilara-cell.js';
 
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
-    if (this._suggestions) {
-      console.log(this._suggestions)
-    }
     return html`
     <style>
 

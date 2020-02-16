@@ -37,7 +37,7 @@ export class BilaraCell extends LitElement{
     </style>
     <div>
     <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
-                  contenteditable="${this._editable == 'true' ? 'plaintext-only' : 'false'}"
+                  contenteditable="${this._editable == true ? 'plaintext-only' : 'false'}"
                   @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"
                   @input="${this._inputEvent}"
@@ -149,7 +149,6 @@ export class BilaraCell extends LitElement{
               this._committedValue = data.value;
             }            
             this._pendingValue = null;
-            console.log(this, data);
         }).catch( (e) => {
             this._error = 'fetch error';
             this._status = 'error';
