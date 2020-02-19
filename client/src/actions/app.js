@@ -14,6 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 export const UPDATE_PAGE = 'UPDATE_PAGE';
 export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
+export const UPDATE_PROBLEMS = 'UPDATE_PROBLEMS';
 export const SET_USER_AUTH_TOKEN = 'SET_USER_AUTH_TOKEN';
 
 export const navigate = (path) => (dispatch) => {
@@ -107,5 +108,16 @@ export const updateDrawerState = (opened) => {
     type: UPDATE_DRAWER_STATE,
     opened
   }
+}
+
+export const getProblems = () => (dispatch) => {
+  return fetch('/api/problems/')
+  .then(res => res.json())
+  .then(data => {
+      dispatch( {
+        type: UPDATE_PROBLEMS,
+        problems: data
+      } );
+  }).catch( (e) => {console.log(e);})
 }
 

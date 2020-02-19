@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import atexit
+import pickle
 import pathlib
 import logging
 import threading
@@ -9,11 +11,13 @@ from config import config
 from util import humansortkey, bilarasortkey
 from itertools import groupby
 from copy import copy, deepcopy
+from threading import Event
 
 from collections import defaultdict, Counter
 
 import simple_git_fs as git_fs
 from search import search
+from log import problemsLog
 
 REPO_DIR = config.REPO_DIR
 
@@ -55,14 +59,44 @@ def get_long_id(path):
     return pathlib.Path(path).name
 
 
+saved_state_file = pathlib.Path('./.saved_state.pickle')
 
+def save_state():
+    print('Saving file index')
+    with saved_state_file.open('wb') as f:
+        pickle.dump(
+            (_tree_index, _uid_index, _muid_index, _file_index, _meta_definitions),
+            f
+        )
 
-def make_file_index():
+def load_state():
     global _tree_index
     global _uid_index
     global _muid_index
     global _file_index
     global _meta_definitions
+
+    if not saved_state_file.exists():
+        return
+    try:
+        with saved_state_file.open('rb') as f:
+            (_tree_index, _uid_index, _muid_index, _file_index, _meta_definitions) = pickle.load(f)
+        print('Loaded saved file index')
+        _build_complete.set()
+    except Exception as e:    
+        saved_state_file.unlink()
+_build_started = Event()
+_build_complete = Event()
+def make_file_index(force=False):
+    _build_started.set()
+    global _tree_index
+    global _uid_index
+    global _muid_index
+    global _file_index
+    global _meta_definitions
+
+    if not force:
+        load_state()
 
     print('Building file index')
 
@@ -139,10 +173,9 @@ def make_file_index():
 
     for v in file_index.values():
         v['_meta'] = invert_meta(v['_meta'])
-
-    build_thread = threading.Thread(target=search.index, kwargs={'force': True})
-    build_thread.start()
-
+    print('File Index Built')
+    save_state()
+    _build_complete.set()
 
 _tree_index = None
 _uid_index = None
@@ -165,12 +198,20 @@ class StatsCalculator:
         uid, _ = get_uid_and_muids(translation['path'])
         root_lang = get_child_property_value(translation, 'root_lang')
         root_edition = get_child_property_value(translation, 'root_edition')
-        root_entry = get_matching_entry(uid, ['root', root_lang, root_edition])
-
-        root_count = self.count_strings(root_entry)
-
-        total_count = max(root_count, translated_count)
-
+        missing = []
+        if not root_lang or not root_edition:
+            missing.append('root lang')
+        if not root_edition:
+            missing.append('root edition')
+        if missing:
+            msg = f'{", ".join(missing)} could not be determined, please check author and project definitions'
+            print(str(translation["path"]), msg, file=sys.stderr)
+            problemsLog.add(file=str(translation["path"]), msg=msg)
+            total_count = translated_count
+        else:
+            root_entry = get_matching_entry(uid, ['root', root_lang, root_edition])
+            root_count = self.count_strings(root_entry)
+            total_count = max(root_count, translated_count)
         return {'_translated': translated_count, '_root': total_count}
 
     def count_strings(self, entry):
@@ -404,8 +445,9 @@ def sum_counts(subtree):
     return counts
 
 def get_condensed_tree(path):
-    if not _tree_index:
+    if not _build_started.is_set():
         make_file_index()
+    _build_complete.wait()
     tree = _tree_index
     for part in path:
         tree = tree[part]
@@ -493,13 +535,6 @@ def update_segment(segment, user):
         
         return result
 
-
-        
-
-
-
-
-
 def update_file(filepath, segments, user):
     with git_fs._lock:
         
@@ -531,6 +566,3 @@ def update_file(filepath, segments, user):
             git_fs.update_file(filepath, user)            
             
         return result
-
-
-make_file_index()

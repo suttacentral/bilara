@@ -6,11 +6,13 @@ import itertools
 import logging
 import regex
 
-from threading import Event
+from multiprocessing import Event
 
 from cachetools import TTLCache
 
 from config import config
+
+from log import problemsLog
 
 from .highlight import highlight_matching
 
@@ -170,35 +172,37 @@ class Search:
         return regex.sub(r"[^a-zA-Z0-9_:.@()+,=;$!*'%-]", '.', string)
 
     def yield_strings(self):
-        for file in repo_dir.glob("**/*.json"):
-            if ".scripts" in file.parts:
+        for folder in repo_dir.iterdir():
+            if not folder.is_dir() or folder.name.startswith('.'):
                 continue
-            if "_" not in file.stem:
-                continue
-
-            uid, muids = file.stem.split("_")
-            if not uid:
-                continue
-
-            with file.open("r") as f:
-                try:
-                    data = json.load(f)
-                except Exception as e:
-                    logging.error(file)
+            for file in folder.glob('**/*.json'):
+                if "_" not in file.stem:
                     continue
 
-            for segment_id, string in data.items():
-                if segment_id == "~":
+                uid, muids = file.stem.split("_")
+                if not uid:
                     continue
-                yield (
-                    muids,
-                    {
-                        "_key": self.legalize_key(segment_id),
-                        "segment_id": segment_id,
-                        "string": string,
-                        "muids": muids,
-                    },
-                )
+
+                with file.open("r") as f:
+                    try:
+                        data = json.load(f)
+                    except Exception as e:
+                        logging.error(file)
+                        problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'JSON Decode Error on line {e.lineno}')
+                        continue
+
+                for segment_id, string in data.items():
+                    if segment_id == "~":
+                        continue
+                    yield (
+                        muids,
+                        {
+                            "_key": self.legalize_key(segment_id),
+                            "segment_id": segment_id,
+                            "string": string,
+                            "muids": muids,
+                        },
+                    )
 
     def create_search_view(self):
         links = {}
@@ -332,7 +336,4 @@ class Search:
             "segment_ids": result['segment_ids']
         } for result in results]
 
-
-
-search = Search()
 

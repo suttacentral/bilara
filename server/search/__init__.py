@@ -1,1 +1,3 @@
-from .arango_search import search
+from .arango_search import Search
+
+search = Search()

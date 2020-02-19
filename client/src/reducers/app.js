@@ -12,7 +12,9 @@ import {
   UPDATE_PAGE,
   UPDATE_OFFLINE,
   UPDATE_DRAWER_STATE,
+  UPDATE_PROBLEMS,
   SET_USER_AUTH_TOKEN,
+
 } from '../actions/app.js';
 
 const INITIAL_USER_STATE = {
@@ -40,6 +42,7 @@ const INITIAL_STATE = {
   },
   user: getInitialUserState(),
   offline: false,
+  problems: null,
   drawerOpened: false,
 };
 
@@ -57,6 +60,11 @@ const app = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         offline: action.offline
+      };
+    case UPDATE_PROBLEMS:
+      return {
+        ...state,
+        problems: action.problems
       };
     case UPDATE_DRAWER_STATE:
       return {

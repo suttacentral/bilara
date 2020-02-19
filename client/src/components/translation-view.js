@@ -37,7 +37,7 @@ class TranslationView extends connect(store)(PageViewElement) {
       }
     </style>
     <section>
-      ${ this._segments.length == 0 ? 
+      ${ this._segments.length == 0 || this._sortedFields.length == 0 ? 
         html`Fetching Data` :
         html`
           <bilara-segment ._sortedFields="${this._sortedFields}"></bilara-segment>

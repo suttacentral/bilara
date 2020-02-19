@@ -20,6 +20,7 @@ store.addReducers({
 });
 
 import { getBrowseData } from '../actions/browse.js';
+import { getProblems } from '../actions/app.js';
 
 
 class NavItem extends LitElement {
@@ -89,14 +90,14 @@ class NavItem extends LitElement {
                  : html`${ this._name }` }
         ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%"></span></span><span class="percent">${progressPercent}%</span>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
-          ${this.open ? repeat(Object.keys(this._tree), (key)=>key, (name, index) => {
+          ${this.open ? repeat(Object.keys(this._tree || []), (key)=>key, (name, index) => {
             if (name.match(/^_/)) {
               return null
             }
             return html`<nav-item ._name="${name}" ._tree="${this._tree[name]}" ?open=${false} @click="${this._onClick}"></nav-item>`
           }) : html``}
         </div>
-        </div>`
+      </div>`
   }
 
   _onClick(e) {
@@ -140,26 +141,85 @@ class BrowseView extends connect(store)(PageViewElement) {
         max-width: 70em;
         margin: auto;
       }
+
+      .problems {
+        font-size: 0.8em;
+      }
+
+      .error {
+        padding: 0.5em;
+        border: 1px solid red;
+        border-radius: 3px;
+        margin: 0.25em;
+      }
+
+      .file {
+        font-family: mono;
+        font-size: 0.8em;
+      }
+
+      .link {
+        text-decoration: none;
+        color: blue;
+      }
+
+      .link svg {
+        width: 1em;
+        height: 1em;
+      }
+
+      .link::after {
+        content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);    
+   }
+
+      .msg {
+        display: block;
+        background-color: rgba(255,0,0, 0.05);
+      }
     </style>
-    <section>
+    <section class="browse">
       ${ this._dataTree ? html`
         <nav-item _name="Browse" ._tree="${this._dataTree}" ?open="${true}"></nav-item>
       ` : html`Loading...`}
-    </section>`
+    </section>
+    
+    ${this._renderProblems()}
+    `
+  }
+
+  _renderProblems(){
+    if (!this._problems || this._problems.length == 0) return html``
+
+    return html`
+    <section class="problems">
+    <hr>
+    <p>Some errors occured while attempting to load the data and require human intervention. You can likely use
+    Bilara without issue, except in relation to the files where errors occurred.</p>
+    <div class="errors">
+    ${repeat(this._problems, (entry) => {
+        return html`<div class="error"><span class="file">${entry.file} <a class="link" href="${entry.href_root}${entry.file}"></a></span>  <span class="msg">${entry.msg}</span></div>`
+      })
+    }
+    </div>
+    </section>` 
   }
 
   static get properties() { 
     return {
-      _dataTree: {type: Object}
+      _dataTree: {type: Object},
+      _problems: { type: Array },
     }
   }
 
   firstUpdated() {
     store.dispatch(getBrowseData());
+    store.dispatch(getProblems());
   }
 
   stateChanged(state) {
-    this._dataTree = state.browse.tree
+    console.log(state)
+    this._dataTree = state.browse.tree;
+    this._problems = state.app.problems;
   }
 }
 
