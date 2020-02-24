@@ -28,7 +28,6 @@
     "commander": "^2.20.3",
     "express-http-proxy": "^1.6.0",
     "lit-element": "^2.2.1",
-    "lodash-es": "^4.17.15",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",

@@ -16,11 +16,8 @@ import { store } from '../store.js';
 import { segmentData } from '../reducers/segment-data.js';
 import { searchReducer } from '../reducers/search.js';
 
-import xor from 'lodash-es/xor.js';
-
-
 import { getChildMatchingKey } from '../util.js';
-import { sortByKeyFn, storageLoad, storageSave } from '../util.js';
+import { sortByKeyFn, storageLoad, storageSave, setEquality } from '../util.js';
 
 store.addReducers({
   segmentData,
@@ -133,7 +130,7 @@ class TranslationView extends connect(store)(PageViewElement) {
     let savedFieldOrder = storageLoad('fieldOrder', [...fields].sort());
     if (savedFieldOrder) {
       console.log("Saved Order ", savedFieldOrder);
-      if (xor(fields, savedFieldOrder).length == 0) {
+      if (setEquality(fields, savedFieldOrder).length == 0) {
         return savedFieldOrder;
       }
     }

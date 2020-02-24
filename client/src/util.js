@@ -24,3 +24,7 @@ export function storageLoad(namespace, key) {
   }
   return undefined
 }
+
+export function setEquality(a, b){
+  return JSON.stringify([...a].sort()) == JSON.stringify([...b])
+}
