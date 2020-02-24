@@ -514,7 +514,7 @@ def update_segment(segment, user):
         file_data = json_load(file)
         current_value = file_data.get(segment_id)
         result = {}
-        if current_value and current_value != segment['oldValue']:
+        if current_value and current_value != segment.get('oldValue'):
             result['clobbered'] = current_value
             
         if current_value != segment['value']:
@@ -529,6 +529,7 @@ def update_segment(segment, user):
             result['success'] = True
             if config.GIT_COMMIT_ENABLED :
                 git_fs.update_file(filepath, user)
+            search.update_segment(segment)
         except:
             logging.error(f'could not write segment: {segment}')
             return {"error": "could not write file"}

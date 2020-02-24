@@ -1,14 +1,10 @@
 import { LitElement, html } from 'lit-element';
-
-
-import {updateSegment, focusSegment} from '../actions/segment.js';
-import { fetchSuggestions } from '../actions/search.js';
+import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 
-import { BilaraSuggestions } from './bilara-suggestions.js';
-
-import { BilaraCell } from './bilara-cell.js';
+import './bilara-cell.js';
+import './bilara-suggestions.js';
 
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
@@ -41,15 +37,10 @@ div:focus-within{
         opacity: 0.6;
       }
 
-      .field-title {
-        padding: 0.5em;
-        font-size: 80%;
-      }
-
     </style>
     ${ this.segmentId ? 
       html`<div class="row" id="${this.segmentId}">
-      ${this._sortedFields.map(field => {
+      ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'];
           return html`
@@ -66,7 +57,7 @@ div:focus-within{
       
       </div>
       ${ (this._isActive && this._suggestions) ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
-    ` : html `<div class="row" id="fields">${this._sortedFields.map(field => {
+    ` : html `<div class="row" id="fields">${this._orderedFields.map(field => {
       return html`<span class="field-title">${field}</span>`
     })
   }</div>` }
@@ -81,7 +72,7 @@ div:focus-within{
       _fields: { type: Object },
       _sourceField: String,
       _targetField: String,
-      _sortedFields: String,
+      _orderedFields: {type: Array, hasChanged (newVal, oldVal) {return true} },
       _suggestions: {type: Object},
       _rootLang: String,
       _translationLang: String,
@@ -110,9 +101,7 @@ div:focus-within{
   }
 
   updated(changedProperties) {
-    if (changedProperties.get('_pushState')) {
-      this._dirty = false;
-    }
+
   }
 
   navigate(steps, field) {

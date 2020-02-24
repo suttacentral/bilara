@@ -9,3 +9,18 @@ export function sortByKeyFn(list, keyFn) {
     return x < y ? -1 : x > y ? 1 : 0;
   })
 }
+
+export function storageSave(namespace, key, value) {
+  let keyString = namespace + JSON.stringify(key);
+  localStorage.setItem(keyString, JSON.stringify(value));
+}
+
+export function storageLoad(namespace, key) {
+  let keyString = namespace + JSON.stringify(key);
+  try {
+    return JSON.parse(localStorage.getItem(keyString));
+  } catch (e) {
+    localStorage.removeItem(keyString);
+  }
+  return undefined
+}

@@ -120,6 +120,17 @@ class Search:
         else:
             self.db[collection].insert(doc)
 
+    def update_segment(self, segment):
+        print(segment)
+        doc = {
+            'muids': segment['field'],
+            'string': segment['value'],
+            'segment_id': segment['segmentId'],
+            '_key': self.legalize_key(segment['segmentId'])
+        }
+
+        self.db.update_document(doc)
+
     def execute(self, query, **kwargs):
         print("=== Running Query ===")
         print(query)
