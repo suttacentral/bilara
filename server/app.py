@@ -212,10 +212,10 @@ def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _ca
 import fs
 
 def init():    
-    import multiprocessing as mp
+    #import multiprocessing as mp
     problemsLog.clear()
-    p = mp.Process(target=search.index)
-    p.start()
+    #p = mp.Process(target=search.index)
+    #p.start()
     fs.make_file_index()
 
 

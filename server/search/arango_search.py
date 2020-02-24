@@ -126,7 +126,7 @@ class Search:
             'muids': segment['field'],
             'string': segment['value'],
             'segment_id': segment['segmentId'],
-            '_key': self.legalize_key(segment['segmentId'])
+            '_id': segment['field'] + '/' + self.legalize_key(segment['segmentId'])
         }
 
         self.db.update_document(doc)

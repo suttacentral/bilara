@@ -527,43 +527,15 @@ def update_segment(segment, user):
         try:
             json_save(sorted_data, file)
             result['success'] = True
-            if config.GIT_COMMIT_ENABLED :
-                git_fs.update_file(filepath, user)
             search.update_segment(segment)
         except:
-            logging.error(f'could not write segment: {segment}')
+            logging.exception(f'could not write segment: {segment}')
             return {"error": "could not write file"}
         
-        return result
-
-def update_file(filepath, segments, user):
-    with git_fs._lock:
-        
-        print(f'Updating {filepath} for {user}')
-        changes = False
-        file = get_file(filepath)
-
-        file_data = json_load(file)
-
-        for key, segment in sorted(segments, key=lambda t: t[1]['timestamp']):
-            old_value = file_data.get(segment['segmentId'], None)
-            if old_value != segment['value']:
-                file_data[segment['segmentId']] = segment['value']
-                changes = True
-
-        sorted_data = dict(sorted(file_data.items(), key=bilarasortkey))
-
-
         try:
-            json_save(sorted_data, file)
-            result = {key: "SUCCESS" for key, segment in segments}
-            success = True
-        except Exception as e:
-            logging.exception(f"error writing json to {filepath}")
-            result = {key: "ERROR" for key in segments}
-            success = False
-
-        if config.GIT_COMMIT_ENABLED and success and changes:
-            git_fs.update_file(filepath, user)            
-            
+            if config.GIT_COMMIT_ENABLED :
+                git_fs.update_file(filepath, user)
+        except:
+            logging.exception('Git Commit Failed')
+        
         return result
