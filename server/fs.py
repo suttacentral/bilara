@@ -148,7 +148,7 @@ def make_file_index(force=False):
                     uid, muids = get_uid_and_muids(file)
                 else:
                     uid = file.name if file.is_dir() else file.stem
-                    muid = None
+                    muids = None
                 obj['uid'] = uid
                 if uid not in uid_index:
                     uid_index[uid] = set()
