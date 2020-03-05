@@ -1,3 +1,4 @@
+import pathlib
 config = {
     'GIT_APP_KEY': '',
     'GIT_APP_SECRET': '',
