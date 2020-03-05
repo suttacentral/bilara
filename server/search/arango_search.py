@@ -16,6 +16,8 @@ from log import problemsLog
 
 from .highlight import highlight_matching
 
+from git_fs import get_deleted_file_data
+
 repo_dir = config.REPO_DIR
 
 
@@ -140,80 +142,109 @@ class Search:
             kwargs['count'] = True
         return self.db.aql.execute(query, **kwargs)
 
-    def index(self, force=False):
+    def index(self, files=None, force=False):
         self._build_complete.clear()
         print('TM Indexing Started')
         db = self.db
-        collection_names = set()
+        collection_names = self.collection_names or set()
+        regenerate_views = False
+
+        if not files:
+            files = self.iter_all_files()
 
         if force:
-            for doc in db.collections():
-                if doc['name'].startswith('_'):
-                    continue
-                if doc['name'] in {'meta'}:
-                    continue
-                db.delete_collection(doc['name'])
+            for name in collection_names:
+                db.delete_collection(name)
 
         for collection_name, group in itertools.groupby(
-            self.yield_strings(), lambda t: t[0]
+            self.yield_strings(files), lambda t: t[0]
         ):
-            collection_names.add(collection_name)
+            if collection_name not in collection_names:
+                regenerate_views = True
+                collection_names.add(collection_name)
+            
             for chunk in grouper((t[1] for t in group), 1000):
                 if not db.has_collection(collection_name):
                     db.create_collection(collection_name)
+                    regenerate_views = True
                 result = db[collection_name].import_bulk(
                     chunk, on_duplicate="replace", halt_on_error=False
                 )
                 if result["errors"] > 0:
                     print(result)
 
-        self.insert_or_update(
-            "meta", {"_key": "collection_names", "value": list(collection_names)}
-        )
+        if regenerate_views:
+            self.insert_or_update(
+                "meta", {"_key": "collection_names", "value": list(collection_names)}
+            )
 
-        self.create_search_view()
+            self.create_search_view()
 
         print('TM Indexing Complete')
 
         self._build_complete.set()
+    
+    def update_partial(self, added=[], modified=[]):
+        if modified or added:
+            files = [repo_dir / filepath for filepath in set(added).union(set(modified))]
+            self.index(files=files, force=False)
+
+    def files_removed(files_and_data):
+        for filepath, data in files_and_data:
+            file = repo_dir / filepath
+            uid, muids = file.name.split('_')
+            
+            if not data:
+                logging.error('No data could be found for deleted file {filepath}')
+                continue
+            self.db.collection[muids].delete_many([
+                {
+                    '_key': self.legalize_key(segment_id)
+                }
+                for segment_id in data
+            ])
+        
 
     @staticmethod
     def legalize_key(string):
         'Ensure that only legal characters are in the key, by replacing non-whitelisted characters with .'
         return regex.sub(r"[^a-zA-Z0-9_:.@()+,=;$!*'%-]", '.', string)
 
-    def yield_strings(self):
+    def iter_all_files(self):
         for folder in repo_dir.iterdir():
             if not folder.is_dir() or folder.name.startswith('.'):
                 continue
             for file in folder.glob('**/*.json'):
                 if "_" not in file.stem:
                     continue
+                yield file
 
-                uid, muids = file.stem.split("_")
-                if not uid:
+    def yield_strings(self, files):
+        for file in files:
+            uid, muids = file.stem.split("_")
+            if not uid:
+                continue
+
+            with file.open("r") as f:
+                try:
+                    data = json.load(f)
+                except Exception as e:
+                    logging.error(file)
+                    problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'JSON Decode Error on line {e.lineno}')
                     continue
 
-                with file.open("r") as f:
-                    try:
-                        data = json.load(f)
-                    except Exception as e:
-                        logging.error(file)
-                        problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'JSON Decode Error on line {e.lineno}')
-                        continue
-
-                for segment_id, string in data.items():
-                    if segment_id == "~":
-                        continue
-                    yield (
-                        muids,
-                        {
-                            "_key": self.legalize_key(segment_id),
-                            "segment_id": segment_id,
-                            "string": string,
-                            "muids": muids,
-                        },
-                    )
+            for segment_id, string in data.items():
+                if segment_id == "~":
+                    continue
+                yield (
+                    muids,
+                    {
+                        "_key": self.legalize_key(segment_id),
+                        "segment_id": segment_id,
+                        "string": string,
+                        "muids": muids,
+                    },
+                )
 
     def create_search_view(self):
         links = {}

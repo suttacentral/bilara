@@ -9,6 +9,8 @@ import notify
 
 import atexit
 
+from search import search
+
 _lock = threading.RLock()
 master = 'master'
 PUSH_DELAY = 15
@@ -86,14 +88,26 @@ def pull_if_needed(webhook_payload, branch_name=working_branch):
     ref = webhook_payload['ref'].split('/')[-1]
     if ref != branch_name:
         return
+    
+    added = []
+    modified = []
+    removed = []
+    
     for commit in webhook_payload['commits']:
         if commit['id'] == repo.active_branch.commit.hexsha:
             return 
+        added.extend(webhook_payload['added'])
+        modified.extend(webhook_payload['modified'])
+        removed.extend(webhook_payload['removed'])
+    
     with _lock:
-        
         if _pending_commit:
             finalize_commit()
         git.pull('-Xtheirs')
+    
+    search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
+    search.update_partial(added, modified)
+    
 
 def finalize_commit(branch_name=working_branch):
     global _pending_commit
