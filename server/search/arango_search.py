@@ -45,8 +45,14 @@ class Search:
         self.db = client.db(username="bilara", password="bilara", name="bilara")
         self._cursor_cache = TTLCache(1000, 3600)
         self._build_complete = Event()
-        self.init()
+        if self.needs_init():
+            self.init()
+            self.index()
         self._build_complete.set()
+        
+
+    def needs_init(self):
+        return not self.db.has_collection("meta")
 
     def init(self):
         db = self.db
@@ -64,10 +70,26 @@ class Search:
             version = 1
 
         self.insert_or_update("meta", {"_key": "version", "version": version})
+    
+    def deinit(self):
+        db = self.db
+        for name in self.collection_names:
+            self.db.delete_collection(name, True)
+        self.db.delete_collection('meta', True)
 
     @property
     def collection_names(self):
-        return self.db["meta"]["collection_names"]["value"]
+        try:
+            return set(self.db["meta"]["collection_names"]["value"])
+        except TypeError:
+            return set()
+    
+    @collection_names.setter
+    def collection_names(self, value):
+        self.insert_or_update(
+            "meta", {"_key": "collection_names", "value": list(value)}
+        )
+
 
     def get_analyzers(self):
         return {
@@ -146,7 +168,7 @@ class Search:
         self._build_complete.clear()
         print('TM Indexing Started')
         db = self.db
-        collection_names = self.collection_names or set()
+        collection_names = self.collection_names
         regenerate_views = False
 
         if not files:
@@ -174,9 +196,7 @@ class Search:
                     print(result)
 
         if regenerate_views:
-            self.insert_or_update(
-                "meta", {"_key": "collection_names", "value": list(collection_names)}
-            )
+            self.collection_names = collection_names
 
             self.create_search_view()
 

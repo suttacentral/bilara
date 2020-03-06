@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd server
+python -c "from search import search; search.index()"
