@@ -176,13 +176,21 @@ def make_file_index(force=False):
     print('File Index Built')
     save_state()
     _build_complete.set()
+    stats_calculator.reset()
 
 _tree_index = None
 _uid_index = None
 
 class StatsCalculator:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self._completion = {}
+
+    def invalidate(self, path):
+        if path in self._completion:
+            del self._completion[path]
 
     def get_completion(self, translation):
 

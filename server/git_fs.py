@@ -84,7 +84,7 @@ def update_files(user, files):
         git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
         finalize_commit(branch_name)
 
-def pull_if_needed(webhook_payload, branch_name=working_branch):
+def githook(webhook_payload, branch_name=working_branch):
     ref = webhook_payload['ref'].split('/')[-1]
     if ref != branch_name:
         return
@@ -104,10 +104,16 @@ def pull_if_needed(webhook_payload, branch_name=working_branch):
         if _pending_commit:
             finalize_commit()
         git.pull('-Xtheirs')
+
+    if added or removed:
+        import app
+        app.init()
     
     search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
     search.update_partial(added, modified)
-    
+
+
+
 
 def finalize_commit(branch_name=working_branch):
     global _pending_commit
