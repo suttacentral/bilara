@@ -40,55 +40,93 @@ class NavItem extends LitElement {
       :host {
         margin-left: 1em;
         display: block;
+         white-space: nowrap;
+         overflow: visible;
+         position: relative
       }
+      :host:before{
+        content: "🖛";
+        display: inline-block;
+        position: absolute;
+        font-size: 0.75em;
+    top: 6px;
+    left: 4px;
+    color: var(--bilara-green)
+      }
+      [open=""]:before{
+        content: "🖡";
+        display: inline-block;
+        position: absolute;
+        font-size: 0.75em;
+    top: 6px;
+    left: 4px;
+     color: var(--bilara-yellow)
+      }
+
       .division {
         display: block;
         margin: 2px 0;
         padding: 2px 0;
         cursor: pointer;
       }
+
+      .navigable{
+        padding: 4px 24px 4px 24px;
+           font-weight: 600
+      }
+      .navigable:hover{
+        background-color: var(--bilara-secondary-background-color)
+      }
       .more:after {
         content: '▶';
       }
-      paper-progress {
-        display: inline-block;
-        -paper-progress-secondary-color: rgb(200,100,100);
-      }
+
       a{
-        text-decoration: none
+        text-decoration: none;
+
       }
       
       .progress-track {
           position: relative;
           display: inline-block;
           width: 5em;
-          height: 0.7em;
-          margin-top: 0.1em;
-          background-color: #cccccc;
+          height:12px;
+          margin: 6px 0;
+          background-color: var(--bilara-tertiary-background-color);
           border-radius: 4px;
+          float: right
+      }
+      .progress-track:before{
+        content: "${progressPercent}%";
+        position: absolute;
+        display: inline-block;
+        color: white;
+        font-size: 0.55em;
+        z-index: 1;
+        vertical-align: middle;
+        font-weight: 600;
+        top: -1px;
+        left: 4px;
+        text-shadow: 0px 0px 1px var(--bilara-black);
+        font-weight: 800
       }
 
       .progress-bar {
           position: absolute;
           display: inline-block;
           height: 100%;
-          background-color: green;
+          background-color: var(--bilara-green);
           border-radius: 4px;
-          
+           float: right;
       }
 
-      .percent {
-          font-size: 0.75em;
-          vertical-align: middle;
-          margin-left: 0.5em;
-      }
 
       </style>
 
       <div class="${isFile ? "document" : "division"}">${ 
-          isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}">${this._name}</a>` 
-                 : html`${ this._name }` }
-        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%"></span></span><span class="percent">${progressPercent}%</span>` : null}
+          isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
+                 : html`<span class="navigable">${ this._name }</span>` }
+        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%"></span></span>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
           ${this.open ? repeat(Object.keys(this._tree || []), (key)=>key, (name, index) => {
             if (name.match(/^_/)) {
@@ -137,15 +175,23 @@ class BrowseView extends connect(store)(PageViewElement) {
     return html`
     ${SharedStyles}
     <style>
-      :host {
-        max-width: 70em;
-        margin: auto;
+
+         .browse{
+      border: 3px solid var(--bilara-tertiary-background-color);
+       width: 600px;
+       padding: 1em 1em 1em 0
+      }
+      h2{
+        text-align: center;
+        font-weight:600
       }
 
       .problems {
         font-size: 0.8em;
       }
-
+.total:before{
+content: ""
+}
       .error {
         padding: 0.5em;
         border: 1px solid red;
@@ -176,10 +222,14 @@ class BrowseView extends connect(store)(PageViewElement) {
         display: block;
         background-color: rgba(255,0,0, 0.05);
       }
+      .heart{
+        color: var(--bilara-red)
+      }
     </style>
     <section class="browse">
+    <h2>Translate your little <span class="heart">💚</span> out, Bob!</h2>
       ${ this._dataTree ? html`
-        <nav-item _name="Browse" ._tree="${this._dataTree}" ?open="${true}"></nav-item>
+        <nav-item _name="Total" ._tree="${this._dataTree}" ?open="${true}" class="total"></nav-item>
       ` : html`Loading...`}
     </section>
     

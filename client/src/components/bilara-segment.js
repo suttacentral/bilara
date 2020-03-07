@@ -10,32 +10,25 @@ export class BilaraSegment extends connect(store)(LitElement){
   render() {
     return html`
     <style>
-
-      div {
-        display: flex;
-        margin-bottom: 5px;
-        border-radius: 4px
-      }
-div:focus-within{
-  background-color: var(--bilara-secondary-background-color);
-  color: var(--bilara-empasized-text-color);
+div.row {
+  display: flex;
+  justify-content: space-around;
+  border-radius: 2px;
 }
-      .string {
-        display: inline-flex;
-        flex: 1;
-        padding: 0 8px;
-        hyphens: auto;
-        white-space: prewrap;
-      }
-    
-      .string[contenteditable="plaintext-only"]{
-        font-family:"source serif pro"
-      }
-
-      .string.empty:after {
-        content: "[ ]";
-        opacity: 0.6;
-      }
+div:focus-within {
+  background-color: var(--bilara-secondary-background-color);
+  color: var(--bilara-emphasized-text-color);
+}
+/* For some reason, the outline appears on empty segments unless this is included.*/
+bilara-cell {
+  outline: 0px solid transparent;
+}
+bilara-cell.string {
+  flex-basis: 50%;
+  padding: 0 8px;
+  max-width: 40rem;
+  margin: 0 16px;
+}
 
     </style>
     ${ this.segmentId ? 

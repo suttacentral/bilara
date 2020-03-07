@@ -6,12 +6,31 @@ import { store } from '../store.js';
 export class BilaraCell extends LitElement{
   render() {
     return html`<style>
-    div, span.string {
+    div,
+    span.string {
       display: inline-flex;
       width: 100%;
     }
+    [contenteditable] {
+      outline: 0px solid transparent;
+      padding: 4px 8px;
+      height: 100%
+    }
 
-    .status{
+    .string[contenteditable="plaintext-only"] {
+      font-family: "source serif pro";
+    }
+    .string[contenteditable="plaintext-only"]:focus {
+      border-radius: 8px;
+      box-shadow: 0 0 0 1px var(--bilara-red);
+    }
+
+    .string.empty:after {
+      content: "[ ]";
+      opacity: 0.6;
+    }
+
+    .status {
       font-size: 12px;
       color: white;
       height: 1.2em;
@@ -19,21 +38,19 @@ export class BilaraCell extends LitElement{
       width: 1.2em;
       text-align: center;
       border-radius: 50%;
-      
     }
-    .status.pending{
-      background-color: rgb(125,125,125);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);        
+    .status.pending {
+      background-color: rgb(125, 125, 125);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-    .status.committed{
-        background-color: green;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    .status.committed {
+      background-color: green;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-    .status.modified{
-      background-color:var(--bilara-red);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    .status.modified {
+      background-color: var(--bilara-red);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-
     </style>
     <div>
     <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
