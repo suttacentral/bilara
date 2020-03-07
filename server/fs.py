@@ -15,7 +15,7 @@ from threading import Event
 
 from collections import defaultdict, Counter
 
-import simple_git_fs as git_fs
+import git_fs
 from search import search
 from log import problemsLog
 
