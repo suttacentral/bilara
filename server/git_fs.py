@@ -4,12 +4,17 @@ from config import config
 import threading
 import time
 
+import notify
+
 
 import atexit
 
+from search import search
+
 _lock = threading.RLock()
 master = 'master'
-AUTO_COMMIT_DELAY = 30
+PUSH_DELAY = 15
+working_branch = 'master'
 
 from config import config
 REPO_DIR = config.REPO_DIR
@@ -39,107 +44,122 @@ def create_empty_commit(user, branch_name):
     git.commit(allow_empty=True, m=f'Translations by {user["login"]}', author=f'{user["name"]} <{user["email"]}>')
     _pending_commits[branch_name] = time.time()
 
-_pending_commits = {}
+_pending_commit = None
+
 def update_file(file, user):
+    global _pending_commit
     file = str(file).lstrip('/')
     with _lock:
-        branch_name = user['login']
-        
-        checkout_branch(branch_name)
-        branch = repo.branches[branch_name]
-        print(f'Checking out branch {branch_name}')
-        files = branch.commit.stats.files
-        reuse_commit = False
-        if branch_name in _pending_commits:
-            if len(files) == 1 and file in files:
-                reuse_commit = True
+        branch = checkout_branch(working_branch)
+
+        commit_message = f'Translations by {user["login"]} to {file}'
+
+        if _pending_commit and branch.commit.message == commit_message:
+            # We can add onto this commit
+            git.add(file)
+            git.commit(amend=True, no_edit=True)
         else:
-            if not files:
-                # If the old commit has no messages we can simply reuse it
-                # otherwise we create a new empty commit
-                _pending_commits[branch_name] = time.time()
-                reuse_commit = True
-        
-        if not reuse_commit:
-            if branch_name in _pending_commits:
-                finalize_commit(branch_name)
-            create_empty_commit(user, branch_name)
+            finalize_commit(working_branch)
 
-        print(f'Adding {file} to index')    
-        git.add(file)
-        print(f'Commiting')
-        git.commit(amend=True, no_edit=True)
-
+            git.add(file)
+            try:
+                git.commit(m=commit_message, author=f'{user.get("name") or user["login"]} <{user["email"]}>')
+                _pending_commit = branch.commit
+            except GitCommandError as e:
+                if e.status == 1 and ('nothing to commit' in e.stdout or 'nothing added to commit' in e.stdout):
+                    # This is unusual but fine
+                    pass
+                else:
+                    raise
 
 def update_files(user, files):
+    global _pending_commit
     with _lock:
-        branch_name = user['login']
-        checkout_branch(branch_name)
-        branch = repo.branches[branch_name]
-        if branch.commit.files:
-            finalize_commit(branch_name)
+        branch = checkout_branch(working_branch)
+        if _pending_commit:
+            finalize_commit(working_branch)
+
         
         git.add(files)
-        git.commit(m=f"Bulk update", author=f'{user["name"]} <{user["email"]}>')
+        git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
         finalize_commit(branch_name)
 
-def finalize_commit(branch_name, push_master=True, push_branch=True):
-    print(f'Finalizing Commit in {branch_name}')
-    branch = checkout_branch(branch_name)
-    if not branch.commit.stats.files:
-        _pending_commits.pop(branch_name)
-        return
-    if push_branch:
-        git.push('-u', 'origin', branch_name, '--force')
-    git.checkout(master)
-    print('Merging into master... ', end='')
-    try:
-        git.merge(branch_name, '-Xtheirs')
-        print('Success')
-    except:
-        print('Failure')
-        raise
-    _pending_commits.pop(branch_name)
-    if push_master:
-        print('Pushing to master... ', end='')
-        for i in range(0, 2):
-            try:
-                git.push('-u', 'origin', master)
-                print('Success')
-                break
-            except GitCommandError:
-                print('Git push failed, attempting to pull and trying again')
-                if i == 0:
-                    git.pull('-Xtheirs')
-        else:
-            print('Failure')
-            print('Git push failed multiple times')
-            return
-    print('Rebasing to master')
-    git.checkout(branch_name)
-    git.rebase(master)
-
-
-def finalize_commits(force=False):
-    if not _pending_commits:
+def githook(webhook_payload, branch_name=working_branch):
+    ref = webhook_payload['ref'].split('/')[-1]
+    if ref != branch_name:
         return
     
+    added = []
+    modified = []
+    removed = []
+    
+    for commit in webhook_payload['commits']:
+        if commit['id'] == repo.active_branch.commit.hexsha:
+            return 
+        added.extend(commit['added'])
+        modified.extend(commit['modified'])
+        removed.extend(commit['removed'])
+    
+    print(f'{len(added)} added, {len(modified)} modified, {len(removed)} removed')
     with _lock:
-        now = time.time()
-        for name, commit_time in tuple(_pending_commits.items()):
-            if now - commit_time > AUTO_COMMIT_DELAY or force == True:
-                finalize_commit(name)
+        if _pending_commit:
+            finalize_commit()
+        git.pull('-Xtheirs')
+
+    if added or removed:
+        import app
+        app.init()
+    
+    #search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
+    search.update_partial(added, modified)
+
+
+
+def finalize_commit(branch_name=working_branch):
+    global _pending_commit
+    if not _pending_commit:
+        return
+    branch = checkout_branch(branch_name)
+    if not config.GIT_SYNC_ENABLED:
+        print('Not Pushing because disabled in config')
+        _pending_commit = None
+        return
+    print(f'Pushing to {branch_name}... ', end='')
+    for i in range(0, 2):
+        try:
+            git.push('-u', 'origin', master)
+            print('Success')
+            break
+        except GitCommandError:
+            print('Git push failed, attempting to pull and trying again')
+            if i == 0:
+                git.pull('-Xtheirs')
+            
+    else:
+        print('Failure')
+        print('Git push failed multiple times')
+        notify.send_message_to_admin('Bilara failed to push to Github, this requires manual intervention', title='Bilara Push Fail')
+        return
+    _pending_commit = None
+
 
 def finalizer_task_runner(interval):
     while True:
         time.sleep(interval)
-        finalize_commits()
+        if not _pending_commit:
+            continue
+        
+        with _lock:
+            now = time.time()
+            if now - _pending_commit.committed_date > PUSH_DELAY:
+                finalize_commit()
 
-atexit.register(finalize_commits, force=True)
+atexit.register(finalize_commit)
 
 def start_finalizer(interval):
     finalizer = threading.Thread(target=finalizer_task_runner, args=(interval,))
     finalizer.daemon = True
     finalizer.start()
+    return finalizer
 
-_finalizer = start_finalizer(10)
+_finalizer = start_finalizer(5)

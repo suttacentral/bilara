@@ -83,6 +83,12 @@ def tm_get():
         search.tm_query(string, root_lang, translation_lang, exclude_id=exclude_id)
     )
 
+@app.route("/api/webhook", methods=["POST"])
+def webhook():
+    data = request.get_json()
+    fs.git_fs.githook(data)
+    return "Okay", 200
+
 
 if config.GITHUB_AUTH_ENABLED:
     oauth = OAuth(app)
@@ -132,12 +138,6 @@ if config.GITHUB_AUTH_ENABLED:
     @github_auth.tokengetter
     def get_github_oauth_token():
         return session.get("github_token")
-
-    @app.route("/api/webhook", methods=["POST"])
-    def webhook():
-        data = request.get_json()
-        fs.git_fs.pull_if_needed(data)
-        return "Okay", 200
 
 
 else:
@@ -212,10 +212,7 @@ def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _ca
 import fs
 
 def init():    
-    #import multiprocessing as mp
     problemsLog.clear()
-    #p = mp.Process(target=search.index)
-    #p.start()
     fs.make_file_index()
 
 

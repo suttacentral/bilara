@@ -16,7 +16,7 @@ from log import problemsLog
 
 from .highlight import highlight_matching
 
-from git_fs import get_deleted_file_data
+#from git_fs import get_deleted_file_data
 
 repo_dir = config.REPO_DIR
 
@@ -45,8 +45,14 @@ class Search:
         self.db = client.db(username="bilara", password="bilara", name="bilara")
         self._cursor_cache = TTLCache(1000, 3600)
         self._build_complete = Event()
-        self.init()
+        if self.needs_init():
+            self.init()
+            self.index()
         self._build_complete.set()
+        
+
+    def needs_init(self):
+        return not self.db.has_collection("meta")
 
     def init(self):
         db = self.db
@@ -64,10 +70,26 @@ class Search:
             version = 1
 
         self.insert_or_update("meta", {"_key": "version", "version": version})
+    
+    def deinit(self):
+        db = self.db
+        for name in self.collection_names:
+            self.db.delete_collection(name, True)
+        self.db.delete_collection('meta', True)
 
     @property
     def collection_names(self):
-        return self.db["meta"]["collection_names"]["value"]
+        try:
+            return set(self.db["meta"]["collection_names"]["value"])
+        except TypeError:
+            return set()
+    
+    @collection_names.setter
+    def collection_names(self, value):
+        self.insert_or_update(
+            "meta", {"_key": "collection_names", "value": list(value)}
+        )
+
 
     def get_analyzers(self):
         return {
@@ -146,8 +168,7 @@ class Search:
         self._build_complete.clear()
         print('TM Indexing Started')
         db = self.db
-        collection_names = self.collection_names or set()
-        regenerate_views = False
+        collection_names = self.collection_names
 
         if not files:
             files = self.iter_all_files()
@@ -160,25 +181,20 @@ class Search:
             self.yield_strings(files), lambda t: t[0]
         ):
             if collection_name not in collection_names:
-                regenerate_views = True
                 collection_names.add(collection_name)
             
             for chunk in grouper((t[1] for t in group), 1000):
                 if not db.has_collection(collection_name):
                     db.create_collection(collection_name)
-                    regenerate_views = True
                 result = db[collection_name].import_bulk(
                     chunk, on_duplicate="replace", halt_on_error=False
                 )
                 if result["errors"] > 0:
                     print(result)
 
-        if regenerate_views:
-            self.insert_or_update(
-                "meta", {"_key": "collection_names", "value": list(collection_names)}
-            )
-
-            self.create_search_view()
+        
+        self.collection_names = collection_names
+        self.create_search_view()
 
         print('TM Indexing Complete')
 
@@ -189,7 +205,7 @@ class Search:
             files = [repo_dir / filepath for filepath in set(added).union(set(modified))]
             self.index(files=files, force=False)
 
-    def files_removed(files_and_data):
+    def files_removed(self, files_and_data):
         for filepath, data in files_and_data:
             file = repo_dir / filepath
             uid, muids = file.name.split('_')

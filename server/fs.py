@@ -15,7 +15,7 @@ from threading import Event
 
 from collections import defaultdict, Counter
 
-import simple_git_fs as git_fs
+import git_fs
 from search import search
 from log import problemsLog
 
@@ -176,13 +176,21 @@ def make_file_index(force=False):
     print('File Index Built')
     save_state()
     _build_complete.set()
+    stats_calculator.reset()
 
 _tree_index = None
 _uid_index = None
 
 class StatsCalculator:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self._completion = {}
+
+    def invalidate(self, path):
+        if path in self._completion:
+            del self._completion[path]
 
     def get_completion(self, translation):
 
@@ -527,15 +535,18 @@ def update_segment(segment, user):
         try:
             json_save(sorted_data, file)
             result['success'] = True
-            search.update_segment(segment)
         except:
             logging.exception(f'could not write segment: {segment}')
             return {"error": "could not write file"}
-        
         try:
             if config.GIT_COMMIT_ENABLED :
                 git_fs.update_file(filepath, user)
         except:
             logging.exception('Git Commit Failed')
+        
+        try:
+            search.update_segment(segment)
+        except:
+            logging.exception('Could not update TM for segment: {segment}')
         
         return result
