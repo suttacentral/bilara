@@ -38,7 +38,7 @@ class NavItem extends LitElement {
       ${SharedStyles}
       <style>
       :host {
-        margin-left: 1em;
+        margin: 0 0 0 1rem;
         display: block;
          white-space: nowrap;
          overflow: visible;
@@ -72,19 +72,23 @@ class NavItem extends LitElement {
 
       .navigable{
         padding: 4px 24px 4px 24px;
-           font-weight: 600
+           font-weight: 600;
+           display: inline-block
       }
       .navigable:hover{
         background-color: var(--bilara-secondary-background-color)
       }
+
       .more:after {
         content: '▶';
       }
 
       a{
         text-decoration: none;
-
       }
+      a:hover{
+      text-decoration: underline
+    }
       
       .progress-track {
           position: relative;
@@ -94,7 +98,8 @@ class NavItem extends LitElement {
           margin: 6px 0;
           background-color: var(--bilara-tertiary-background-color);
           border-radius: 4px;
-          float: right
+          float: right;
+          right: 1rem;
       }
       .progress-track:before{
         content: "${progressPercent}%";
@@ -178,12 +183,16 @@ class BrowseView extends connect(store)(PageViewElement) {
 
          .browse{
       border: 3px solid var(--bilara-tertiary-background-color);
-       width: 600px;
-       padding: 1em 1em 1em 0
+       padding: 108px;
+       min-width: 600px;
+       height: fit-content;
+       margin: 144px 0;
+       border-radius: 600px
       }
       h2{
         text-align: center;
-        font-weight:600
+        font-weight:600;
+        margin: 0 0 16px 0
       }
 
       .problems {
@@ -194,7 +203,7 @@ content: ""
 }
       .error {
         padding: 0.5em;
-        border: 1px solid red;
+        border: 1px solid var(--bilara-red);
         border-radius: 3px;
         margin: 0.25em;
       }
@@ -206,7 +215,7 @@ content: ""
 
       .link {
         text-decoration: none;
-        color: blue;
+        color: var(--bilara-blue);
       }
 
       .link svg {
@@ -220,7 +229,7 @@ content: ""
 
       .msg {
         display: block;
-        background-color: rgba(255,0,0, 0.05);
+        background-color: var(--bilara-secondary-background-color);
       }
       .heart{
         color: var(--bilara-red)

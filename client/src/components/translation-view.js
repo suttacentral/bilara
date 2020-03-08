@@ -40,7 +40,8 @@ class TranslationView extends connect(store)(PageViewElement) {
         box-sizing: border-box;
         display: flex;
         flex-direction: row;
-        overflow: none
+        padding-bottom: 72px;
+        padding-top: 24px
       }
 
       #field-headings {
@@ -49,6 +50,7 @@ class TranslationView extends connect(store)(PageViewElement) {
         margin-bottom: 16px;
         position: sticky;
         top: 28px;
+        z-index: 10
       }
 
       .field {

@@ -57,6 +57,7 @@ class BilaraApp extends connect(store)(LitElement) {
       --bilara-cyan: #2aa198;
       --bilara-green: #859900;
       --bilara-black: #002b36;
+      --bilara-footer-height: 108px;
       color: var(--bilara-primary-text-color)
     }
 
@@ -70,11 +71,14 @@ class BilaraApp extends connect(store)(LitElement) {
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      height: 36px;
     }
 
     header div {
-      margin: 4px 16px
+      margin: 4px 16px;
+
+    display: flex;
+    align-items: center;
     }
 
     [main-title] {
@@ -95,13 +99,15 @@ class BilaraApp extends connect(store)(LitElement) {
     a {
       text-decoration: none;
     }
+    a.navigable:hover{
+      text-decoration: underline
+    }
 
     main {
       display: flex;
       justify-content: center;
-      min-height: 100vh;
+      min-height: calc(100vh - var(--bilara-footer-height));
       background-color: var(--bilara-primary-background-color);
-      padding: 4em 0
     }
 
     .page {
@@ -113,11 +119,23 @@ class BilaraApp extends connect(store)(LitElement) {
     }
 
     footer {
-      padding: 24px;
-      background-color: var(--bilara-black);
-      color: var(--bilara-secondary-text-color);
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      justify-content: space-around;
+      background-color: var(--bilara-tertiary-background-color);
+      color: var(--bilara-emphasized-text-color);
+      height: var(--bilara-footer-height);
+      padding: 0 32px
     }
+
+    footer a{
+      color: var(--bilara-secondary-color)
+    }
+        footer a:hover{
+      text-decoration: underline
+    }
+
 
     .disabled {
       opacity: 0.7;
@@ -139,18 +157,40 @@ class BilaraApp extends connect(store)(LitElement) {
       background-color: var(--bilara-secondary-color);
       color: var(--bilara-secondary-background-color);
     }
-    .user-name {
-      display: inline-block;
-      font-size: 0.8rem;
-      font-style: italic;
-      padding: 4px 8px;
-      margin: 0 4px
+    figure{
+      margin: 0 8px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px
+    }
+    figcaption.user-name {
+font-size: 12px;
+    font-style: italic;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-top: -6px;
+    padding: 0 4px;
+    line-height: 1;
+    text-shadow: 0px 0px 3px black;
+    color: var(--bilara-cyan);
+
     }
     .user-name::before {
-      content: "user: "
+ 
     }
     .user-name::after {
       content: "!"
+    }
+
+    img{
+      width: 28px;
+      height: 28px;
+      border-radius: 50%
+    }
+    .user-name-link{
+      display: contents;
     }
     </style>
 
@@ -161,7 +201,12 @@ class BilaraApp extends connect(store)(LitElement) {
        </div>
        <div class="app-header-right">
         ${
-          this._username ? html`<span class="user-name">${this._username}</span> <a href="/logout" target="_top" class="app-log">Logout</a>` : html`<a href="/api/login"  target="_top" class="app-log">Login</a>` 
+          this._username ? html`<a class="user-name-link" href="https://www.youtube.com/watch?v=oHg5SJYRHA0"><figure>
+  <img src="../images/bob.jpg" alt="${this._username}">
+  <figcaption class="user-name">${this._username}</figcaption>
+</figure></a>
+<a href="/logout" target="_top" class="app-log">Logout</a>` 
+: html`<a href="/api/login"  target="_top" class="app-log">Login</a>` 
         }
         </div>
     </header>
@@ -184,6 +229,11 @@ class BilaraApp extends connect(store)(LitElement) {
 
     <footer>
       <p>Computer Aided Translation for SuttaCentral</p>
+      <ul>
+      <li><a href="https://suttacentral.net">SuttaCentral</a></li>
+      <li><a href="https://github.com/suttacentral/bilara">Github</a></li>
+      <li><a href="https://discourse.suttacentral.net/">Forum</a></li>
+      </ul>
     </footer>`
   }
 

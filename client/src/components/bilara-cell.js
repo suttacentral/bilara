@@ -10,6 +10,7 @@ export class BilaraCell extends LitElement{
     span.string {
       display: inline-flex;
       width: 100%;
+      position: relative
     }
     [contenteditable] {
       outline: 0px solid transparent;
@@ -33,21 +34,33 @@ export class BilaraCell extends LitElement{
     .status {
       font-size: 12px;
       color: white;
-      height: 1.2em;
-      line-height: 1.2em;
-      width: 1.2em;
+      height: 16px;
+      line-height: 16px;
+      width: 16px;
       text-align: center;
       border-radius: 50%;
+      position: absolute;
+    right: -20px;
+    top: 8px;
+    display: none
     }
     .status.pending {
+      display: inline-block;
       background-color: rgb(125, 125, 125);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
     .status.committed {
+      display: inline-block;
       background-color: green;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
     .status.modified {
+      display: inline-block;
+      background-color: var(--bilara-magenta);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+    .status.error {
+      display: inline-block;
       background-color: var(--bilara-red);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
