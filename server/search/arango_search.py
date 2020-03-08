@@ -16,7 +16,7 @@ from log import problemsLog
 
 from .highlight import highlight_matching
 
-from git_fs import get_deleted_file_data
+#from git_fs import get_deleted_file_data
 
 repo_dir = config.REPO_DIR
 
@@ -209,7 +209,7 @@ class Search:
             files = [repo_dir / filepath for filepath in set(added).union(set(modified))]
             self.index(files=files, force=False)
 
-    def files_removed(files_and_data):
+    def files_removed(self, files_and_data):
         for filepath, data in files_and_data:
             file = repo_dir / filepath
             uid, muids = file.name.split('_')

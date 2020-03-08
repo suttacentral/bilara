@@ -109,9 +109,8 @@ def githook(webhook_payload, branch_name=working_branch):
         import app
         app.init()
     
-    search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
+    #search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
     search.update_partial(added, modified)
-
 
 
 
