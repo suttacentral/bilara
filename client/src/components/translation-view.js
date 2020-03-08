@@ -79,7 +79,7 @@ class TranslationView extends connect(store)(PageViewElement) {
             <div id="field-headings">
             ${Object.values(this._orderedFields).map(fieldName => {
               return html`<span class="field"
-                                draggable="true"
+                                draggable="false"
                                 @drop="${this._dropHandler}"
                                 @dragover="${this._dragoverHandler}"
                                 @dragstart="${this._dragstartHandler}"
