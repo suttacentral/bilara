@@ -96,10 +96,11 @@ def githook(webhook_payload, branch_name=working_branch):
     for commit in webhook_payload['commits']:
         if commit['id'] == repo.active_branch.commit.hexsha:
             return 
-        added.extend(webhook_payload['added'])
-        modified.extend(webhook_payload['modified'])
-        removed.extend(webhook_payload['removed'])
+        added.extend(commit['added'])
+        modified.extend(commit['modified'])
+        removed.extend(commit['removed'])
     
+    print(f'{len(added)} added, {len(modified)} modified, {len(removed)} removed')
     with _lock:
         if _pending_commit:
             finalize_commit()

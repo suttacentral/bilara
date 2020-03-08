@@ -86,7 +86,7 @@ def tm_get():
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
-    is_init_needed = fs.git_fs.githook(data)
+    fs.git_fs.githook(data)
     return "Okay", 200
 
 
@@ -212,10 +212,7 @@ def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _ca
 import fs
 
 def init():    
-    #import multiprocessing as mp
     problemsLog.clear()
-    #p = mp.Process(target=search.index)
-    #p.start()
     fs.make_file_index()
 
 
