@@ -535,15 +535,18 @@ def update_segment(segment, user):
         try:
             json_save(sorted_data, file)
             result['success'] = True
-            search.update_segment(segment)
         except:
             logging.exception(f'could not write segment: {segment}')
             return {"error": "could not write file"}
-        
         try:
             if config.GIT_COMMIT_ENABLED :
                 git_fs.update_file(filepath, user)
         except:
             logging.exception('Git Commit Failed')
+        
+        try:
+            search.update_segment(segment)
+        except:
+            logging.exception('Could not update TM for segment: {segment}')
         
         return result
