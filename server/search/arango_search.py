@@ -169,7 +169,6 @@ class Search:
         print('TM Indexing Started')
         db = self.db
         collection_names = self.collection_names
-        regenerate_views = False
 
         if not files:
             files = self.iter_all_files()
@@ -182,23 +181,20 @@ class Search:
             self.yield_strings(files), lambda t: t[0]
         ):
             if collection_name not in collection_names:
-                regenerate_views = True
                 collection_names.add(collection_name)
             
             for chunk in grouper((t[1] for t in group), 1000):
                 if not db.has_collection(collection_name):
                     db.create_collection(collection_name)
-                    regenerate_views = True
                 result = db[collection_name].import_bulk(
                     chunk, on_duplicate="replace", halt_on_error=False
                 )
                 if result["errors"] > 0:
                     print(result)
 
-        if regenerate_views:
-            self.collection_names = collection_names
-
-            self.create_search_view()
+        
+        self.collection_names = collection_names
+        self.create_search_view()
 
         print('TM Indexing Complete')
 
