@@ -48,7 +48,8 @@ class BilaraApp extends connect(store)(LitElement) {
       --bilara-primary-text-color: #657b83;
       --bilara-emphasized-text-color: #586e75;
       --bilara-secondary-text-color: #93a1a1;
-      --bilara-yellow: #b58900;
+      --bilara-brown: #b58900;
+      --bilara-yellow: #ffc202;
       --bilara-orange: #cb4b16;
       --bilara-red: #dc322f;
       --bilara-magenta: #d33682;
@@ -58,6 +59,12 @@ class BilaraApp extends connect(store)(LitElement) {
       --bilara-green: #859900;
       --bilara-black: #002b36;
       --bilara-footer-height: 108px;
+      --bilara-header-height: 36px;
+      --scrollbar-track-color: transparent;  
+      --scrollbar-color: rgba(0,0,0,.2);
+      --scrollbar-width: thin;
+  --scrollbar-size: 8px;
+  --scrollbar-minlength: 1.5rem; 
       color: var(--bilara-primary-text-color)
     }
 
@@ -71,7 +78,7 @@ class BilaraApp extends connect(store)(LitElement) {
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
       display: flex;
       justify-content: space-between;
-      height: 36px;
+      height: var(--bilara-header-height);
     }
 
     header div {
