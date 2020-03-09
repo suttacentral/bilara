@@ -132,7 +132,7 @@ if config.GITHUB_AUTH_ENABLED:
             "avatar_url": user["avatar_url"],
         }
 
-        response = redirect(f"/auth?{urlencode(params)}")
+        response = redirect(f"https://bilara.suttacentral.net/auth?{urlencode(params)}")
         return response
 
     @github_auth.tokengetter
@@ -218,6 +218,9 @@ def init():
 
 if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     init()
-    
+else:
+    @app.before_first_request
+    def warmup():
+        init()
 
 
