@@ -150,14 +150,14 @@ class Search:
             'muids': segment['field'],
             'string': segment['value'],
             'segment_id': segment['segmentId'],
-            '_id': segment['field'] + '/' + self.legalize_key(segment['segmentId'])
+            '_key': self.legalize_key(segment['segmentId'])
         }
 
-        self.db.update_document(doc)
+        self.insert_or_update(segment['field'], doc)
 
     def execute(self, query, **kwargs):
-        print("=== Running Query ===")
-        print(query)
+        #print("=== Running Query ===")
+        #print(query)
         if 'bind_vars' in kwargs:
             print(json.dumps(kwargs['bind_vars']))
         if 'count' not in kwargs:
