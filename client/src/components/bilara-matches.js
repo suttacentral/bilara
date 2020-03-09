@@ -19,15 +19,19 @@ ins{
   color: var(--bilara-blue)
 }
 mark{
-  color: var(--bilara-red);
-  background-color: var(--bilara-yellow)
+  background-color: var(--bilara-yellow);
+  color: var(--bilara-empasized-text-color);
 }
 
 .row{
+  display: flex;
           background-color: var(--bilara-secondary-background-color);
           box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
           transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-          border-radius: 8px
+          border-radius: 8px;
+          justify-content: space-evenly;
+          flex-direction: row;
+          margin: 0 5% 8px
 }
 
 .row:hover {
@@ -35,18 +39,15 @@ mark{
          cursor:pointer;
 }
 
-      .row {
-          flex-direction: row;
-      }
-
       .column {
           flex-direction: column;
       }
 
       .root_string, .translation {
-          flex: 1;
-          padding: 0 8px;
-          display: block;
+flex-basis: 50%;
+    padding: 0 8px;
+    max-width: 40rem;
+    margin: 0 16px;
       }
       .row + .row {
         border-top: 1px dotted rgba(0,0,0,0.2);
@@ -60,10 +61,6 @@ mark{
           display: none
       }
   
-        div {
-          display: flex;
-          margin-bottom: 8px;
-        }
       </style>
       
       <div id="matches" class="column">
