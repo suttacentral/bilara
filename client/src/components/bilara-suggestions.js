@@ -9,7 +9,7 @@ export class BilaraSuggestions extends LitElement{
       #suggestions {
           font-size: 80%;
           color: var(--bilara-empasized-text-color);
-          margin: 0 5%;
+          margin: 8px 5% 0;
 }
 
 del{
@@ -17,6 +17,9 @@ del{
 }
 ins{
   color: var(--bilara-blue)
+}
+mark{
+  color: var(--bilara-yellow)
 }
 
 .row{

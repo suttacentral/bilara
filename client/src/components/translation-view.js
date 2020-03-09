@@ -63,6 +63,7 @@ class TranslationView extends connect(store)(PageViewElement) {
         border-radius: 8px 8px 0 0;
         cursor: grab;
         color: white;
+        white-space: nowrap
       }
       .field:hover {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
