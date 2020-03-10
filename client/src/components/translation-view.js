@@ -159,6 +159,7 @@ class TranslationView extends connect(store)(PageViewElement) {
     } else {
       this._segments = {};
       this._fields = {};
+      this._orderedFields = [];
     }
 
     this._pushState = state.segmentData.pushState || {};
