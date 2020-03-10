@@ -236,7 +236,7 @@ content: ""
       }
     </style>
     <section class="browse">
-    <h2>Translate your little <span class="heart">💚</span> out, Bob!</h2>
+    <h2>Translate your little <span class="heart">💚</span> out, ${this._username}!</h2>
       ${ this._dataTree ? html`
         <nav-item _name="Total" ._tree="${this._dataTree}" ?open="${true}" class="total"></nav-item>
       ` : html`Loading...`}
@@ -266,7 +266,8 @@ content: ""
   static get properties() { 
     return {
       _dataTree: {type: Object},
-      _problems: { type: Array },
+      _problems: {type: Array},
+      _username: {type: String}
     }
   }
 
@@ -276,9 +277,9 @@ content: ""
   }
 
   stateChanged(state) {
-    console.log(state)
     this._dataTree = state.browse.tree;
     this._problems = state.app.problems;
+    this._username = state.app.user.username;
   }
 }
 
