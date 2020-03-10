@@ -17,31 +17,9 @@ export const SharedStyles = html`
     box-sizing: border-box;
   }
 
-  section {
-    padding: 24px;
-  }
-
-  section > * {
-    max-width: 600px;
-    margin-right: auto;
-    margin-left: auto;
-  }
-
-
-  h2 {
-    font-size: 24px;
-    text-align: center;
-  }
-
 a{
  color: var(--bilara-primary-color);
 }
-
-  @media (min-width: 460px) {
-    h2 {
-      font-size: 36px;
-    }
-  }
 
   .circle {
     display: block;

@@ -39,122 +39,159 @@ class BilaraApp extends connect(store)(LitElement) {
     // Anything that's related to rendering should be done in here.
     return html`
     <style>
-     :host {
-    --bilara-primary-color: #dc322f;
-    --bilara-secondary-color: #6c71c4;
-    --bilara-primary-background-color: #fdf6e3;
-    --bilara-secondary-background-color: #eee8d5;
-    --bilara-primary-text-color: #657b83;
-    --bilara-emphasized-text-color: #586e75;
-    --bilara-secondary-text-color: #93a1a1;
-    --bilara-yellow: #b58900;
-    --bilara-orange: #cb4b16;
-    --bilara-red: #dc322f;
-    --bilara-magenta: #d33682;
-    --bilara-violet: #6c71c4;
-    --bilara-blue: #268bd2;
-    --bilara-cyan: #2aa198;
-    --bilara-green: #859900;
-    --bilara-black: #002b36;
-    color: var(--bilara-primary-text-color)
-}
+    :host {
+      --bilara-primary-color: #dc322f;
+      --bilara-secondary-color: #6c71c4;
+      --bilara-primary-background-color: #fdf6e3;
+      --bilara-secondary-background-color: #eee8d5;
+      --bilara-tertiary-background-color: #BEB9AA;
+      --bilara-primary-text-color: #657b83;
+      --bilara-emphasized-text-color: #586e75;
+      --bilara-secondary-text-color: #93a1a1;
+      --bilara-yellow: #b58900;
+      --bilara-orange: #cb4b16;
+      --bilara-red: #dc322f;
+      --bilara-magenta: #d33682;
+      --bilara-violet: #6c71c4;
+      --bilara-blue: #268bd2;
+      --bilara-cyan: #2aa198;
+      --bilara-green: #859900;
+      --bilara-black: #002b36;
+      --bilara-footer-height: 108px;
+      color: var(--bilara-primary-text-color)
+    }
 
-header {
-    position: fixed;
-    top: 0;
-    z-index: 1;
-    width: 100%;
-    background-color: var(--bilara-black);
-    color: var(--bilara-secondary-text-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    header {
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      background-color: var(--bilara-black);
+      color: var(--bilara-secondary-text-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      display: flex;
+      justify-content: space-between;
+      height: 36px;
+    }
+
+    header div {
+      margin: 4px 16px;
+
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
+    align-items: center;
+    }
 
-header div {
-    margin: 4px 16px
-}
+    [main-title] {
+      font-weight: 900;
+      font-size: 1rem;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 2px 8px;
+      color: var(--bilara-secondary-color);
+    }
 
-[main-title] {
-    font-weight: 900;
-    font-size: 1rem;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    padding: 2px 8px;
-    color: var(--bilara-secondary-color);
-}
+    [main-title]:hover {
+      background-color: var(--bilara-secondary-color);
+      color: var(--bilara-secondary-background-color);
+    }
 
-[main-title]:hover{
-	background-color: var(--bilara-secondary-color);
-    color: var(--bilara-secondary-background-color);
-}
+    a {
+      text-decoration: none;
+    }
+    a.navigable:hover{
+      text-decoration: underline
+    }
 
-a {
-    text-decoration: none;
-}
-/* Workaround for IE11 displaying <main> as inline */
-main {
-    display: block;
-}
+    main {
+      display: flex;
+      justify-content: center;
+      min-height: calc(100vh - var(--bilara-footer-height));
+      background-color: var(--bilara-primary-background-color);
+    }
 
-.main-content {
-    padding-top: 64px;
-    min-height: 100vh;
-    background-color: var(--bilara-primary-background-color);
-}
+    .page {
+      display: none;
+    }
 
-.page {
-    display: none;
-}
+    .page[active] {
+      display: flex;
+    }
 
-.page[active] {
-    display: block;
-}
+    footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      justify-content: space-around;
+      background-color: var(--bilara-tertiary-background-color);
+      color: var(--bilara-emphasized-text-color);
+      height: var(--bilara-footer-height);
+      padding: 0 32px
+    }
 
-footer {
-    padding: 24px;
-    background-color: var(--bilara-black);
-    color: var(--bilara-secondary-text-color);
-    text-align: center;
-}
+    footer a{
+      color: var(--bilara-secondary-color)
+    }
+        footer a:hover{
+      text-decoration: underline
+    }
 
 
+    .disabled {
+      opacity: 0.7;
+    }
 
-.disabled {
-    opacity: 0.7;
-}
-
-.app-log {
-    color: var(--bilara-secondary-color);
-    font-weight: 600;
-    font-size: 0.8rem;
-    padding: 2px 8px;
-    margin: 0 4px;
-    border: 1px solid var(--bilara-secondary-text-color);
-    border-radius: 8px;
-    display: inline-block;
-    text-transform: uppercase;
-    letter-spacing: .05em
-}
-.app-log:hover {
-    background-color: var(--bilara-secondary-color);
-    color: var(--bilara-secondary-background-color);
-}
-.user-name {
-    display: inline-block;
-    font-size: 0.8rem;
+    .app-log {
+      color: var(--bilara-secondary-color);
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      margin: 0 4px;
+      border: 1px solid var(--bilara-secondary-text-color);
+      border-radius: 8px;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: .05em
+    }
+    .app-log:hover {
+      background-color: var(--bilara-secondary-color);
+      color: var(--bilara-secondary-background-color);
+    }
+    figure{
+      margin: 0 8px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px
+    }
+    figcaption.user-name {
+font-size: 12px;
     font-style: italic;
-    padding: 4px 8px;
-    margin: 0 4px
-}
-.user-name::before {
-    content: "user: "
-}
-.user-name::after {
-    content: "!"
-}
+    font-weight: 600;
+    white-space: nowrap;
+    margin-top: -6px;
+    padding: 0 4px;
+    line-height: 1;
+    text-shadow: 0px 0px 3px black;
+    color: var(--bilara-cyan);
+
+    }
+    .user-name::before {
+ 
+    }
+    .user-name::after {
+      content: "!"
+    }
+
+    img{
+      width: 28px;
+      height: 28px;
+      border-radius: 50%
+    }
+    .user-name-link{
+      display: contents;
+    }
     </style>
 
     <!-- Header -->
@@ -164,7 +201,12 @@ footer {
        </div>
        <div class="app-header-right">
         ${
-          this._username ? html`<span class="user-name">${this._username}</span> <a href="/logout" target="_top" class="app-log">Logout</a>` : html`<a href="/api/login"  target="_top" class="app-log">Login</a>` 
+          this._username ? html`<a class="user-name-link" href="https://www.youtube.com/watch?v=oHg5SJYRHA0"><figure>
+  <img src="../images/bob.jpg" alt="${this._username}">
+  <figcaption class="user-name">${this._username}</figcaption>
+</figure></a>
+<a href="/logout" target="_top" class="app-log">Logout</a>` 
+: html`<a href="/api/login"  target="_top" class="app-log">Login</a>` 
         }
         </div>
     </header>
@@ -187,6 +229,11 @@ footer {
 
     <footer>
       <p>Computer Aided Translation for SuttaCentral</p>
+      <ul>
+      <li><a href="https://suttacentral.net">SuttaCentral</a></li>
+      <li><a href="https://github.com/suttacentral/bilara">Github</a></li>
+      <li><a href="https://discourse.suttacentral.net/">Forum</a></li>
+      </ul>
     </footer>`
   }
 

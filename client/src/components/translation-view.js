@@ -32,45 +32,60 @@ class TranslationView extends connect(store)(PageViewElement) {
     ${SharedStyles}
     <style>
       :host {
-        max-width: 70em;
-        margin: auto;
         display: flex;
+        justify-content: center
       }
 
       #container {
-        display: flex;
         box-sizing: border-box;
-        
-      }
-
-      #translation, #search {
         display: flex;
-        flex-direction: column;
-        flex-shrink: 1;
-        flex-grow: 1;
-      }
-
-      #search {
-        flex-shrink: 0.5;
-        flex-grow: 0.5;
-        
+        flex-direction: row;
+        padding-bottom: 72px;
+        padding-top: 24px
       }
 
       #field-headings {
         display: flex;
+        justify-content: space-around;
+        margin-bottom: 16px;
+        position: sticky;
+        top: 28px;
+        z-index: 10
       }
 
       .field {
-        padding: 0.5em;
+        flex-basis: 50%;
+        padding: 12px 12px 4px 12px;
+        margin: 0 16px 16px 16px;
         font-size: 80%;
-        display: inline-flex;
-        flex: 1;
-        padding: 0 8px;
-        hyphens: auto;
-        white-space: prewrap;
+        font-weight: 600;
+        background-color: var(--bilara-secondary-color);
+        border-radius: 8px 8px 0 0;
+        cursor: grab;
+        color: white;
+        white-space: nowrap
       }
+      .field:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      }
+      .field:active {
+        cursor: grabbing;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      }
+      .field:before {
+        display: inline-block;
+        content: " ";
+        background-image: url(../images/drag_indicator-24px.svg);
+        height: 12px;
+        width: 16px;
+        background-repeat: no-repeat;
+        vertical-align: middle;
+        opacity: 70%
+      }
+
     </style>
     <div id="container">
+
       <section id="translation">
       <div id="segments">
         ${ this._segments.length == 0 || this._orderedFields.length == 0 ? 
@@ -80,6 +95,7 @@ class TranslationView extends connect(store)(PageViewElement) {
             ${Object.values(this._orderedFields).map(fieldName => {
               return html`<span class="field"
                                 draggable="false"
+                                title="Drag and drop columns in any order"
                                 @drop="${this._dropHandler}"
                                 @dragover="${this._dragoverHandler}"
                                 @dragstart="${this._dragstartHandler}"
@@ -105,7 +121,7 @@ class TranslationView extends connect(store)(PageViewElement) {
         }
         </div>
       </section>
-
+  
     </div>
     
     `

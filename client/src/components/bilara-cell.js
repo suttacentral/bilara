@@ -6,34 +6,64 @@ import { store } from '../store.js';
 export class BilaraCell extends LitElement{
   render() {
     return html`<style>
-    div, span.string {
+    div,
+    span.string {
       display: inline-flex;
       width: 100%;
+      position: relative
+    }
+    [contenteditable] {
+      outline: 0px solid transparent;
+      padding: 4px 8px;
+      height: 100%
     }
 
-    .status{
+    .string[contenteditable="plaintext-only"] {
+      font-family: "source serif pro";
+    }
+    .string[contenteditable="plaintext-only"]:focus {
+      border-radius: 8px;
+      box-shadow: 0 0 0 1px var(--bilara-red);
+    }
+
+    .string.empty:after {
+      content: "[ ]";
+      opacity: 0.6;
+    }
+
+    .status {
       font-size: 12px;
       color: white;
-      height: 1.2em;
-      line-height: 1.2em;
-      width: 1.2em;
+      height: 16px;
+      line-height: 16px;
+      width: 16px;
       text-align: center;
       border-radius: 50%;
-      
+      position: absolute;
+    right: -20px;
+    top: 8px;
+    display: none
     }
-    .status.pending{
-      background-color: rgb(125,125,125);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);        
+    .status.pending {
+      display: inline-block;
+      background-color: rgb(125, 125, 125);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-    .status.committed{
-        background-color: green;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    .status.committed {
+      display: inline-block;
+      background-color: green;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-    .status.modified{
-      background-color:var(--bilara-red);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    .status.modified {
+      display: inline-block;
+      background-color: var(--bilara-magenta);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-
+    .status.error {
+      display: inline-block;
+      background-color: var(--bilara-red);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
     </style>
     <div>
     <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
