@@ -108,7 +108,7 @@ bilara-cell.string {
       steps += 1;
     }
 
-    if (segment != this) {
+    if (segment && segment != this) {
       segment.setFocus(field);
     }
 
