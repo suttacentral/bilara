@@ -201,8 +201,8 @@ font-size: 12px;
        </div>
        <div class="app-header-right">
         ${
-          this._username ? html`<a class="user-name-link" href="https://www.youtube.com/watch?v=oHg5SJYRHA0"><figure>
-  <img src="../images/bob.jpg" alt="${this._username}">
+          this._username ? html`<a class="user-name-link" href="${this._avatarUrl ? 'https://github.com/' + this._username : 'https://www.youtube.com/watch?v=oHg5SJYRHA0'}"><figure>
+  <img src="${this._avatarUrl || '../images/bob.jpg'}" alt="${this._username}">
   <figcaption class="user-name">${this._username}</figcaption>
 </figure></a>
 <a href="/logout" target="_top" class="app-log">Logout</a>` 

@@ -48,7 +48,7 @@ const loadPage = (view, subpath) => (dispatch) => {
     case 'auth':
       
       console.log('queryParams: ', JSON.stringify(queryParams));
-      dispatch(setAuthToken(queryParams.token, queryParams.login, queryParams.avatarUrl));
+      dispatch(setAuthToken(queryParams.token, queryParams.login, queryParams.avatar_url));
       history.replaceState(null, null, '/browse');
       view = 'browse';
     case 'browse': 
