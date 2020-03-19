@@ -216,11 +216,11 @@ def init():
     fs.make_file_index()
 
 
-if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+#if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+#    init()
+#else:
+@app.before_first_request
+def warmup():
     init()
-else:
-    @app.before_first_request
-    def warmup():
-        init()
 
 
