@@ -14,6 +14,8 @@ import {
   UPDATE_DRAWER_STATE,
   UPDATE_PROBLEMS,
   SET_USER_AUTH_TOKEN,
+  UPDATE_ORDERING_PREF,
+  UPDATE_TERTIARY_PREF
 
 } from '../actions/app.js';
 
@@ -21,6 +23,12 @@ const INITIAL_USER_STATE = {
     username: null,
     avatarUrl: null,
     authToken: null,
+}
+
+
+const PREF_STATE = {
+  ordering: {},
+  tertiary: {}
 }
 
 function getInitialUserState(){
@@ -34,6 +42,21 @@ function getInitialUserState(){
     return user
 }
 
+function getPrefState(){
+  let pref = PREF_STATE;
+  try {
+    pref = JSON.parse(localStorage.getItem('state.pref')) || pref;
+  } catch (err) {
+    console.log(err.message);
+    localStorage.removeItem('state.pref');
+  }
+  return pref
+}
+
+
+function savePrefState(pref){
+  localStorage.setItem('state.pref', JSON.stringify(pref));
+}
 
 const INITIAL_STATE = {
   page: {
@@ -41,12 +64,14 @@ const INITIAL_STATE = {
     subpath: []
   },
   user: getInitialUserState(),
+  pref: getPrefState(),
   offline: false,
   problems: null,
   drawerOpened: false,
 };
 
 const app = (state = INITIAL_STATE, action) => {
+  let newState;
   switch (action.type) {
     case UPDATE_PAGE:
       return {
@@ -81,6 +106,28 @@ const app = (state = INITIAL_STATE, action) => {
         }
     };
 
+    case UPDATE_ORDERING_PREF:
+      newState = {
+        ...state,
+        pref: {
+          ...state.pref,
+          ordering: {...state.pref.ordering, [action.key]: action.value}
+        }
+      }
+      savePrefState(newState.pref);
+      return newState
+
+    case UPDATE_TERTIARY_PREF:
+      newState = {
+        ...state,
+        pref: {
+          ...state.pref,
+          tertiary: {...state.pref.tertiary, [action.key]: action.value}
+        }
+      }
+      savePrefState(newState.pref);
+      return newState
+    
     default:
       return state;
   }

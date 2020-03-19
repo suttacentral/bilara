@@ -2,6 +2,12 @@ import { html } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
+import '@lion/checkbox-group/lion-checkbox-group.js';
+import '@lion/checkbox-group/lion-checkbox.js';
+import '@lion/dialog/lion-dialog.js';
+
+import './bilara-dialog.js';
+
 import './bilara-segment.js';
 import './bilara-search.js';
 
@@ -16,6 +22,8 @@ import { store } from '../store.js';
 import { segmentData } from '../reducers/segment-data.js';
 import { searchReducer } from '../reducers/search.js';
 
+import { updateOrdering, updateTertiary } from '../actions/app.js';
+
 import { getChildMatchingKey } from '../util.js';
 import { sortByKeyFn, storageLoad, storageSave, setEquality } from '../util.js';
 
@@ -26,7 +34,8 @@ store.addReducers({
 
 class TranslationView extends connect(store)(PageViewElement) {
   render(){
-    let fields = this._fields;
+    let fields = this._fields,
+        segmentIds = Object.keys(this._segments);
     console.log('Render, ', this._orderedFields);
     return html`
     ${SharedStyles}
@@ -53,17 +62,27 @@ class TranslationView extends connect(store)(PageViewElement) {
         z-index: 10
       }
 
-      .field {
-        flex-basis: 50%;
+      .field, .adder {
         padding: 12px 12px 4px 12px;
         margin: 0 16px 16px 16px;
         font-size: 80%;
         font-weight: 600;
         background-color: var(--bilara-secondary-color);
         border-radius: 8px 8px 0 0;
-        cursor: grab;
         color: white;
-        white-space: nowrap
+        white-space: nowrap;
+      }
+
+      .field {
+        flex-basis: 50%;
+        cursor: grab;
+      }
+
+      .adder {
+        position: absolute;
+        cursor: pointer;
+        right: -36px;
+        
       }
       .field:hover {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -92,9 +111,9 @@ class TranslationView extends connect(store)(PageViewElement) {
           html`Fetching Data` :
           html`
             <div id="field-headings">
-            ${Object.values(this._orderedFields).map(fieldName => {
+            ${repeat(Object.values(this._orderedFields), fieldName => {
               return html`<span class="field"
-                                draggable="false"
+                                draggable="true"
                                 title="Drag and drop columns in any order"
                                 @drop="${this._dropHandler}"
                                 @dragover="${this._dragoverHandler}"
@@ -103,8 +122,28 @@ class TranslationView extends connect(store)(PageViewElement) {
 
               >${fieldName}</span>`
             })}
+            <lion-dialog .config=${{ hidesOnOutsideClick: true, hidesOnEsc: true}}>
+              <span slot="invoker" class="adder">+</span>
+              <bilara-dialog slot="content"> 
+              <lion-checkbox-group>
+              ${repeat(this._potentialFields, (muids) => html`
+              <lion-checkbox 
+                label="${muids}"
+                .disabled=${muids == this._sourceField || muids == this._targetField}
+                .checked=${muids in this._fields}
+                ></lion-checkbox>
+                `
+                )}
+              </lion-checkbox-group>
+              
+              </bilara-dialog>
+
+            </lion-dialog>
             </div>
-            ${Object.keys(this._segments).map(segmentId => {
+
+            ${repeat(segmentIds, 
+                     segmentId => JSON.stringify(this._orderedFields) + segmentId, 
+                     segmentId => {
               const segment = this._segments[segmentId],
                     rootString = segment[this._sourceField];
 
@@ -138,30 +177,32 @@ class TranslationView extends connect(store)(PageViewElement) {
       _targetField: { type: String },
       _suggestions: { type: Object },
       _orderedFields: { type: Array, reflect: true },
+      _potentialFields: { type: Array },
       _pushState: { type: Object }
     }
   }
 
-  _getFieldOrder(fields){
-    let savedFieldOrder = storageLoad('fieldOrder', [...fields].sort());
-    if (savedFieldOrder) {
-      console.log("Saved Order ", savedFieldOrder);
-      if (setEquality(fields, savedFieldOrder).length == 0) {
-        return savedFieldOrder;
-      }
+  _fieldsKey(fields) {
+    return JSON.stringify([...fields].sort())
+  }
+  _getFieldOrder(fields, ordering){
+    const key = this._fieldsKey(fields);
+    if (!(key in ordering)) {
+      return sortByKeyFn(fields, field => {
+        if (field == this._sourceField) return '\u0001' + field;
+        if (field == this._targetField) return '\u0002' + field;
+        return field;
+      })
     }
-    
-    console.log('Sorting Fields')
 
-    return sortByKeyFn(fields, field => {
-      if (field == this._sourceField) return '\u0001' + field;
-      if (field == this._targetField) return '\u0002' + field;
-      return field;
-    })
+    return ordering[key];
   }
 
   _saveFieldOrder(fields) {
-    storageSave('fieldOrder', [...fields].sort(), fields);
+    const key = this._fieldsKey(fields);
+    console.log('Calling Update Ordering');
+    //debugger
+    store.dispatch(updateOrdering(key, fields));
   }
 
   stateChanged(state) {
@@ -171,7 +212,8 @@ class TranslationView extends connect(store)(PageViewElement) {
       this._fields = state.segmentData.data.fields;
       this._sourceField = state.segmentData.data.sourceField;
       this._targetField = state.segmentData.data.targetField;
-      this._orderedFields = this._getFieldOrder(Object.keys(this._fields));
+      this._orderedFields = this._getFieldOrder(Object.keys(this._fields), state.app.pref.ordering);
+      this._potentialFields = state.segmentData.data.potential;
     } else {
       this._segments = {};
       this._fields = {};
@@ -197,8 +239,8 @@ class TranslationView extends connect(store)(PageViewElement) {
     this._saveFieldOrder(fields);
     this._orderedFields = fields;
     let savedSegments = this._segments;
-    this._segments = {};
-    setTimeout(()=> this._segments = savedSegments, 1);
+    // this._segments = {};
+    // setTimeout(()=> this._segments = savedSegments, 1);
   }
 
   _dragoverHandler(event){

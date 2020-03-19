@@ -1,5 +1,6 @@
 import { fetchSegmentData } from './segment-data.js';
 import { query } from 'lit-element';
+import { store } from '../store.js';
 
 /**
 @license
@@ -16,6 +17,9 @@ export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 export const UPDATE_PROBLEMS = 'UPDATE_PROBLEMS';
 export const SET_USER_AUTH_TOKEN = 'SET_USER_AUTH_TOKEN';
+
+export const UPDATE_ORDERING_PREF = 'UPDATE_ORDERING_PREF';
+export const UPDATE_TERTIARY_PREF = 'UPDATE_TERTIARY_PREF';
 
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
@@ -121,3 +125,19 @@ export const getProblems = () => (dispatch) => {
   }).catch( (e) => {console.log(e);})
 }
 
+export const updateOrdering = (k, value) => (dispatch, getState) => {
+  console.log('Updating Ordering ', k, value);
+  return dispatch({
+    type: UPDATE_ORDERING_PREF,
+    key: k,
+    value
+  });
+}
+
+export const updateTertiary = (key, value) => (dispatch) => {
+  dispatch({
+    type: UPDATE_TERTIARY_PREF,
+    key,
+    value
+  });
+}

@@ -433,6 +433,10 @@ def get_data(primary_long_id, root=None, tertiary=None):
         raise
     result['segments'] = dict(sorted_results)
 
+    result['potential'] = [
+        name.split('_')[1] for name in _uid_index[uid]
+    ]
+
     return result
 
 
