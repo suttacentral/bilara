@@ -72,7 +72,9 @@ mark{
         <span class="root_string">${unsafeHTML(item.highlighted)}</span>
         
         <span class="translation" 
-                  @click="${this._clickEvent}"
+                  @mousedown=${this._mousedownEvent}
+                  @mouseup=${this._mouseupEvent}
+                  @mousemove=${this._mousemoveEvent}
                   title="${item.segment_ids.length}"
                   >${item.translation}</span>
         `)}        
@@ -85,14 +87,27 @@ mark{
       }
     }
 
-    _clickEvent(e) {
-      const string = e.target.textContent;
-      this.dispatchEvent(new CustomEvent('suggest', {
-          detail: {string},
-          bubbles: true,
-          composed: true
-        }))
+    _mousedownEvent(e) {
+      this.isDragging = false;
     }
+
+    _mousemoveEvent(e) {
+      this.isDragging = true;
+    }
+
+    _mouseupEvent(e) {
+      if (this.isDragging) {
+        this.isDragging = false;
+      } else {
+        const string = e.target.textContent;
+        this.dispatchEvent(new CustomEvent('suggest', {
+            detail: {string},
+            bubbles: true,
+            composed: true
+          }))
+      }
+    }
+
   
     setFocus(dataType) {
       let e = this.shadowRoot.querySelector(`[data-type=${dataType}]`);
