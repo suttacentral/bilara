@@ -62,15 +62,16 @@ class TranslationView extends connect(store)(PageViewElement) {
         z-index: 10
       }
 
-      .field, .adder {
-        padding: 12px 12px 4px 12px;
-        margin: 0 16px 16px 16px;
+      .field{
+        padding: 8px 12px 4px 12px;
+        margin: 8px 16px 16px 16px;
+        height: 20px;
         font-size: 80%;
         font-weight: 600;
         background-color: var(--bilara-secondary-color);
-        border-radius: 8px 8px 0 0;
         color: white;
         white-space: nowrap;
+
       }
 
       .field {
@@ -79,9 +80,19 @@ class TranslationView extends connect(store)(PageViewElement) {
       }
 
       .adder {
+      	padding: 8px 12px 4px 12px;
+        margin: 8px 16px 16px 16px;
+         height: 20px;
+        font-size: 80%;
+        font-weight: 600;
+        background-color: var(--bilara-yellow);
+        color: white;
+        white-space: nowrap;
         position: absolute;
         cursor: pointer;
-        right: -36px;
+        right: 0;
+        border-radius: 50%
+
         
       }
       .field:hover {
@@ -101,14 +112,117 @@ class TranslationView extends connect(store)(PageViewElement) {
         vertical-align: middle;
         opacity: 70%
       }
+table {
+	height: 100%;
+	margin-top: 30vh;
+	border-spacing: 0;
+	border-collapse: collapse;
+}
 
+td > span {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+	animation-duration: 4s;
+	animation-iteration-count: infinite;
+	animation-name: spin;
+	animation-timing-function: linear;
+}
+
+span span {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: rgba(255,255,255,0.7);
+	-webkit-clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
+	clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
+}
+
+span span:first-of-type {
+	transform: translateY(-50%);
+}
+
+span span:last-of-type {
+	transform: translateY(50%) rotate(180deg);
+}
+
+span span::before {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: var(--bilara-tertiary-background-color);
+	animation-duration: 4s;
+	animation-iteration-count: infinite;
+	animation-name: slide;
+	animation-timing-function: linear;
+
+}
+
+span span:last-of-type::before {
+	animation-delay: -2s;
+}
+
+@keyframes slide {
+	0% {
+		transform: translateY(0%);
+	}
+	
+	25% {
+		transform: translateY(100%);
+	}
+	
+	50% {
+		transform: translateY(100%);
+	}
+	
+	75% {
+		transform: translateY(0%);		
+	}
+	
+	100% {
+		transform: translateY(0%);		
+	}
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	
+	25% {
+		transform: rotate(0deg);
+	}
+	
+	50% {
+		transform: rotate(180deg);
+	}
+	
+	75% {
+		transform: rotate(180deg);
+	}
+	
+	100% {
+		transform: rotate(360deg);
+	}
+}
     </style>
     <div id="container">
 
       <section id="translation">
       <div id="segments">
         ${ this._segments.length == 0 || this._orderedFields.length == 0 ? 
-          html`Fetching Data` :
+          html`<table>
+	<td>
+		<span>
+			<span></span>
+			<span></span>
+		</span>
+	</td>
+</table>` :
           html`
             <div id="field-headings">
             ${repeat(Object.values(this._orderedFields), fieldName => {
