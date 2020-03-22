@@ -16,6 +16,8 @@ import { installOfflineWatcher } from 'pwa-helpers/network.js';
 import { installRouter } from 'pwa-helpers/router.js';
 import { updateMetadata } from 'pwa-helpers/metadata.js';
 
+import { repeat } from 'lit-html/directives/repeat';
+
 // This element is connected to the Redux store.
 import { store } from '../store.js';
 
@@ -23,14 +25,19 @@ import { store } from '../store.js';
 import {
   navigate,
   updateOffline,
-  updateDrawerState
+  updateDrawerState,
+  updateTheme
 } from '../actions/app.js';
 
 // These are the elements needed by this element.
 
 import './login-view.js';
 
+import {themes} from '../styles/themes.js';
+
 class BilaraApp extends connect(store)(LitElement) {
+
+
   render() {
     
     const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null;
@@ -38,29 +45,12 @@ class BilaraApp extends connect(store)(LitElement) {
 
     // Anything that's related to rendering should be done in here.
     return html`
+    <style id="theme">
+      :host {
+        ${themes[this._theme]}
+      }
+    </style>
     <style>
-    :host {
-      --bilara-primary-color: #dc322f;
-      --bilara-secondary-color: #6c71c4;
-      --bilara-primary-background-color: #fdf6e3;
-      --bilara-secondary-background-color: #eee8d5;
-      --bilara-tertiary-background-color: #BEB9AA;
-      --bilara-primary-text-color: #657b83;
-      --bilara-emphasized-text-color: #586e75;
-      --bilara-secondary-text-color: #93a1a1;
-      --bilara-yellow: #b58900;
-      --bilara-orange: #cb4b16;
-      --bilara-red: #dc322f;
-      --bilara-magenta: #d33682;
-      --bilara-violet: #6c71c4;
-      --bilara-blue: #268bd2;
-      --bilara-cyan: #2aa198;
-      --bilara-green: #859900;
-      --bilara-black: #002b36;
-      --bilara-footer-height: 108px;
-      color: var(--bilara-primary-text-color)
-    }
-
     header {
       position: fixed;
       top: 0;
@@ -200,6 +190,13 @@ font-size: 12px;
        <a href="/browse"><h1 main-title>${this.appTitle}</h1></a>
        </div>
        <div class="app-header-right">
+       <select id="theme" @change="${this._selectTheme}">
+       ${repeat(Object.keys(themes), (name) => {
+         return html`
+          <option value="${name}" ?selected="${name == this._theme }">${name}</option>
+          `
+       })}
+       </select>
         ${
           this._username ? html`<a class="user-name-link" href="${this._avatarUrl ? 'https://github.com/' + this._username : 'https://www.youtube.com/watch?v=oHg5SJYRHA0'}"><figure>
   <img src="${this._avatarUrl || '../images/bob.jpg'}" alt="${this._username}">
@@ -245,7 +242,8 @@ font-size: 12px;
       _offline: { type: Boolean },
       _username: { type: String },
       _avatarUrl: { type: String },
-      _activeSegmentId: { type: String }
+      _activeSegmentId: { type: String },
+      _theme: { type: String }
     }
   }
 
@@ -283,6 +281,11 @@ font-size: 12px;
     store.dispatch(updateDrawerState(e.target.opened));
   }
 
+  _selectTheme(e) {
+    console.log(e.target.value);
+    store.dispatch(updateTheme(e.target.value));
+  }
+
   stateChanged(state) {
     this._page = state.app.page;
     this._offline = state.app.offline;
@@ -291,6 +294,7 @@ font-size: 12px;
     this._avatarUrl = state.app.user.avatarUrl;
     this._userMustRevalidate = state.app.user.revalidate;
     this._activeSegmentId = state.segmentData ? state.segmentData.activeSegmentId : '';
+    this._theme = state.app.pref.theme;
   }
 }
 

@@ -20,6 +20,7 @@ export const SET_USER_AUTH_TOKEN = 'SET_USER_AUTH_TOKEN';
 
 export const UPDATE_ORDERING_PREF = 'UPDATE_ORDERING_PREF';
 export const UPDATE_TERTIARY_PREF = 'UPDATE_TERTIARY_PREF';
+export const UPDATE_THEME = 'UPDATE_THEME';
 
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
@@ -138,4 +139,11 @@ export const updateTertiary = (key, value) => (dispatch) => {
     key,
     value
   });
+}
+
+export const updateTheme = (theme) => (dispatch) => {
+  dispatch({
+    type: UPDATE_THEME,
+    theme
+  })
 }

@@ -15,7 +15,8 @@ import {
   UPDATE_PROBLEMS,
   SET_USER_AUTH_TOKEN,
   UPDATE_ORDERING_PREF,
-  UPDATE_TERTIARY_PREF
+  UPDATE_TERTIARY_PREF,
+  UPDATE_THEME,
 
 } from '../actions/app.js';
 
@@ -28,7 +29,8 @@ const INITIAL_USER_STATE = {
 
 const PREF_STATE = {
   ordering: {},
-  tertiary: {}
+  tertiary: {},
+  theme: 'bilara'
 }
 
 function getInitialUserState(){
@@ -45,11 +47,20 @@ function getInitialUserState(){
 function getPrefState(){
   let pref = PREF_STATE;
   try {
-    pref = JSON.parse(localStorage.getItem('state.pref')) || pref;
+    let savedState = JSON.parse(localStorage.getItem('state.pref'));
+    if (savedState) {
+      for (let k in savedState) {
+        //We only want to include states which have not been deleted
+        if (k in pref) {
+          pref[k] = savedState[k];
+        }
+      }
+    }
   } catch (err) {
     console.log(err.message);
     localStorage.removeItem('state.pref');
   }
+  console.log(pref);
   return pref
 }
 
@@ -128,6 +139,17 @@ const app = (state = INITIAL_STATE, action) => {
       savePrefState(newState.pref);
       return newState
     
+    case UPDATE_THEME:
+      newState = {
+        ...state,
+        pref: {
+          ...state.pref,
+          'theme': action.theme
+        }
+      }
+      savePrefState(newState.pref);
+      return newState
+
     default:
       return state;
   }
