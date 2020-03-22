@@ -184,7 +184,7 @@ class TranslationView extends connect(store)(PageViewElement) {
               <span slot="invoker" class="adder ripple">+</span>
               <bilara-columns-dialog slot="content"
                 ._existingFields="${this._orderedFields}"
-                ._fieldNames="${this._potentialFields}"
+                ._fieldNames="${[...new Set([this._sourceField, this._targetField, ...this._potentialFields])]}"
                 ._lockedFields="${[this._sourceField, this._targetField]}"
                 ._keyValue="${this._targetField}"
                 ></bilara-columns-dialog>
