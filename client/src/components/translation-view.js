@@ -11,6 +11,8 @@ import './bilara-dialog.js';
 import './bilara-segment.js';
 import './bilara-search.js';
 
+import './bilara-spinning-hourglass.js';
+
 
 // These are the shared styles needed by this element.
 import { SharedStyles } from './shared-styles.js';
@@ -158,118 +160,13 @@ class TranslationView extends connect(store)(PageViewElement) {
   opacity: .2;
   transition: 0s;
 }
-
-table {
-	height: 100%;
-	margin-top: 30vh;
-	border-spacing: 0;
-	border-collapse: collapse;
-}
-
-td > span {
-	display: inline-block;
-	width: 40px;
-	height: 40px;
-	animation-duration: 4s;
-	animation-iteration-count: infinite;
-	animation-name: spin;
-	animation-timing-function: linear;
-}
-
-span span {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	background: rgba(255,255,255,0.7);
-	-webkit-clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
-	clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
-}
-
-span span:first-of-type {
-	transform: translateY(-50%);
-}
-
-span span:last-of-type {
-	transform: translateY(50%) rotate(180deg);
-}
-
-span span::before {
-	content: '';
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: var(--bilara-tertiary-background-color);
-	animation-duration: 4s;
-	animation-iteration-count: infinite;
-	animation-name: slide;
-	animation-timing-function: linear;
-
-}
-
-span span:last-of-type::before {
-	animation-delay: -2s;
-}
-
-@keyframes slide {
-	0% {
-		transform: translateY(0%);
-	}
-	
-	25% {
-		transform: translateY(100%);
-	}
-	
-	50% {
-		transform: translateY(100%);
-	}
-	
-	75% {
-		transform: translateY(0%);		
-	}
-	
-	100% {
-		transform: translateY(0%);		
-	}
-}
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	
-	25% {
-		transform: rotate(0deg);
-	}
-	
-	50% {
-		transform: rotate(180deg);
-	}
-	
-	75% {
-		transform: rotate(180deg);
-	}
-	
-	100% {
-		transform: rotate(360deg);
-	}
-}
     </style>
     <div id="container">
 
       <section id="translation">
       <div id="segments">
         ${ this._segments.length == 0 || this._orderedFields.length == 0 ? 
-          html`<table>
-	<td>
-		<span>
-			<span></span>
-			<span></span>
-		</span>
-	</td>
-</table>` :
+          html`<bilara-spinning-hourglass></bilara-spinning-hourglass>` :
           html`
             <div id="field-headings">
             ${repeat(Object.values(this._orderedFields), fieldName => {
@@ -283,21 +180,14 @@ span span:last-of-type::before {
 
               >${fieldName}</span>`
             })}
-            <lion-dialog .config=${{ hidesOnOutsideClick: true, hidesOnEsc: true}}>
+            <lion-dialog .config=${{ hidesOnEsc: true}}>
               <span slot="invoker" class="adder ripple">+</span>
-              <bilara-dialog slot="content"> 
-              <lion-checkbox-group>
-              ${repeat(this._potentialFields, (muids) => html`
-              <lion-checkbox 
-                label="${muids}"
-                .disabled=${muids == this._sourceField || muids == this._targetField}
-                .checked=${muids in this._fields}
-                ></lion-checkbox>
-                `
-                )}
-              </lion-checkbox-group>
-              
-              </bilara-dialog>
+              <bilara-columns-dialog slot="content"
+                ._existingFields="${this._orderedFields}"
+                ._fieldNames="${this._potentialFields}"
+                ._lockedFields="${[this._sourceField, this._targetField]}"
+                ._keyValue="${this._targetField}"
+                ></bilara-columns-dialog>
 
             </lion-dialog>
             </div>

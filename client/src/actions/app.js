@@ -45,13 +45,11 @@ function parseQuery(queryString) {
     return query;
 }
 
-const loadPage = (view, subpath) => (dispatch) => {
+const loadPage = (view, subpath) => (dispatch, getState) => {
   let queryParams = parseQuery(location.search);
   console.log(view, subpath, queryParams);
   switch(view) {
     case 'auth':
-      
-      console.log('queryParams: ', JSON.stringify(queryParams));
       dispatch(setAuthToken(queryParams.token, queryParams.login, queryParams.avatar_url));
       history.replaceState(null, null, '/browse');
       view = 'browse';
@@ -62,8 +60,9 @@ const loadPage = (view, subpath) => (dispatch) => {
       if (subpath.length === 0) {
         subpath = ['dn1_translation-en-sujato']
       }
-      
-      dispatch(fetchSegmentData(subpath[0], queryParams.root, queryParams.tertiary));
+      let key = subpath[0].split('_')[1],
+          tertiary = (getState().app.pref.tertiary[key] || []).join(',');
+      dispatch(fetchSegmentData(subpath[0], queryParams.root, tertiary));
       import('../components/translation-view.js');
       break;
     case 'logout':
@@ -125,11 +124,10 @@ export const getProblems = () => (dispatch) => {
   }).catch( (e) => {console.log(e);})
 }
 
-export const updateOrdering = (k, value) => (dispatch, getState) => {
-  console.log('Updating Ordering ', k, value);
+export const updateOrdering = (key, value) => (dispatch) => {
   return dispatch({
     type: UPDATE_ORDERING_PREF,
-    key: k,
+    key,
     value
   });
 }
