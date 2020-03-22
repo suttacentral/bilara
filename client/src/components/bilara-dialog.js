@@ -39,6 +39,19 @@ class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
         }
     }
 
+    static get styles() {
+        
+        return [
+            super._styles,
+            css`
+            [disabled]{
+                color: orange;
+            }
+            `
+        ]
+    
+    }
+
     render() {
         return html`
             <div>
