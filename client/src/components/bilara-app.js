@@ -141,7 +141,8 @@ class BilaraApp extends connect(store)(LitElement) {
       border-radius: 8px;
       display: inline-block;
       text-transform: uppercase;
-      letter-spacing: .05em
+      letter-spacing: .05em;
+      background-color: inherit;
     }
     .app-log:hover {
       background-color: var(--bilara-secondary-color);
@@ -203,7 +204,7 @@ font-size: 12px;
   <figcaption class="user-name">${this._username}</figcaption>
 </figure></a>
 <a href="/logout" target="_top" class="app-log">Logout</a>` 
-: html`<a href="/api/login"  target="_top" class="app-log">Login</a>` 
+: html`<form action="/api/login" method="post"><button class="app-log">Login</button></form>` 
         }
         </div>
     </header>

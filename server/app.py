@@ -105,7 +105,7 @@ if config.GITHUB_AUTH_ENABLED:
         authorize_url="https://github.com/login/oauth/authorize",
     )
 
-    @app.route("/api/login")
+    @app.route("/api/login", methods=['POST'])
     def login():
         return github_auth.authorize(
             callback="https://bilara.suttacentral.net/api/authorized"
@@ -142,7 +142,7 @@ if config.GITHUB_AUTH_ENABLED:
 
 else:
 
-    @app.route("/api/login")
+    @app.route("/api/login", methods=['POST'])
     def login():
         return redirect("/api/authorized")
 

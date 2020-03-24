@@ -12,6 +12,9 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
+import('../components/browse-view.js');
+import('../components/translation-view.js');
+
 export const UPDATE_PAGE = 'UPDATE_PAGE';
 export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
@@ -55,7 +58,7 @@ const loadPage = (view, subpath) => (dispatch, getState) => {
       history.replaceState(null, null, '/browse');
       view = 'browse';
     case 'browse': 
-      import('../components/browse-view.js');
+      
       break;
     case 'translation':
       if (subpath.length === 0) {
@@ -64,7 +67,7 @@ const loadPage = (view, subpath) => (dispatch, getState) => {
       let key = subpath[0].split('_')[1],
           tertiary = (getState().app.pref.tertiary[key] || []).join(',');
       dispatch(fetchSegmentData(subpath[0], queryParams.root, tertiary));
-      import('../components/translation-view.js');
+
       break;
     case 'logout':
       console.log('Logging out');
