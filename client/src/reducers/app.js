@@ -36,7 +36,7 @@ const PREF_STATE = {
 function getInitialUserState(){
     let user = INITIAL_USER_STATE;
     try {
-        user = JSON.parse(localStorage.getItem('state.user'));
+        user = JSON.parse(localStorage.getItem('state.user')) || user;
     } catch (err) {
         console.log(err.message);
         localStorage.removeItem('state.user');
