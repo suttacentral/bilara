@@ -2,13 +2,14 @@ import { LitElement, html } from 'lit-element';
 import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
-
+import { ColumnStyles } from '../styles/columns.js';
 import './bilara-cell.js';
 import './bilara-suggestions.js';
 
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
     return html`
+    ${ColumnStyles}
     <style>
 div.row {
   display: flex;
@@ -24,13 +25,13 @@ bilara-cell {
   outline: 0px solid transparent;
 }
 bilara-cell.string {
-  flex-basis: 50%;
   padding: 0 8px;
   max-width: 40rem;
   margin: 0 16px;
 }
 
     </style>
+    
     ${ this.segmentId ? 
       html`<div class="row" id="${this.segmentId}">
       ${this._orderedFields.map(field => {

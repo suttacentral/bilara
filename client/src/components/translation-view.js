@@ -14,8 +14,10 @@ import './bilara-search.js';
 import './bilara-spinning-hourglass.js';
 
 
+
 // These are the shared styles needed by this element.
 import { SharedStyles } from './shared-styles.js';
+import { ColumnStyles } from '../styles/columns.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
 
@@ -42,6 +44,7 @@ class TranslationView extends connect(store)(PageViewElement) {
     return html`
     ${SharedStyles}
     <style>
+      
       :host {
         display: flex;
         justify-content: center
@@ -161,6 +164,7 @@ class TranslationView extends connect(store)(PageViewElement) {
   transition: 0s;
 }
     </style>
+    ${ColumnStyles}
     <div id="container">
 
       <section id="translation">
@@ -171,6 +175,7 @@ class TranslationView extends connect(store)(PageViewElement) {
             <div id="field-headings">
             ${repeat(Object.values(this._orderedFields), fieldName => {
               return html`<span class="field"
+                                field="${fieldName}"
                                 draggable="true"
                                 title="Drag and drop columns in any order"
                                 @drop="${this._dropHandler}"
