@@ -11,16 +11,21 @@
 module.exports = {
   staticFileGlobs: [
     'manifest.json',
-    'src/**/*',
+    'src/**',
+    'images/**'
   ],
   runtimeCaching: [
     {
+      urlPattern: /\/api\//,
+      handler: 'networkOnly'
+    },
+    {
       urlPattern: /\/@webcomponents\/webcomponentsjs\//,
-      handler: 'fastest'
+      handler: 'cacheFirst'
     },
     {
       urlPattern: /^https:\/\/fonts.gstatic.com\//,
-      handler: 'fastest'
+      handler: 'cacheFirst'
     }
   ]
 };
