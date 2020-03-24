@@ -26,7 +26,11 @@ module.exports = {
     {
       urlPattern: /^https:\/\/fonts.gstatic.com\//,
       handler: 'cacheFirst'
-    }
+    },
+    {
+		urlPattern: /.*\/node_modules\/.*/,
+		handler: 'cacheFirst'
+	}
   ],
   navigateFallback: '/index.html',
   navigateFallbackWhitelist: [/^(?!.*\.json$|\/api\/).*/]
