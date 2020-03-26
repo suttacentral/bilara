@@ -115,7 +115,7 @@ class TranslationView extends connect(store)(PageViewElement) {
     line-height: 24px;
         text-align: center;
         font-weight: 600;
-        background-color: var(--bilara-yellow);
+        background-color: var(--bilara-magenta);
         color: var(--bilara-primary-background-color);
         white-space: nowrap;
         position: absolute;

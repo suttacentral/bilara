@@ -6,10 +6,11 @@ class BilaraSpinningHourglass extends LitElement {
     static get styles(){
         return css`
         :host {
-            height: 100%;
-            margin-top: 30vh;
-            border-spacing: 0;
-            border-collapse: collapse;
+
+        }
+
+        table{
+             margin-top: 30vh;
         }
         
         td > span {

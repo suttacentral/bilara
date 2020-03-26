@@ -60,7 +60,7 @@ class NavItem extends LitElement {
         font-size: 0.75em;
     top: 6px;
     left: 4px;
-     color: var(--bilara-yellow)
+     color: var(--bilara-magenta)
       }
 
       .division {
@@ -73,7 +73,8 @@ class NavItem extends LitElement {
       .navigable{
         padding: 4px 24px 4px 24px;
            font-weight: 600;
-           display: inline-block
+           display: inline-block;
+           border-radius: 4px
       }
       .navigable:hover{
         background-color: var(--bilara-secondary-background-color)

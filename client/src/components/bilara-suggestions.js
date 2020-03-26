@@ -19,7 +19,8 @@ ins{
   color: var(--bilara-blue)
 }
 mark{
-  color: var(--bilara-yellow)
+  color: var(--bilara-red);
+  background-color: var(--bilara-yellow)
 }
 
 .row{
