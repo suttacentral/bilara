@@ -40,14 +40,14 @@ class BilaraApp extends connect(store)(LitElement) {
 
   render() {
     
-    const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null;
-
+    const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null,
+          theme = this._theme in themes ? this._theme : defaultTheme;
 
     // Anything that's related to rendering should be done in here.
     return html`
     <style id="theme">
       :host {
-        ${themes[this._theme || defaultTheme]}
+        ${themes[theme]}
       }
     </style>
     <style>
