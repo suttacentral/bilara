@@ -25,6 +25,8 @@ export const themes = {
         --bilara-green: #859900;
         --bilara-black: #002b36;
         --bilara-footer-height: 108px;
+        --scrollbar-size: 8px;
+        --scrollbar-minlength: 1.5rem; 
         color: var(--bilara-primary-text-color)
     `,
         'candima': css`

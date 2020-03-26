@@ -45,11 +45,6 @@ class BilaraApp extends connect(store)(LitElement) {
     // Anything that's related to rendering should be done in here.
     return html`
     <style>
-    :host {
-  --scrollbar-size: 8px;
-  --scrollbar-minlength: 1.5rem; 
-    }
-
     header {
       position: fixed;
       top: 0;
