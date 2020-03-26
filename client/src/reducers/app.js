@@ -30,7 +30,7 @@ const INITIAL_USER_STATE = {
 const PREF_STATE = {
   ordering: {},
   tertiary: {},
-  theme: 'bilara'
+  theme: false
 }
 
 function getInitialUserState(){

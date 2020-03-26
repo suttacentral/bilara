@@ -1,5 +1,7 @@
 import { css } from 'lit-element';
 
+export const defaultTheme = 'suriya';
+
 export const themes = {
     'suriya': css`
         --bilara-primary-color: #dc322f;

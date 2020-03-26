@@ -33,7 +33,7 @@ import {
 
 import './login-view.js';
 
-import {themes} from '../styles/themes.js';
+import {themes, defaultTheme} from '../styles/themes.js';
 
 class BilaraApp extends connect(store)(LitElement) {
 
@@ -47,7 +47,7 @@ class BilaraApp extends connect(store)(LitElement) {
     return html`
     <style id="theme">
       :host {
-        ${themes[this._theme]}
+        ${themes[this._theme || defaultTheme]}
       }
     </style>
     <style>
