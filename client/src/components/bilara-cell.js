@@ -3,6 +3,8 @@ import { LitElement, html } from 'lit-element';
 
 import { store } from '../store.js';
 
+import { contentEditableValue } from '../util.js';
+
 export class BilaraCell extends LitElement{
   render() {
     return html`<style>
@@ -67,7 +69,7 @@ export class BilaraCell extends LitElement{
     </style>
     <div>
     <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
-                  contenteditable="${this._editable == true ? 'plaintext-only' : 'false'}"
+                  contenteditable="${this._editable == true ? contentEditableValue : 'false'}"
                   @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"
                   @input="${this._inputEvent}"

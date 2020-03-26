@@ -28,3 +28,9 @@ export function storageLoad(namespace, key) {
 export function setEquality(a, b){
   return JSON.stringify([...a].sort()) == JSON.stringify([...b])
 }
+
+export const contentEditableValue = (()=>{
+  let div = document.createElement('div');
+  div.setAttribute('contenteditable', 'PLAINTEXT-ONLY');
+  return div.contentEditable === 'plaintext-only' ? 'plaintext-only' : 'true';
+})();
