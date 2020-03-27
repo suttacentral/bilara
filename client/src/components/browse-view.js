@@ -45,21 +45,18 @@ class NavItem extends LitElement {
          position: relative
       }
       :host:before{
-        content: "🖛";
+        content: "▶";
         display: inline-block;
         position: absolute;
         font-size: 0.75em;
-    top: 6px;
-    left: 4px;
-    color: var(--bilara-green)
+    top: 10px;
+    left: 8px;
+    color: var(--bilara-green);
       }
       [open=""]:before{
-        content: "🖡";
-        display: inline-block;
-        position: absolute;
-        font-size: 0.75em;
-    top: 6px;
-    left: 4px;
+transform: rotate(90deg);
+    top: 10px;
+    left: 8px;
      color: var(--bilara-magenta)
       }
 

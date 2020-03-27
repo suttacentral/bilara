@@ -187,23 +187,6 @@ font-size: 12px;
   list-style: none; /* Remove default bullets */
 }
 
-ul li::before, 
-ul li::after{
-display: inline-block;
-vertical-align: baseline;
-  color: var(--bilara-primary-color); /* Change the color */
-}
-
-ul li::before {
-  content: "⫷";  
-  width: 1.5em; /* Also needed for space (tweak if needed) */
-  margin-left: -1.5em; /* Also needed for space (tweak if needed) */
-}
-ul li::after {
-  content: "⫸";  
-  width: 1.5em; /* Also needed for space (tweak if needed) */
-  margin-left: .5em; /* Also needed for space (tweak if needed) */
-}
 
 select {
   width: 120px;
