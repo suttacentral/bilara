@@ -8,6 +8,7 @@ import { store } from '../store.js';
 
 import { updateTertiary } from '../actions/app.js';
 
+
 class BilaraDialog extends LitElement {
     static get styles() {
         return css`
@@ -21,10 +22,10 @@ class BilaraDialog extends LitElement {
                     justify-content: center;
                     align-items: center
                 }
-                lion-checkbox-group{
+                #columns{
                     margin-bottom: 16px
                 }
-                lion-checkbox{
+                l.checkbox{
                     padding: 8px 0;
                     color: white;
                     font-weight: 500;
@@ -39,7 +40,7 @@ class BilaraDialog extends LitElement {
                     height: 16px
                 }
                 button {
-                     background-color: white;
+                     background-color: var(--bilara-cyan);
                     font-size: 18px;
                     font-variant-caps: all-small-caps;
                     font-weight: 600;
@@ -98,6 +99,7 @@ class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
               <lion-checkbox-group id="columns">
               ${repeat(this._fieldNames, (field) => html`
               <lion-checkbox 
+               class="checkbox"
                 .choiceValue=${field}
                 label="${field}"
                 ?disabled="${this._lockedFields.includes(field)}"
