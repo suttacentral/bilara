@@ -22,10 +22,13 @@ class BilaraDialog extends LitElement {
                     justify-content: center;
                     align-items: center
                 }
-                #columns{
-                    margin-bottom: 16px
+                div{
+                    position: relative
                 }
-                l.checkbox{
+                #columns{
+                    padding-bottom: 30%
+                }
+                .checkbox{
                     padding: 8px 0;
                     color: white;
                     font-weight: 500;
@@ -40,25 +43,31 @@ class BilaraDialog extends LitElement {
                     height: 16px
                 }
                 button {
-                     background-color: var(--bilara-cyan);
+                     background-color: gold;
                     font-size: 18px;
                     font-variant-caps: all-small-caps;
                     font-weight: 600;
-                    padding: 4px 16px;
+                    height: 72px;
+                    width: 72px;
                     margin: 8px 8px;
-                    border-radius: 8px
+                    border-radius: 50%;
+                    position: absolute;
+                    top: -20%;
                   }
                   button:hover{
-                     background-color: chartreuse;
+                     background-color: var(--bilara-cyan);
+
                   }
                   .accept-button{
                     color: green;
                     border: 4px solid green;
+                                         left: -100px
 
                   }
                       .cancel-button{
                     color: red;
                     border: 4px solid red; 
+                                         right: -100px
                   }
             `
     }

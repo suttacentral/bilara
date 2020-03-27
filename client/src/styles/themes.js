@@ -129,6 +129,27 @@ export const themes = {
         --bilara-footer-height: 108px;
         color: var(--bilara-primary-text-color)
 `,
+'niraya': css`
+        --bilara-primary-color: #666;
+        --bilara-secondary-color: firebrick;
+        --bilara-primary-background-color: darkred;
+        --bilara-secondary-background-color: red;
+        --bilara-tertiary-background-color: #666;
+        --bilara-primary-text-color: crimson;
+        --bilara-emphasized-text-color: maroon;
+        --bilara-secondary-text-color: maroon;
+        --bilara-yellow: orange;
+        --bilara-orange: orange;
+        --bilara-red: red;
+        --bilara-magenta: magenta;
+        --bilara-violet: fuschia;
+        --bilara-blue: blue;
+        --bilara-cyan: cyan;
+        --bilara-green: tomato;
+        --bilara-black: #666;
+        --bilara-footer-height: 108px;
+        color: var(--bilara-primary-text-color)
+`,
 'suññatā': css`
         --bilara-black: white;
         --bilara-footer-height: 108px;
