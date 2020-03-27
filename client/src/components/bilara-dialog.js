@@ -12,12 +12,52 @@ class BilaraDialog extends LitElement {
     static get styles() {
         return css`
                 :host {
-                    background-color: #fff;
+                     background-color: purple;
+                    border-radius: 50%;
+                    width: 400px;
+                    height: auto;
+                    padding-top:5%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center
+                }
+                lion-checkbox-group{
+                    margin-bottom: 16px
+                }
+                lion-checkbox{
+                    padding: 8px 0;
+                    color: white;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                }
+                label{
+                        margin-left: 8px;
+                }
+                input{
+                    margin: 0;
+                    height: 16px
                 }
                 button {
-                    color: black;
-                    font-size: 28px;
-                    line-height: 28px;
+                     background-color: white;
+                    font-size: 18px;
+                    font-variant-caps: all-small-caps;
+                    font-weight: 600;
+                    padding: 4px 16px;
+                    margin: 8px 8px;
+                    border-radius: 8px
+                  }
+                  button:hover{
+                     background-color: chartreuse;
+                  }
+                  .accept-button{
+                    color: green;
+                    border: 4px solid green;
+
+                  }
+                      .cancel-button{
+                    color: red;
+                    border: 4px solid red; 
                   }
             `
     }
