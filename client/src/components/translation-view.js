@@ -215,9 +215,10 @@ class TranslationView extends connect(store)(PageViewElement) {
         }
         </div>
       </section>
-      <bilara-search ._sourceField="${this._sourceField}"
+
+      ${ this._segments.length  == 0 ? html`` : html`<bilara-search ._sourceField="${this._sourceField}"
                      ._targetField="${this._targetField}">
-      </bilara-search>
+      </bilara-search>`}
     `
   }
 

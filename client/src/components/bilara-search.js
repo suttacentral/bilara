@@ -91,43 +91,28 @@ export class BilaraSearch extends connect(store)(LitElement){
     </dl>
         </details>
         `
-    }
+  }
 
-    _submitResult(e){
-      console.log(e);
-      console.log(e.target);
-      e.preventDefault();
+  _submitResult(e) {
+    console.log(e);
+    console.log(e.target);
+    e.preventDefault();
 
-    }
+    e.target.classList.add("replaced");
+  }
 
-    _renderResults(){
-      return html`
+  _renderResults() {
+    return html`
       <section id="results">
-      ${repeat(this._results, (r) => JSON.stringify([r.segmentId, r.replaced]), (result) => 
-        html`
-        <form class="result" id="${result.segmentId}" @submit="${this._submitResult}">
-          <div class="result-location">
-          <a href="/translation/mn23_translation-en-sujato#mn23:43.1" title="Go to MN 23:43.1">MN 23:43.1. The Discourse on the Noble Search</a>
-          ${result.replaced ? 
-            html`<button type="button" class="undo-button" title="Undo this replace">Undo</button>` :
-            html`<button type="submit" class="replace-button" title="Replace this term">Replace</button>`
-         }
-        </div>
-          
-        <div class="result-translation-text">Standing to one side, the god Kassapa <mark>recited</mark> this verse in the Buddha’s presence:</div>
-        <div class="result-root-text">Ekamantaṃ ṭhito kho māgadho devaputto bhagavantaṃ <mark>gāthāy</mark>a ajjhabhāsi:</div>
-      </form>`
-
-      )
-
-      
-    }
+      ${repeat(this._results, (r) => JSON.stringify([r.segmentId, r.replaced]), (result, i) => 
+        html`<bilara-search-result></bilara-search-result>`
+      )}
       </section>
       `
-    }
+  }
 
-    static get styles(){
-      return css`
+  static get styles() {
+    return css`
       #translation {
         margin-bottom: 72px;
       }
@@ -299,6 +284,7 @@ export class BilaraSearch extends connect(store)(LitElement){
         color: var(--bilara-secondary-background-color)
       }
       `
-    }
-  } 
+  }
+}
+
 window.customElements.define('bilara-search', BilaraSearch);
