@@ -33,23 +33,17 @@ import {
 
 import './login-view.js';
 
-import {themes, defaultTheme} from '../styles/themes.js';
+import { themes, defaultTheme } from '../styles/themes.js';
 
 class BilaraApp extends connect(store)(LitElement) {
 
 
   render() {
     
-    const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null,
-          theme = this._theme in themes ? this._theme : defaultTheme;
+    const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null;
 
     // Anything that's related to rendering should be done in here.
     return html`
-    <style id="theme">
-      :host {
-        ${themes[theme]}
-      }
-    </style>
     <style>
     header {
       position: fixed;
@@ -336,7 +330,7 @@ select option {
     this._avatarUrl = state.app.user.avatarUrl;
     this._userMustRevalidate = state.app.user.revalidate;
     this._activeSegmentId = state.segmentData ? state.segmentData.activeSegmentId : '';
-    this._theme = state.app.pref.theme;
+    this._theme = state.app.pref.theme || defaultTheme;
   }
 }
 

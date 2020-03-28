@@ -1,5 +1,8 @@
 import { css } from 'lit-element';
 
+
+import { store } from '../store.js';
+
 export const defaultTheme = 'suriya';
 
 export const themes = {
@@ -155,3 +158,18 @@ export const themes = {
         --bilara-footer-height: 108px;
 `
 }
+
+
+let oldTheme = null,
+    styleElement = document.createElement('STYLE');
+    
+store.subscribe( () => {
+  const state = store.getState(),
+        theme = state.app.pref.theme || defaultTheme;
+  if (oldTheme != theme) {
+    
+    styleElement.innerHTML = 'body{' + themes[theme] + '}';
+    document.body.appendChild(styleElement);
+    oldTheme = theme;
+  }
+})
