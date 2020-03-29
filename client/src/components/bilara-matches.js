@@ -1,12 +1,12 @@
 import { LitElement, html } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
-export class BilaraSuggestions extends LitElement{
+export class BilaraMatches extends LitElement{
     render() {
       return html`
       <style>
 
-      #suggestions {
+      #matches {
           font-size: 80%;
           color: var(--bilara-empasized-text-color);
           margin: 8px 5% 0;
@@ -66,8 +66,8 @@ mark{
         }
       </style>
       
-      <div id="suggestions" class="column">
-      ${ this._suggestions.map( (item) => html`
+      <div id="matches" class="column">
+      ${ this._matches.map( (item) => html`
       
         <div class="row">
         <span class="root_string">${unsafeHTML(item.highlighted)}</span>
@@ -84,7 +84,7 @@ mark{
   
     static get properties(){
       return {
-        _suggestions: {type: Object}
+        _matches: {type: Object}
       }
     }
 
@@ -101,7 +101,7 @@ mark{
         this.isDragging = false;
       } else {
         const string = e.target.textContent;
-        this.dispatchEvent(new CustomEvent('suggest', {
+        this.dispatchEvent(new CustomEvent('match', {
             detail: {string},
             bubbles: true,
             composed: true
@@ -116,4 +116,4 @@ mark{
     }
   }
   
-  window.customElements.define('bilara-suggestions', BilaraSuggestions);
+  window.customElements.define('bilara-matches', BilaraMatches);

@@ -4,7 +4,7 @@ import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { ColumnStyles } from '../styles/columns.js';
 import './bilara-cell.js';
-import './bilara-suggestions.js';
+import './bilara-matches.js';
 
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
@@ -51,7 +51,7 @@ bilara-cell.string {
       }
       
       </div>
-      ${ (this._isActive && this._suggestions) ? html`<bilara-suggestions ._suggestions=${this._suggestions}></bilara-suggestions>` : ''}
+      ${ (this._isActive && this._matches) ? html`<bilara-matches ._matches=${this._matches}></bilara-matches>` : ''}
     ` : html `<div class="row" id="fields">${this._orderedFields.map(field => {
       return html`<span class="field-title">${field}</span>`
     })
@@ -68,7 +68,7 @@ bilara-cell.string {
       _sourceField: String,
       _targetField: String,
       _orderedFields: {type: Array, hasChanged (newVal, oldVal) {return true} },
-      _suggestions: {type: Object},
+      _matches: {type: Object},
       _rootLang: String,
       _translationLang: String,
       _tertiaryLang: String
@@ -81,11 +81,11 @@ bilara-cell.string {
   }
 
   firstUpdated(changedProperties) {
-    this.addEventListener('suggest', (e) => {
-      const suggestedString = e.detail.string;
+    this.addEventListener('match', (e) => {
+      const matchedString = e.detail.string;
       let cell = this.shadowRoot.querySelector(`bilara-cell[field=${this._targetField}`);
 
-      cell._suggestValue(suggestedString);
+      cell._matchValue(matchedString);
 
     });
 
@@ -127,17 +127,17 @@ bilara-cell.string {
     const segmentId = this.segmentId;
     store.dispatch(focusSegment(segmentId));
 
-    this.fetchSuggestions();
+    this.fetchmatches();
     let nextSibling = this.nextElementSibling;
     if (nextSibling) {
-      nextSibling.fetchSuggestions();
+      nextSibling.fetchmatches();
     }
   }
 
 
 
-  fetchSuggestions(){
-    if (this._suggestions)  return
+  fetchmatches(){
+    if (this._matches)  return
 
     const sourceString = this._segment[this._sourceField],
           rootLang = this._fields[this._sourceField].language.uid,
@@ -147,7 +147,7 @@ bilara-cell.string {
       let request = fetch(`/api/tm/?string=${sourceString}&root_lang=${rootLang}&translation_lang=${targetLang}&exclude_uid=${segmentId}`, {mode: 'cors'})
           .then(res => res.json())
           .then(data => {
-              this._suggestions = data;
+              this._matches = data;
           }).catch( (e) => {console.log(e)});
   }
 

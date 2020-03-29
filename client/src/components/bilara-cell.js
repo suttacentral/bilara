@@ -136,7 +136,7 @@ export class BilaraCell extends LitElement{
     this.shadowRoot.querySelector('.string').innerText = value || '';
   }
 
-  _suggestValue(value) {
+  _matchValue(value) {
     this._setValue(value);
     this.focus();
   }
@@ -202,7 +202,7 @@ export class BilaraCell extends LitElement{
     if (e.key == 'Enter') {
       e.preventDefault();
       e.stopPropagation();
-      this._suggestions = null;
+      this._matches = null;
   
       const value = e.currentTarget.textContent;
       
