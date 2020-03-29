@@ -106,7 +106,7 @@ export const themes = {
         --bilara-violet: #B10DC9;
         --bilara-blue: #0074D9;
         --bilara-cyan: #c5a1a0;
-        --bilara-green:#c9f7ca;
+        --bilara-green:#70ea73;
         --bilara-black: #DEE4F1;
         --bilara-footer-height: 108px;
         color: var(--bilara-primary-text-color)
@@ -129,6 +129,27 @@ export const themes = {
         --bilara-cyan: #c5a1a0;
         --bilara-green: #2ECC40;
         --bilara-black: #727272;
+        --bilara-footer-height: 108px;
+        color: var(--bilara-primary-text-color)
+`,
+'gandhabba': css`
+        --bilara-primary-color: #92a8d1;
+        --bilara-secondary-color: #F661B1;
+        --bilara-primary-background-color: #1C1C1C;
+        --bilara-secondary-background-color:  #272727;
+        --bilara-tertiary-background-color: #25313E;
+        --bilara-primary-text-color: rgba(255,255,255,0.8);
+        --bilara-emphasized-text-color:  white;
+        --bilara-secondary-text-color: #D4D4D4;
+        --bilara-yellow: rgba(230, 219, 116,0.1);
+        --bilara-orange: #F39B35;
+        --bilara-red: #FC4384;
+        --bilara-magenta: #8059a2;
+        --bilara-violet: #FC4384;
+        --bilara-blue: #00A7AA;
+        --bilara-cyan: #c5a1a0;
+        --bilara-green: #98E342;
+        --bilara-black: #272727;
         --bilara-footer-height: 108px;
         color: var(--bilara-primary-text-color)
 `,

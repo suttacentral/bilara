@@ -19,7 +19,7 @@ export class BilaraCell extends LitElement{
     }
 
     .string[contenteditable="plaintext-only"] {
-      font-family: "source serif pro";
+      font-family: "source serif variable";
     }
     .string[contenteditable="plaintext-only"]:focus {
       border-radius: 8px;

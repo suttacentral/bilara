@@ -13,8 +13,9 @@ class BilaraDialog extends LitElement {
     static get styles() {
         return css`
                 :host {
-                     background-color: purple;
+                     background-color: var(--bilara-black);
                     border-radius: 50%;
+                    border: 4px solid var(--bilara-magenta);
                     width: 400px;
                     height: auto;
                     padding-top:5%;
@@ -37,13 +38,14 @@ class BilaraDialog extends LitElement {
                 }
                 label{
                         margin-left: 8px;
+                        var(--bilara-primary-text-color)
                 }
                 input{
                     margin: 0;
                     height: 16px
                 }
                 button {
-                     background-color: gold;
+                     background-color: var(--bilara-tertiary-background-color);
                     font-size: 18px;
                     font-variant-caps: all-small-caps;
                     font-weight: 600;
@@ -55,18 +57,18 @@ class BilaraDialog extends LitElement {
                     top: -20%;
                   }
                   button:hover{
-                     background-color: var(--bilara-cyan);
+                     background-color: var(--bilara-primary-background-color);
 
                   }
                   .accept-button{
-                    color: green;
-                    border: 4px solid green;
+                    color: var(--bilara-green);
+                    border: 4px solid var(--bilara-green);
                                          left: -100px
 
                   }
                       .cancel-button{
-                    color: red;
-                    border: 4px solid red; 
+                    color: var(--bilara-red);
+                    border: 4px solid var(--bilara-red); 
                                          right: -100px
                   }
             `

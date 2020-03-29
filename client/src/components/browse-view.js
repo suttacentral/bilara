@@ -69,7 +69,7 @@ transform: rotate(90deg);
 
       .navigable{
         padding: 4px 24px 4px 24px;
-           font-weight: 600;
+           font-weight: 500;
            display: inline-block;
            border-radius: 4px
       }
@@ -189,8 +189,10 @@ class BrowseView extends connect(store)(PageViewElement) {
       }
       h2{
         text-align: center;
-        font-weight:600;
-        margin: 0 0 16px 0
+    font-weight: 500;
+    margin: 0 0 16px 0;
+    font-style: italic;
+    font-size: 16px;
       }
 
       .problems {

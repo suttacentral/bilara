@@ -67,9 +67,11 @@ class BilaraApp extends connect(store)(LitElement) {
 
     [main-title] {
       font-weight: 900;
+      font-family: "source serif pro";
       font-size: 1rem;
       margin: 0;
-      text-transform: uppercase;
+      
+      font-variant-caps: all-small-caps;
       letter-spacing: 2px;
       padding: 2px 8px;
       color: var(--bilara-secondary-color);
@@ -134,7 +136,7 @@ class BilaraApp extends connect(store)(LitElement) {
       border: 1px solid var(--bilara-secondary-text-color);
       border-radius: 8px;
       display: inline-block;
-      text-transform: uppercase;
+      font-variant-caps: all-small-caps;
       letter-spacing: .05em;
       background-color: inherit;
     }

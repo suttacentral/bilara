@@ -19,6 +19,7 @@ div.row {
 div:focus-within {
   background-color: var(--bilara-secondary-background-color);
   color: var(--bilara-emphasized-text-color);
+  font-weight: 450
 }
 /* For some reason, the outline appears on empty segments unless this is included.*/
 bilara-cell {
