@@ -219,6 +219,90 @@ select option {
 }
 
 
+
+
+@supports(-webkit-appearance: none) or (-moz-appearance: none) {
+  input[type='radio'] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    --active: var(--bilara-green);
+    --active-inner: #fff;
+    --focus: 2px rgba(39, 94, 254, .25);
+    --border: #BBC1E1;
+    --border-hover: #275EFE;
+    --background: var(--bilara-secondary-background-color);
+    --disabled: #F6F8FF;
+    --disabled-inner: #E1E6F9;
+    height: 16px;
+    width: 16px;
+    outline: none;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    margin: 0 2px 0 0;
+    cursor: pointer;
+    border: 1px solid var(--bc, var(--border));
+    background: var(--b, var(--background));
+    -webkit-transition: background .3s, border-color .3s, box-shadow .2s;
+    transition: background .3s, border-color .3s, box-shadow .2s;
+    border-radius: 50%;
+      display: inline-block;
+      vertical-align: middle;
+
+  }
+}
+
+
+input[type='radio']:checked {
+  --b: var(--active);
+  --bc: var(--active);
+}
+
+input[type='radio']:checked:after {
+  content: " ";
+  outline: 2px solid white;
+    width: 64px;
+display: inline-block;
+    position: absolute;
+    bottom: -8px;
+}
+
+
+/* Apply another border color on hover if not checked & not disabled */
+input[type='radio']:not(:checked):not(:disabled):hover {
+  --bc: var(--border-hover);
+}
+
+input[type='radio'] {
+outline: none;
+  transition: box-shadow .2s;
+}
+
+input[type='radio']:focus {
+  box-shadow: 0 0 0 var(--focus);
+}
+
+input[type='radio'] + label {
+  font-size: 12px;
+  font-weight: 600;
+      display: inline-block;
+       vertical-align: middle;
+       font-family: inherit;
+       opacity: 0.6;
+       color: white;
+       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+input[type='radio']:checked + label{
+  opacity: 1
+
+}
+input[type='radio']:disabled + label {
+    cursor: not-allowed;
+}
+label + input{
+        margin-left: 16px!important
+}?* I don't know why the important is needed.*/
     </style>
 
     <!-- Header -->
@@ -226,8 +310,16 @@ select option {
     <div class="app-header-left">
        <a href="/browse"><h1 main-title>${this.appTitle}</h1></a>
        </div>
-       <div class="app-header-right">
 
+       <div class="app-header-center">
+       <form>
+  <input type="radio" id="commit" name="edit" value="commit" checked>
+  <label for="commit">Commit</label>
+  <input type="radio" id="suggest" name="edit" value="suggest">
+  <label for="suggest">Suggest</label><br>
+</form>
+</div>
+       <div class="app-header-right">
         ${
           this._username ? html`<a class="user-name-link" href="${this._avatarUrl ? 'https://github.com/' + this._username : 'https://www.youtube.com/watch?v=oHg5SJYRHA0'}"><figure>
   <img src="${this._avatarUrl || '../images/bob.jpg'}" alt="${this._username}">

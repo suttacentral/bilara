@@ -231,7 +231,7 @@ class TranslationView extends connect(store)(PageViewElement) {
       _failure: { type: Boolean },
       _sourceField: { type: String },
       _targetField: { type: String },
-      _suggestions: { type: Object },
+      _matches: { type: Object },
       _orderedFields: { type: Array, reflect: true },
       _potentialFields: { type: Array },
       _pushState: { type: Object }
