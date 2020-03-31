@@ -3,8 +3,8 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { LitElement, html, css } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 
-
-export class BilaraSearch extends connect(store)(LitElement){
+import './bilara-search-result.js'
+export class BilaraSearch extends connect(store)(LitElement) {
 
   static get properties(){
     return {
@@ -153,11 +153,29 @@ export class BilaraSearch extends connect(store)(LitElement){
         padding: 0 8px 16px;
         display: block
       }
+
+      .replace-button, .undo-button {
+        display: none;
+      }
+
+      form.replaced .undo-button {
+        display: inline-block;
+      }
+
+      form:not(.replaced) .replace-button {
+        display: inline-block;
+      }
       input[type="search"] {
         border: 1px solid var(--bilara-red);
         border-radius: 2px;
         width: 100%;
         padding: 4px 8px
+      }
+      input::placeholder {
+        opacity: 0.5;
+      }
+      input:focus::placeholder {
+        opacity: 0;
       }
       label {
         font-size: 80%;

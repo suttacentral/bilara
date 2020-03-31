@@ -31,6 +31,8 @@ import { updateOrdering, updateTertiary } from '../actions/app.js';
 import { getChildMatchingKey } from '../util.js';
 import { sortByKeyFn, storageLoad, storageSave, setEquality } from '../util.js';
 
+import { featureFlags } from '../util.js';
+
 store.addReducers({
   segmentData,
   search: searchReducer
@@ -168,7 +170,7 @@ class TranslationView extends connect(store)(PageViewElement) {
 
       <section id="translation">
       <div id="segments">
-        ${ this._segments.length == 0 || this._orderedFields.length == 0 ? 
+        ${ !this._segments ? 
           html`<bilara-spinning-hourglass></bilara-spinning-hourglass>` :
           html`
             <div id="field-headings">
@@ -216,9 +218,11 @@ class TranslationView extends connect(store)(PageViewElement) {
         </div>
       </section>
 
-      ${ this._segments.length  == 0 ? html`` : html`<bilara-search ._sourceField="${this._sourceField}"
-                     ._targetField="${this._targetField}">
-      </bilara-search>`}
+      ${ this._segments && featureFlags.search
+          ? html`<bilara-search ._sourceField="${this._sourceField}"
+                                ._targetField="${this._targetField}">
+                 </bilara-search>` 
+          : html`` }
     `
   }
 
@@ -271,9 +275,7 @@ class TranslationView extends connect(store)(PageViewElement) {
       this._orderedFields = this._getFieldOrder(Object.keys(this._fields), state.app.pref.ordering);
       this._potentialFields = state.segmentData.data.potential;
     } else {
-      this._segments = {};
-      this._fields = {};
-      this._orderedFields = [];
+      this._segments = null;
     }
 
     this._pushState = state.segmentData.pushState || {};
@@ -295,8 +297,6 @@ class TranslationView extends connect(store)(PageViewElement) {
     this._saveFieldOrder(fields);
     this._orderedFields = fields;
     let savedSegments = this._segments;
-    // this._segments = {};
-    // setTimeout(()=> this._segments = savedSegments, 1);
   }
 
   _dragoverHandler(event){

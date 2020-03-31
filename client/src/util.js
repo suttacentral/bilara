@@ -34,3 +34,9 @@ export const contentEditableValue = (()=>{
   div.setAttribute('contenteditable', 'PLAINTEXT-ONLY');
   return div.contentEditable === 'plaintext-only' ? 'plaintext-only' : 'true';
 })();
+
+export const featureFlags = {
+  search: !!window.location.host.match(/localhost\b/)
+}
+
+console.log(featureFlags);
