@@ -37,24 +37,24 @@ export class BilaraSearch extends connect(store)(LitElement) {
   _renderForm(){
     return html`
     <form>
-      <label>
+      <label class="check-label" for="radio-thisproject">
         <input type="radio" id="radio-thisproject" name="scope" checked>
         This project
       </label>
-      <label>
+      <label class="check-label" for="radio-all">
         <input type="radio" id="radio-all" name="scope">
         All
       </label>
-      <label>Find in translation
+      <label class="search-label" for="find-translation">Find in translation
         <input type="search" id="find-translation" name="find-translation" placeholder="recited">
       </label>
-      <label>Find in root
+      <label class="search-label" for="find-root">Find in root
         <input type="search" id="find-root" name="find-root" placeholder="gāthāy">
         </label>
-      <label>Replace in translation
+      <label class="search-label" for="replace">Replace in translation
         <input type="search" id="replace" name="replace" placeholder="shouted">
       </label>
-      <label>UID filter
+      <label class="search-label" for="uid-filter">UID filter
         <input type="search" id="uid-filter" name="uid-filter" placeholder="dn*">
       </label>
       <div class="button-row">
@@ -66,7 +66,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
       </span>
       </div>
       <input type="checkbox" id="match-caps" name="match-caps" checked>
-        <label for="match-caps">Match caps</label>
+        <label class="check-label" for="match-caps">Match caps</label>
       </form>
     `
   }
@@ -124,7 +124,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
         position: sticky;
         padding: 0 0 24px 0;
         align-self: flex-start;
-        top: 36px;
+        top: 44px;
         overflow-y: auto;
         height: 100vh;
         -webkit-overflow-scrolling: touch;
@@ -168,8 +168,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
       input[type="search"] {
         border: 1px solid var(--bilara-red);
         border-radius: 2px;
+        padding: 4px 8px;
         width: 100%;
-        padding: 4px 8px
+
       }
       input::placeholder {
         opacity: 0.5;
@@ -180,15 +181,13 @@ export class BilaraSearch extends connect(store)(LitElement) {
       label {
         font-size: 80%;
         margin-top: 8px;
-        margin-right: 16px
+        margin-right: 16px;
+        display: inline-block;
+       
       }
-      input,
-      label {
-        display: inline-block
-      }
-      [for="find-root"],
-      [for="find-translation"] {
-        display: block
+      .search-label{
+      	display: block;
+      	 width: 100%;
       }
       .button-row {
         display: flex;
@@ -286,20 +285,28 @@ export class BilaraSearch extends connect(store)(LitElement) {
       details {
         padding: 4px 8px;
         margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--bilara-emphasized-text-color);
+        max-width: fit-content;
       }
       summary {
         font-weight: 600;
-        font-size: 80%
+        color: var(--bilara-secondary-text-color);
       }
       dt {
-        font-weight: 600
+        font-weight: 600;
+        margin-top: 8px
+      }
+      dd{
+      	margin: 0
       }
       kbd {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
         padding: 4px 8px;
         border-radius: 4px;
         background-color: var(--bilara-secondary-text-color);
-        color: var(--bilara-secondary-background-color)
+        color: var(--bilara-secondary-background-color);
+        font-size: 9px
       }
       `
   }
