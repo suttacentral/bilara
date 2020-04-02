@@ -14,6 +14,7 @@ from copy import copy, deepcopy
 from threading import Event
 
 from collections import defaultdict, Counter
+from bisect import bisect_left
 
 import git_fs
 from search import search
@@ -63,28 +64,28 @@ saved_state_file = pathlib.Path('./.saved_state.pickle')
 
 def save_state():
     print('Saving file index')
+    stored = (
+      '_tree_index',
+      '_uid_index',
+      '_muid_index',
+      '_file_index',
+      '_meta_definitions',
+      '_special_uid_mapping'
+    )
     with saved_state_file.open('wb') as f:
-        pickle.dump(
-            (_tree_index, _uid_index, _muid_index, _file_index, _meta_definitions),
-            f
-        )
+        pickle.dump({k: globals()[k] for k in stored}, f)
 
 def load_state():
-    global _tree_index
-    global _uid_index
-    global _muid_index
-    global _file_index
-    global _meta_definitions
-
     if not saved_state_file.exists():
         return
     try:
         with saved_state_file.open('rb') as f:
-            (_tree_index, _uid_index, _muid_index, _file_index, _meta_definitions) = pickle.load(f)
+            globals().update(pickle.load(f))
         print('Loaded saved file index')
         _build_complete.set()
     except Exception as e:    
         saved_state_file.unlink()
+
 _build_started = Event()
 _build_complete = Event()
 def make_file_index(force=False):
@@ -94,6 +95,7 @@ def make_file_index(force=False):
     global _muid_index
     global _file_index
     global _meta_definitions
+    global _special_uid_mapping
 
     if not force:
         load_state()
@@ -170,6 +172,7 @@ def make_file_index(force=False):
     _uid_index = uid_index
     _muid_index = muid_index
     _file_index = file_index
+    _special_uid_mapping = make_special_uid_mapping()
 
     for v in file_index.values():
         v['_meta'] = invert_meta(v['_meta'])
@@ -180,6 +183,19 @@ def make_file_index(force=False):
 
 _tree_index = None
 _uid_index = None
+
+def make_special_uid_mapping():
+  uid_mapping = {}
+  for file in REPO_DIR.glob('root/**/*.json'): 
+     if 'blurbs' in str(file): 
+         continue 
+     with file.open() as f: 
+         data = json.load(f) 
+     for k in data: 
+         uid = k.split(':')[0] 
+         if uid not in _uid_index and uid not in uid_mapping: 
+             uid_mapping[uid] = file.name.split('_')[0]
+  return uid_mapping
 
 class StatsCalculator:
     def __init__(self):
@@ -481,25 +497,12 @@ def get_condensed_tree(path):
     sum_counts(tree)
     return tree
 
-# def update_segment(segments, user):
-#     results = {}
-#     for filepath, group in groupby(segments.items(), lambda t: t[1]['filepath']):
-#         file_segments = list(group)
-#         results.update(update_file(filepath, file_segments, user))
-            
-#     try:
-#         tm.update_docs(segments)
-#     except Exception as e:
-#         logging.exception("Could not update TM")
-#     return results
-
 
 def get_parent_uid(uid):
     if uid in _uid_index:
         return uid
     
-    uids = sorted([uid] + list(_uid_index), key=bilarasortkey)
-    return uids[uids.index(uid)-1]
+    return _special_uid_mapping[uid]
 
 
 def update_segment(segment, user):
