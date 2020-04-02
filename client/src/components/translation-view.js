@@ -64,7 +64,7 @@ class TranslationView extends connect(store)(PageViewElement) {
         justify-content: space-around;
         margin-bottom: 16px;
         position: sticky;
-        top: 28px;
+        top: 34px;
         z-index: 10
       }
 
