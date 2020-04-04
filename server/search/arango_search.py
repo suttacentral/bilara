@@ -237,8 +237,9 @@ class Search:
 
     def yield_strings(self, files):
         for file in files:
-            if '_' not in file:
+            if '_' not in file.name:
                 logging.error(f'Invalid filename: {file}')
+                problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'Not a valid filename: "_" missing')
                 continue
             uid, muids = file.stem.split("_")
             if not uid:

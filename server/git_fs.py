@@ -125,14 +125,14 @@ def finalize_commit(branch_name=working_branch):
         _pending_commit = None
         return
     print(f'Pushing to {branch_name}... ', end='')
-    for i in range(0, 2):
+    for i in range(0, 3):
         try:
             git.push('-u', 'origin', master)
             print('Success')
             break
         except GitCommandError:
             print('Git push failed, attempting to pull and trying again')
-            if i == 0:
+            if i <= 1:
                 git.pull('-Xtheirs')
             
     else:
@@ -151,6 +151,8 @@ def finalizer_task_runner(interval):
         
         with _lock:
             now = time.time()
+            if not _pending_commit:
+                continue
             if now - _pending_commit.committed_date > PUSH_DELAY:
                 finalize_commit()
 
