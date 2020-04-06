@@ -8,10 +8,9 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
-import { html } from 'lit-element';
+import { html, css } from 'lit-element';
 
-export const SharedStyles = html`
-<style>
+export const sharedStyles = css`
   :host {
     display: block;
     box-sizing: border-box;
@@ -33,5 +32,69 @@ a{
     font-size: 30px;
     line-height: 64px;
   }
-</style>
+`;
+
+export const formStyles = css`
+      form {
+        padding: 0 8px 16px;
+        display: block
+      }
+
+      input[type="search"] {
+        border: 1px solid var(--bilara-red);
+        border-radius: 2px;
+        padding: 4px 8px;
+        width: 100%;
+
+      }
+      input::placeholder {
+        opacity: 0.5;
+      }
+      input:focus::placeholder {
+        opacity: 0;
+      }
+      label {
+        font-size: 80%;
+        margin-top: 8px;
+        margin-right: 16px;
+        display: inline-block;
+       
+      }
+      .search-label{
+      	display: block;
+      	 width: 100%;
+      }
+      .button-row {
+        display: flex;
+        justify-content: space-between
+      }
+      button {
+        display: inline-block;
+        color: var(--bilara-secondary-color);
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border: 1px solid var(--bilara-secondary-color);
+        border-radius: 8px;
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        background-color: var(--bilara-primary-background-color);
+        white-space: nowrap;
+        line-height: 1;
+      }
+      form button {
+        margin: 16px 4px 0px 0px;
+      }
+
+      .undo-button {
+        color: var(--bilara-red);
+        border: 1px solid var(--bilara-red);
+        background-color: var(--bilara-primary-background-color);
+      }
+      .undo-button:hover {
+        background-color: var(--bilara-red);
+        color: var(--bilara-secondary-background-color);
+      }
+
 `;

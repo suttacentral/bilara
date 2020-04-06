@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit-element';
+import { html, LitElement, css } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
@@ -7,7 +7,7 @@ import {navigate} from '../actions/app.js';
 import { BilaraSegment } from './bilara-segment.js';
 
 // These are the shared styles needed by this element.
-import { SharedStyles } from './shared-styles.js';
+import { sharedStyles } from './shared-styles.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
 
@@ -24,19 +24,10 @@ import { getProblems } from '../actions/app.js';
 
 
 class NavItem extends LitElement {
-  render(){
-    const translated = this._tree._translated || this._tree._translated_count,
-          root = this._tree._root || this._tree._root_count,
-          isFile = this._tree._type == 'document',
-          filename = this._name,
-          lang = 'en',
-          progressPercent = this._calculateProgressPercent(translated, root);
-
-    
-    
-    return html`
-      ${SharedStyles}
-      <style>
+  static get styles(){
+    [
+      sharedStyles,
+      css`
       :host {
         margin: 0 0 0 1rem;
         display: block;
@@ -100,7 +91,6 @@ transform: rotate(90deg);
           right: 1rem;
       }
       .progress-track:before{
-        content: "${progressPercent}%";
         position: absolute;
         display: inline-block;
         color: white;
@@ -122,10 +112,24 @@ transform: rotate(90deg);
           border-radius: 4px;
            float: right;
       }
+      `
+    ]
+  }
+  render(){
+    const translated = this._tree._translated || this._tree._translated_count,
+          root = this._tree._root || this._tree._root_count,
+          isFile = this._tree._type == 'document',
+          filename = this._name,
+          lang = 'en',
+          progressPercent = this._calculateProgressPercent(translated, root);
 
-
+    
+    return html`
+      <style>
+        .progress-track:before {
+            content: "${progressPercent}%";
+        }
       </style>
-
       <div class="${isFile ? "document" : "division"}">${ 
           isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }

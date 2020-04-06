@@ -1,8 +1,13 @@
 import { html, LitElement } from 'lit-element';
 
-import { SharedStyles } from './shared-styles.js';
+import { sharedStyles } from './shared-styles.js';
 
 class LoginView extends LitElement {
+  static get styles(){
+    return [
+      sharedStyles
+    ]
+  }
   render(){
     return html`
       <style>

@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html, css } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
@@ -16,7 +16,7 @@ import './bilara-spinning-hourglass.js';
 
 
 // These are the shared styles needed by this element.
-import { SharedStyles } from './shared-styles.js';
+import { sharedStyles } from './shared-styles.js';
 import { ColumnStyles } from '../styles/columns.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
@@ -39,14 +39,10 @@ store.addReducers({
 });
 
 class TranslationView extends connect(store)(PageViewElement) {
-  render(){
-    let fields = this._fields,
-        segmentIds = Object.keys(this._segments);
-    console.log('Render, ', this._orderedFields);
-    return html`
-    ${SharedStyles}
-    <style>
-      
+  static get styles(){
+    return [
+      sharedStyles,
+      css`
       :host {
         display: flex;
         justify-content: center;
@@ -104,67 +100,73 @@ class TranslationView extends connect(store)(PageViewElement) {
       lion-dialog{
       	position: relative;
     z-index: inherit;
-}
-            .adder {
-      	padding: 0;
-        margin: 4px 16px 16px 16px;
-    width: 24px;
-    height: 24px;
-     right: -12px;
-    top: 8px;
-     font-size: 20px;
-    line-height: 24px;
-        text-align: center;
-        font-weight: 600;
-        background-color: var(--bilara-magenta);
-        color: var(--bilara-primary-background-color);
-        white-space: nowrap;
-        position: absolute;
-        cursor: pointer;
+    }
+                .adder {
+            padding: 0;
+            margin: 4px 16px 16px 16px;
+        width: 24px;
+        height: 24px;
+        right: -12px;
+        top: 8px;
+        font-size: 20px;
+        line-height: 24px;
+            text-align: center;
+            font-weight: 600;
+            background-color: var(--bilara-magenta);
+            color: var(--bilara-primary-background-color);
+            white-space: nowrap;
+            position: absolute;
+            cursor: pointer;
 
-        border-radius: 50%;
-      }
-            .adder:hover {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      }
-      .adder:active {
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      }
-      .adder:before{
-      	content: " ";
-      	background-color: var(--bilara-primary-background-color);
-      	border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    right: -8px;
-    top: -6px;
-   display: inline-block;
-    position: absolute;
-    z-index: -1;
-      }
-.ripple:after {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, var(--bilara-primary-background-color) 10%, transparent 10.01%);
-  background-repeat: no-repeat;
-  background-position: 50%;
-  transform: scale(10, 10);
-  opacity: 0;
-  transition: transform .5s, opacity 1s;
-}
-.ripple:active:after {
-  transform: scale(0, 0);
-  opacity: .2;
-  transition: 0s;
-}
-    </style>
+            border-radius: 50%;
+          }
+                .adder:hover {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          }
+          .adder:active {
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          }
+          .adder:before{
+            content: " ";
+            background-color: var(--bilara-primary-background-color);
+            border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        right: -8px;
+        top: -6px;
+      display: inline-block;
+        position: absolute;
+        z-index: -1;
+          }
+    .ripple:after {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle, var(--bilara-primary-background-color) 10%, transparent 10.01%);
+      background-repeat: no-repeat;
+      background-position: 50%;
+      transform: scale(10, 10);
+      opacity: 0;
+      transition: transform .5s, opacity 1s;
+    }
+    .ripple:active:after {
+      transform: scale(0, 0);
+      opacity: .2;
+      transition: 0s;
+    }`
+    ]
+  }
+  render(){
+    let fields = this._fields,
+        segmentIds = Object.keys(this._segments);
+    console.log('Render, ', this._orderedFields);
+    return html`
     ${ColumnStyles}
     <div id="container">
 

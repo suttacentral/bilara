@@ -3,6 +3,8 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { LitElement, html, css } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 
+import { formStyles } from './shared-styles.js';
+
 import './bilara-search-result.js'
 export class BilaraSearch extends connect(store)(LitElement) {
 
@@ -36,7 +38,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
   _renderForm(){
     return html`
-    <form>
+    <form @submit=${this._submit}>
       <label class="check-label" for="radio-thisproject">
         <input type="radio" id="radio-thisproject" name="scope" checked>
         This project
@@ -59,7 +61,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
       </label>
       <div class="button-row">
       <span>
-      <button type="button" class="find-button" title="search for the specified term">Find</button>
+      <button type="submit" class="find-button" title="search for the specified term">Find</button>
       </span>
       <span>
         <button type="button" class="undo-button" title="Clear the search fields">Clear</button>
@@ -93,12 +95,10 @@ export class BilaraSearch extends connect(store)(LitElement) {
         `
   }
 
-  _submitResult(e) {
+  _submit(e) {
     console.log(e);
     console.log(e.target);
     e.preventDefault();
-
-    e.target.classList.add("replaced");
   }
 
   _renderResults() {
@@ -112,7 +112,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
   }
 
   static get styles() {
-    return css`
+    return [
+      formStyles,
+      css`
       #translation {
         margin-bottom: 72px;
       }
@@ -149,139 +151,12 @@ export class BilaraSearch extends connect(store)(LitElement) {
       #search::-webkit-scrollbar-thumb:horizontal {
         min-width: var(--scrollbar-minlength);
       }
-      form {
-        padding: 0 8px 16px;
-        display: block
-      }
 
-      .replace-button, .undo-button {
-        display: none;
-      }
-
-      form.replaced .undo-button {
-        display: inline-block;
-      }
-
-      form:not(.replaced) .replace-button {
-        display: inline-block;
-      }
-      input[type="search"] {
-        border: 1px solid var(--bilara-red);
-        border-radius: 2px;
-        padding: 4px 8px;
-        width: 100%;
-
-      }
-      input::placeholder {
-        opacity: 0.5;
-      }
-      input:focus::placeholder {
-        opacity: 0;
-      }
-      label {
-        font-size: 80%;
-        margin-top: 8px;
-        margin-right: 16px;
-        display: inline-block;
-       
-      }
-      .search-label{
-      	display: block;
-      	 width: 100%;
-      }
-      .button-row {
-        display: flex;
-        justify-content: space-between
-      }
-      button {
-        display: inline-block;
-        color: var(--bilara-secondary-color);
-        font-weight: 600;
-        font-size: 0.8rem;
-        padding: 4px 8px;
-        border: 1px solid var(--bilara-secondary-color);
-        border-radius: 8px;
-        display: inline-block;
-        text-transform: uppercase;
-        letter-spacing: .05em;
-        background-color: var(--bilara-primary-background-color);
-        white-space: nowrap;
-        line-height: 1;
-      }
-      form button {
-        margin: 16px 4px 0px 0px;
-      }
-      .find-button {
-        color: var(--bilara-green);
-        border: 1px solid var(--bilara-green);
-        background-color: var(--bilara-primary-background-color);
-      }
-      .find-button:hover {
-        background-color: var(--bilara-green);
-        color: var(--bilara-secondary-background-color);
-      }
-      .undo-button {
-        color: var(--bilara-red);
-        border: 1px solid var(--bilara-red);
-        background-color: var(--bilara-primary-background-color);
-      }
-      .undo-button:hover {
-        background-color: var(--bilara-red);
-        color: var(--bilara-secondary-background-color);
-      }
-      .replace-button {
-        margin-left: 4px;
-        height: 24px;
-        color: var(--bilara-magenta);
-        border: 1px solid var(--bilara-magenta);
-        background-color: var(--bilara-primary-background-color);
-      }
-      .replace-button:hover {
-        background-color: var(--bilara-magenta);
-        color: var(--bilara-secondary-background-color);
-      }
-      
       #results {
         margin: 0;
         color: var(--bilara-emphasized-text-color)
       }
-      .result {
-        margin: 0;
-        box-sizing: border-box
-      }
-      .result-location {
-        line-height: 1;
-        border-top: 2px solid var(--bilara-tertiary-background-color);
-        padding: 4px 8px 4px;
-        margin: 16px 0 8px;
-        display: flex;
-        justify-content: space-between
-      }
-      .result-location a {
-        font-size: 80%;
-        font-weight: 600;
-        color: var(--bilara-secondary-text-color);
-        text-decoration: none;
-        margin-right: 4px;
-      }
-      .result-location a:hover {
-        color: var(--bilara-red);
-        text-decoration: underline;
-        text-decoration-color: var(--bilara-red)
-      }
-      .result-translation-text {
-        padding: 0 8px;
-        font-size: 0.9em
-      }
-      .result-root-text {
-        font-style: italic;
-        padding: 0 8px;
-          font-size: 0.9em
-      }
-      mark{
-        background-color: var(--bilara-yellow);
-        color: var(--bilara-empasized-text-color);
-      }
+      
       details {
         padding: 4px 8px;
         margin-bottom: 16px;
@@ -308,7 +183,17 @@ export class BilaraSearch extends connect(store)(LitElement) {
         color: var(--bilara-secondary-background-color);
         font-size: 9px
       }
-      `
+
+      .find-button {
+        color: var(--bilara-green);
+        border: 1px solid var(--bilara-green);
+        background-color: var(--bilara-primary-background-color);
+      }
+      .find-button:hover {
+        background-color: var(--bilara-green);
+        color: var(--bilara-secondary-background-color);
+      }
+      `]
   }
 }
 
