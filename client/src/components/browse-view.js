@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit-element';
+import { html, css, LitElement } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
@@ -25,7 +25,7 @@ import { getProblems } from '../actions/app.js';
 
 class NavItem extends LitElement {
   static get styles(){
-    [
+    return [
       sharedStyles,
       css`
       :host {
@@ -90,7 +90,8 @@ transform: rotate(90deg);
           float: right;
           right: 1rem;
       }
-      .progress-track:before{
+      .progress-bar:before{
+        content: attr(data-progress) "%";
         position: absolute;
         display: inline-block;
         color: white;
@@ -105,12 +106,14 @@ transform: rotate(90deg);
       }
 
       .progress-bar {
+          width: attr(data-progress %);
           position: absolute;
           display: inline-block;
           height: 100%;
           background-color: var(--bilara-green);
           border-radius: 4px;
            float: right;
+          width: attr(data-progress)%;
       }
       `
     ]
@@ -124,16 +127,12 @@ transform: rotate(90deg);
           progressPercent = this._calculateProgressPercent(translated, root);
 
     
+    
     return html`
-      <style>
-        .progress-track:before {
-            content: "${progressPercent}%";
-        }
-      </style>
       <div class="${isFile ? "document" : "division"}">${ 
           isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
-        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%"></span></span>` : null}
+        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%" data-progress="${progressPercent}"></span></span>` : null}
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
           ${this.open ? repeat(Object.keys(this._tree || []), (key)=>key, (name, index) => {
             if (name.match(/^_/)) {
@@ -178,67 +177,71 @@ transform: rotate(90deg);
 window.customElements.define('nav-item', NavItem);
 
 class BrowseView extends connect(store)(PageViewElement) {
+  static get styles() {
+    return [
+      sharedStyles,
+      css`
+      .browse{
+        border: 3px solid var(--bilara-tertiary-background-color);
+         padding: 108px;
+         min-width: 600px;
+         height: fit-content;
+         margin: 144px 0;
+         border-radius: 600px
+        }
+        h2{
+          text-align: center;
+      font-weight: 500;
+      margin: 0 0 16px 0;
+      font-style: italic;
+      font-size: 16px;
+        }
+  
+        .problems {
+          font-size: 0.8em;
+        }
+  .total:before{
+  content: ""
+  }
+        .error {
+          padding: 0.5em;
+          border: 1px solid var(--bilara-red);
+          border-radius: 3px;
+          margin: 0.25em;
+        }
+  
+        .file {
+          font-family: mono;
+          font-size: 0.8em;
+        }
+  
+        .link {
+          text-decoration: none;
+          color: var(--bilara-blue);
+        }
+  
+        .link svg {
+          width: 1em;
+          height: 1em;
+        }
+  
+        .link::after {
+          content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);    
+     }
+  
+        .msg {
+          display: block;
+          background-color: var(--bilara-secondary-background-color);
+        }
+        .heart{
+          color: var(--bilara-red)
+        }
+      `
+    ]
+
+  }
   render(){
     return html`
-    ${SharedStyles}
-    <style>
-
-         .browse{
-      border: 3px solid var(--bilara-tertiary-background-color);
-       padding: 108px;
-       min-width: 600px;
-       height: fit-content;
-       margin: 144px 0;
-       border-radius: 600px
-      }
-      h2{
-        text-align: center;
-    font-weight: 500;
-    margin: 0 0 16px 0;
-    font-style: italic;
-    font-size: 16px;
-      }
-
-      .problems {
-        font-size: 0.8em;
-      }
-.total:before{
-content: ""
-}
-      .error {
-        padding: 0.5em;
-        border: 1px solid var(--bilara-red);
-        border-radius: 3px;
-        margin: 0.25em;
-      }
-
-      .file {
-        font-family: mono;
-        font-size: 0.8em;
-      }
-
-      .link {
-        text-decoration: none;
-        color: var(--bilara-blue);
-      }
-
-      .link svg {
-        width: 1em;
-        height: 1em;
-      }
-
-      .link::after {
-        content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);    
-   }
-
-      .msg {
-        display: block;
-        background-color: var(--bilara-secondary-background-color);
-      }
-      .heart{
-        color: var(--bilara-red)
-      }
-    </style>
     <section class="browse">
     <h2>Translate your little <span class="heart">💚</span> out, ${this._username}!</h2>
       ${ this._dataTree ? html`
