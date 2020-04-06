@@ -7,14 +7,98 @@ import { formStyles } from './shared-styles.js';
 
 import './bilara-search-result.js'
 export class BilaraSearch extends connect(store)(LitElement) {
+  static get styles() {
+    return [
+      formStyles,
+      css`
+      #translation {
+        margin-bottom: 72px;
+      }
+      #search {
+        background-color: var(--bilara-secondary-background-color);
+        min-width: 200px;
+        max-width: 400px;
+        margin: 0 0 0 8px;
+        position: sticky;
+        padding: 0 0 24px 0;
+        align-self: flex-start;
+        top: 44px;
+        overflow-y: auto;
+        height: 100vh;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+        scrollbar-width: var(--scrollbar-width);
+        scrollbar-color: var(--scrollbar-color) var(--scrollbar-track-color);
+      }
+      #search::-webkit-scrollbar {
+        height: var(--scrollbar-size);
+        width: var(--scrollbar-size);
+      }
+      #search::-webkit-scrollbar-track {
+        background-color: var(--scrollbar-track-color);
+      }
+      #search::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-color);
+        /* Add :hover, :active as needed */
+      }
+      #search::-webkit-scrollbar-thumb:vertical {  } 
+        min-height: var(--scrollbar-minlength);
+      }
+      #search::-webkit-scrollbar-thumb:horizontal {
+        min-width: var(--scrollbar-minlength);
+      }
 
+      #results {
+        margin: 0;
+        color: var(--bilara-emphasized-text-color)
+      }
+      
+      details {
+        padding: 4px 8px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--bilara-emphasized-text-color);
+        max-width: fit-content;
+      }
+      summary {
+        font-weight: 600;
+        color: var(--bilara-secondary-text-color);
+      }
+      dt {
+        font-weight: 600;
+        margin-top: 8px
+      }
+      dd{
+      	margin: 0
+      }
+      kbd {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        padding: 4px 8px;
+        border-radius: 4px;
+        background-color: var(--bilara-secondary-text-color);
+        color: var(--bilara-secondary-background-color);
+        font-size: 9px
+      }
+
+      .find-button {
+        color: var(--bilara-green);
+        border: 1px solid var(--bilara-green);
+        background-color: var(--bilara-primary-background-color);
+      }
+      .find-button:hover {
+        background-color: var(--bilara-green);
+        color: var(--bilara-secondary-background-color);
+      }
+      `]
+  }
+  
   static get properties(){
     return {
       _sourceField: String,
       _targetField: String,
+      _extraFindFields: Array,
       _results: Array
     }
-
   }
   
   render(){
@@ -109,91 +193,6 @@ export class BilaraSearch extends connect(store)(LitElement) {
       )}
       </section>
       `
-  }
-
-  static get styles() {
-    return [
-      formStyles,
-      css`
-      #translation {
-        margin-bottom: 72px;
-      }
-      #search {
-        background-color: var(--bilara-secondary-background-color);
-        min-width: 200px;
-        max-width: 400px;
-        margin: 0 0 0 8px;
-        position: sticky;
-        padding: 0 0 24px 0;
-        align-self: flex-start;
-        top: 44px;
-        overflow-y: auto;
-        height: 100vh;
-        -webkit-overflow-scrolling: touch;
-        -ms-overflow-style: -ms-autohiding-scrollbar;
-        scrollbar-width: var(--scrollbar-width);
-        scrollbar-color: var(--scrollbar-color) var(--scrollbar-track-color);
-      }
-      #search::-webkit-scrollbar {
-        height: var(--scrollbar-size);
-        width: var(--scrollbar-size);
-      }
-      #search::-webkit-scrollbar-track {
-        background-color: var(--scrollbar-track-color);
-      }
-      #search::-webkit-scrollbar-thumb {
-        background-color: var(--scrollbar-color);
-        /* Add :hover, :active as needed */
-      }
-      #search::-webkit-scrollbar-thumb:vertical {  } 
-        min-height: var(--scrollbar-minlength);
-      }
-      #search::-webkit-scrollbar-thumb:horizontal {
-        min-width: var(--scrollbar-minlength);
-      }
-
-      #results {
-        margin: 0;
-        color: var(--bilara-emphasized-text-color)
-      }
-      
-      details {
-        padding: 4px 8px;
-        margin-bottom: 16px;
-        font-size: 12px;
-        color: var(--bilara-emphasized-text-color);
-        max-width: fit-content;
-      }
-      summary {
-        font-weight: 600;
-        color: var(--bilara-secondary-text-color);
-      }
-      dt {
-        font-weight: 600;
-        margin-top: 8px
-      }
-      dd{
-      	margin: 0
-      }
-      kbd {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-        padding: 4px 8px;
-        border-radius: 4px;
-        background-color: var(--bilara-secondary-text-color);
-        color: var(--bilara-secondary-background-color);
-        font-size: 9px
-      }
-
-      .find-button {
-        color: var(--bilara-green);
-        border: 1px solid var(--bilara-green);
-        background-color: var(--bilara-primary-background-color);
-      }
-      .find-button:hover {
-        background-color: var(--bilara-green);
-        color: var(--bilara-secondary-background-color);
-      }
-      `]
   }
 }
 
