@@ -222,7 +222,10 @@ class TranslationView extends connect(store)(PageViewElement) {
 
       ${ this._segments && featureFlags.search
           ? html`<bilara-search ._sourceField="${this._sourceField}"
-                                ._targetField="${this._targetField}">
+                                ._targetField="${this._targetField}"
+                                ._extraFindFields="${this._orderedFields.filter(
+                                  field => field != this._sourceField 
+                                           && field != this._targetField )}">
                  </bilara-search>` 
           : html`` }
     `

@@ -28,6 +28,7 @@ class ConstructedQuery:
         self.bind_vars = {}
 
     def execute(self, bind_vars={}, **kwargs):
+        print(self.query)
         return self.search.execute(self.query, bind_vars={**self.bind_vars, **bind_vars}, **kwargs)
 
 def grouper(iterable, n):
@@ -283,8 +284,10 @@ class Search:
         else:
             self.db.create_arangosearch_view("strings_view", {"links": links})
 
+    def search_query(self, query_components, offset, limit):
+        search.search_query(self)
 
-    def generic_query(self, query_components, offset, limit):
+    def generic_query(self, query_components, offset, limit, segment_id_filter):
         """
         >>> search.generic_query([{
             "muids": "root-pli-ms",
@@ -299,6 +302,8 @@ class Search:
         self._build_complete.wait()
 
         tab = '  '
+        
+        query_components.sort(key=lambda obj: obj.get('query') is None)
 
         constructed_query = ConstructedQuery(self)
         parts = []
@@ -307,25 +312,35 @@ class Search:
         for n, component in enumerate(query_components):
             muids = component['muids']
             query = component.get('query')
-
-            
-            
-
-            parts.extend([
-                tab * n + f'FOR doc{n} IN strings_view',
-                tab * (n + 1) + f'SEARCH ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc{n}.muids, "splitter")'
-            ])
-            
             constructed_query.bind_vars[f'muids{n}'] = muids
             if query:
-                parts.append(tab * (n + 1)  + f'AND ANALYZER(PHRASE(doc{n}.string, @query{n}), "normalizer")')
+                parts.extend([
+                    tab * n + f'FOR doc{n} IN strings_view',
+                    tab * (n + 1) + f'SEARCH ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc{n}.muids, "splitter")',
+                    tab * (n + 1)  + f'AND ANALYZER(PHRASE(doc{n}.string, @query{n}), "normalizer")'
+                ])
+                if n == 0:
+                    if segment_id_filter:
+                        parts.append(tab * (n + 1) + f'FILTER doc{n}.segment_id LIKE @segment_id_filter')
+                        constructed_query.bind_vars['segment_id_filter'] = segment_id_filter.lower()
+                if n > 0:
+                    parts.append(tab * (n + 1) + f'AND doc{n}.segment_id == doc0.segment_id')
                 constructed_query.bind_vars[f'query{n}'] = query
-
-            if n > 0:
-                parts.append(tab * (n + 1) + f'AND doc{n}.segment_id == doc0.segment_id')
+                return_parts.append(tab + f'@muids{n}: doc{n}.string')
+            else:
+                return_parts.append(f'''
+  @muids{n}: FIRST(
+    FOR doc IN strings_view
+      SEARCH doc.segment_id == doc0.segment_id
+        AND ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc.muids, "splitter")
+      LIMIT 1
+      RETURN doc
+  ).string''' )
             
-            return_parts.append(tab + f'@muids{n}: doc{n}.string')
-        
+            
+            
+        parts.append('LIMIT @offset, @limit')
+        constructed_query.bind_vars.update({'offset': offset, 'limit': limit})
         parts.append('RETURN {\n' + ',\n'.join(return_parts) + '\n}')
 
         composed_query = '\n'.join(parts)

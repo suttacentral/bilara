@@ -83,6 +83,36 @@ def tm_get():
         search.tm_query(string, root_lang, translation_lang, exclude_id=exclude_id)
     )
 
+
+@app.route("/api/search/", methods=["POST"])
+def search():
+    from search import search
+    data = request.get_json()
+
+    query = []
+    if data['source-field']:
+        query.append({
+          "muids": data['source-field'],
+          "query": data.get('find-root') # can be None
+        })
+    if data['target-field']:
+        query.append({
+          "muids": data['target-field'],
+          "query": data.get('find-translation')
+        })
+    
+    query.extend({"muids": field} for field in data['extra-fields'].split(','))
+
+    r = search.generic_query(query, 0, 50, segment_id_filter=data.get('uid-filter'))
+
+    result = {
+      'total': r.count(),
+      'time': r.statistics()['execution_time'],
+      'results': list(r)
+    }
+
+    return jsonify(result)
+
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()

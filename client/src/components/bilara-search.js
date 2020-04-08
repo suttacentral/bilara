@@ -5,6 +5,8 @@ import { repeat } from 'lit-html/directives/repeat';
 
 import { formStyles } from './shared-styles.js';
 
+import { formToJSON } from '../form.js';
+
 import './bilara-search-result.js'
 export class BilaraSearch extends connect(store)(LitElement) {
   static get styles() {
@@ -123,25 +125,35 @@ export class BilaraSearch extends connect(store)(LitElement) {
   _renderForm(){
     return html`
     <form @submit=${this._submit}>
-      <label class="check-label" for="radio-thisproject">
-        <input type="radio" id="radio-thisproject" name="scope" checked>
+      <input type="hidden" name="source-field" value="${this._sourceField}">
+      <input type="hidden" name="target-field" value="${this._targetField}">
+      ${ this._extraFindFields ? 
+        html`<input type="hidden" name="extra-fields" value="${this._extraFindFields.join(',')}">`
+        : null
+      }
+      
+      <label class="check-label">
+        <input type="radio" value="project" name="scope" checked>
         This project
       </label>
-      <label class="check-label" for="radio-all">
-        <input type="radio" id="radio-all" name="scope">
+      <label class="check-label">
+        <input type="radio" value="all" name="scope">
         All
       </label>
-      <label class="search-label" for="find-translation">Find in translation
-        <input type="search" id="find-translation" name="find-translation" placeholder="recited">
+      <label class="search-label">
+        Find in translation
+        <input type="search" name="find-translation" placeholder="recited">
       </label>
-      <label class="search-label" for="find-root">Find in root
-        <input type="search" id="find-root" name="find-root" placeholder="gāthāy">
-        </label>
-      <label class="search-label" for="replace">Replace in translation
-        <input type="search" id="replace" name="replace" placeholder="shouted">
+      <label class="search-label">
+        Find in root
+        <input type="search" name="find-root" placeholder="gāthāy">
       </label>
-      <label class="search-label" for="uid-filter">UID filter
-        <input type="search" id="uid-filter" name="uid-filter" placeholder="dn*">
+      <label class="search-label" >Replace in translation
+        <input type="search" name="replace" placeholder="shouted">
+      </label>
+      <label class="search-label">
+        UID filter
+        <input type="search" name="uid-filter" placeholder="dn%">
       </label>
       <div class="button-row">
       <span>
@@ -151,8 +163,10 @@ export class BilaraSearch extends connect(store)(LitElement) {
         <button type="button" class="undo-button" title="Clear the search fields">Clear</button>
       </span>
       </div>
-      <input type="checkbox" id="match-caps" name="match-caps" checked>
-        <label class="check-label" for="match-caps">Match caps</label>
+      <label class="check-label">
+        <input type="checkbox" name="flags" value="match-caps" checked>
+        Match caps
+      </label>
       </form>
     `
   }
@@ -179,10 +193,27 @@ export class BilaraSearch extends connect(store)(LitElement) {
         `
   }
 
-  _submit(e) {
-    console.log(e);
-    console.log(e.target);
+  async _submit(e) {
     e.preventDefault();
+    const data = formToJSON(e.target);
+    console.log(data);
+
+    const response = await fetch('/api/search/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const responseData = await response.json();
+
+    
+    console.log(response);
+    console.log(responseData);
+    
+    
+
   }
 
   _renderResults() {

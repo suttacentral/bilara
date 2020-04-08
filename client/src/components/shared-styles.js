@@ -40,6 +40,10 @@ export const formStyles = css`
         display: block
       }
 
+      label {
+        cursor: pointer;
+      }
+
       input[type="search"] {
         border: 1px solid var(--bilara-red);
         border-radius: 2px;
