@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
-import { LitElement, html } from 'lit-element';
+import { LitElement, html, css } from 'lit-element';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
@@ -36,7 +36,184 @@ import './login-view.js';
 import { themes, defaultTheme } from '../styles/themes.js';
 
 class BilaraApp extends connect(store)(LitElement) {
-
+  static get styles() {
+    return [
+      css`
+      header {
+        position: fixed;
+        top: 0;
+        z-index: 1000;
+        width: 100%;
+        background-color: var(--bilara-black);
+        color: var(--bilara-secondary-text-color);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        display: flex;
+        justify-content: space-between;
+        height: var(--bilara-header-height);
+      }
+  
+      header div {
+        margin: 4px 16px;
+  
+      display: flex;
+      align-items: center;
+      }
+  
+      [main-title] {
+        font-weight: 900;
+        font-family: "source serif pro";
+        font-size: 1rem;
+        margin: 0;
+        
+        font-variant-caps: all-small-caps;
+        letter-spacing: 2px;
+        padding: 2px 8px;
+        color: var(--bilara-secondary-color);
+      }
+  
+      [main-title]:hover {
+        background-color: var(--bilara-secondary-color);
+        color: var(--bilara-secondary-background-color);
+      }
+  
+      a {
+        text-decoration: none;
+      }
+      a.navigable:hover{
+        text-decoration: underline
+      }
+  
+      main {
+        display: flex;
+        justify-content: center;
+        min-height: calc(100vh - var(--bilara-footer-height));
+        background-color: var(--bilara-primary-background-color);
+      }
+  
+      .page {
+        display: none;
+      }
+  
+      .page[active] {
+        display: flex;
+      }
+  
+      footer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        justify-content: space-around;
+        background-color: var(--bilara-tertiary-background-color);
+        color: var(--bilara-emphasized-text-color);
+        height: var(--bilara-footer-height);
+        padding: 0 32px
+      }
+  
+      footer a{
+        color: var(--bilara-secondary-color)
+      }
+          footer a:hover{
+        text-decoration: underline
+      }
+  
+  
+      .disabled {
+        opacity: 0.7;
+      }
+  
+      .app-log {
+        color: var(--bilara-secondary-color);
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        margin: 0 4px;
+        border: 1px solid var(--bilara-secondary-text-color);
+        border-radius: 8px;
+        display: inline-block;
+        font-variant-caps: all-small-caps;
+        letter-spacing: .05em;
+        background-color: inherit;
+      }
+      .app-log:hover {
+        background-color: var(--bilara-secondary-color);
+        color: var(--bilara-secondary-background-color);
+      }
+      figure{
+        margin: 0 8px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px
+      }
+      figcaption.user-name {
+  font-size: 12px;
+      font-style: italic;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-top: -6px;
+      padding: 0 4px;
+      line-height: 1;
+      text-shadow: 0px 0px 3px black;
+      color: var(--bilara-cyan);
+  
+      }
+      .user-name::before {
+   
+      }
+      .user-name::after {
+        content: "!"
+      }
+  
+      img{
+        width: 28px;
+        height: 28px;
+        border-radius: 50%
+      }
+      .user-name-link{
+        display: contents;
+      }
+      ul {
+    list-style: none; /* Remove default bullets */
+  }
+  
+  
+  select {
+    width: 120px;
+      line-height: 1.3;
+      color: var(--bilara-primary-text-color); 
+      padding: .6em 1.4em .5em .8em;
+      box-sizing: border-box;
+      margin: 0;
+      border: 1px solid var(--bilara-primary-color);
+      box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+      border-radius: 8px;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: var(--bilara-secondary-background-color);
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+      background-repeat: no-repeat, repeat;
+      background-position: right .7em top 50%, 0 0;
+      background-size: .65em auto, 100%;
+  }
+  
+  select:hover {
+      border-color: var(--bilara-red);
+  }
+  select:focus {
+      border-color: #aaa;
+      box-shadow: 0 0 1px 3px var(--bilara-primary-color);
+      box-shadow: 0 0 0 3px -moz-mac-focusring;
+      color: var(--bilara-primary-text-color); 
+      outline: none;
+  }
+  select option {
+      font-weight:normal;
+  }
+      `
+    ]
+  }
 
   render() {
     
@@ -44,182 +221,6 @@ class BilaraApp extends connect(store)(LitElement) {
 
     // Anything that's related to rendering should be done in here.
     return html`
-    <style>
-    header {
-      position: fixed;
-      top: 0;
-      z-index: 1000;
-      width: 100%;
-      background-color: var(--bilara-black);
-      color: var(--bilara-secondary-text-color);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      display: flex;
-      justify-content: space-between;
-      height: var(--bilara-header-height);
-    }
-
-    header div {
-      margin: 4px 16px;
-
-    display: flex;
-    align-items: center;
-    }
-
-    [main-title] {
-      font-weight: 900;
-      font-family: "source serif pro";
-      font-size: 1rem;
-      margin: 0;
-      
-      font-variant-caps: all-small-caps;
-      letter-spacing: 2px;
-      padding: 2px 8px;
-      color: var(--bilara-secondary-color);
-    }
-
-    [main-title]:hover {
-      background-color: var(--bilara-secondary-color);
-      color: var(--bilara-secondary-background-color);
-    }
-
-    a {
-      text-decoration: none;
-    }
-    a.navigable:hover{
-      text-decoration: underline
-    }
-
-    main {
-      display: flex;
-      justify-content: center;
-      min-height: calc(100vh - var(--bilara-footer-height));
-      background-color: var(--bilara-primary-background-color);
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page[active] {
-      display: flex;
-    }
-
-    footer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      justify-content: space-around;
-      background-color: var(--bilara-tertiary-background-color);
-      color: var(--bilara-emphasized-text-color);
-      height: var(--bilara-footer-height);
-      padding: 0 32px
-    }
-
-    footer a{
-      color: var(--bilara-secondary-color)
-    }
-        footer a:hover{
-      text-decoration: underline
-    }
-
-
-    .disabled {
-      opacity: 0.7;
-    }
-
-    .app-log {
-      color: var(--bilara-secondary-color);
-      font-weight: 600;
-      font-size: 0.8rem;
-      padding: 2px 8px;
-      margin: 0 4px;
-      border: 1px solid var(--bilara-secondary-text-color);
-      border-radius: 8px;
-      display: inline-block;
-      font-variant-caps: all-small-caps;
-      letter-spacing: .05em;
-      background-color: inherit;
-    }
-    .app-log:hover {
-      background-color: var(--bilara-secondary-color);
-      color: var(--bilara-secondary-background-color);
-    }
-    figure{
-      margin: 0 8px;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-right: 16px
-    }
-    figcaption.user-name {
-font-size: 12px;
-    font-style: italic;
-    font-weight: 600;
-    white-space: nowrap;
-    margin-top: -6px;
-    padding: 0 4px;
-    line-height: 1;
-    text-shadow: 0px 0px 3px black;
-    color: var(--bilara-cyan);
-
-    }
-    .user-name::before {
- 
-    }
-    .user-name::after {
-      content: "!"
-    }
-
-    img{
-      width: 28px;
-      height: 28px;
-      border-radius: 50%
-    }
-    .user-name-link{
-      display: contents;
-    }
-    ul {
-  list-style: none; /* Remove default bullets */
-}
-
-
-select {
-  width: 120px;
-    line-height: 1.3;
-    color: var(--bilara-primary-text-color); 
-    padding: .6em 1.4em .5em .8em;
-    box-sizing: border-box;
-    margin: 0;
-    border: 1px solid var(--bilara-primary-color);
-    box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
-    border-radius: 8px;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-    background-color: var(--bilara-secondary-background-color);
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-    background-repeat: no-repeat, repeat;
-    background-position: right .7em top 50%, 0 0;
-    background-size: .65em auto, 100%;
-}
-
-select:hover {
-    border-color: var(--bilara-red);
-}
-select:focus {
-    border-color: #aaa;
-    box-shadow: 0 0 1px 3px var(--bilara-primary-color);
-    box-shadow: 0 0 0 3px -moz-mac-focusring;
-    color: var(--bilara-primary-text-color); 
-    outline: none;
-}
-select option {
-    font-weight:normal;
-}
-
-
-    </style>
 
     <!-- Header -->
     <header class="app-header">

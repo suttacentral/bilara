@@ -8,70 +8,71 @@ import { store } from '../store.js';
 
 import { updateTertiary } from '../actions/app.js';
 
+const dialogStyles = css`
+:host {
+     background-color: var(--bilara-black);
+    border-radius: 50%;
+    border: 4px solid var(--bilara-magenta);
+    width: 400px;
+    height: auto;
+    padding-top:5%;
+    display: flex;
+    justify-content: center;
+    align-items: center
+}
+div{
+    position: relative
+}
+#columns{
+    padding-bottom: 30%
+}
+.checkbox{
+    padding: 8px 0;
+    color: white;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+label{
+        margin-left: 8px;
+        var(--bilara-primary-text-color)
+}
+input{
+    margin: 0;
+    height: 16px
+}
+button {
+     background-color: var(--bilara-tertiary-background-color);
+    font-size: 18px;
+    font-variant-caps: all-small-caps;
+    font-weight: 600;
+    height: 72px;
+    width: 72px;
+    margin: 8px 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: -20%;
+  }
+  button:hover{
+     background-color: var(--bilara-primary-background-color);
+
+  }
+  .accept-button{
+    color: var(--bilara-green);
+    border: 4px solid var(--bilara-green);
+                         left: -100px
+
+  }
+      .cancel-button{
+    color: var(--bilara-red);
+    border: 4px solid var(--bilara-red); 
+                         right: -100px
+  }
+`
 
 class BilaraDialog extends LitElement {
     static get styles() {
-        return css`
-                :host {
-                     background-color: var(--bilara-black);
-                    border-radius: 50%;
-                    border: 4px solid var(--bilara-magenta);
-                    width: 400px;
-                    height: auto;
-                    padding-top:5%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center
-                }
-                div{
-                    position: relative
-                }
-                #columns{
-                    padding-bottom: 30%
-                }
-                .checkbox{
-                    padding: 8px 0;
-                    color: white;
-                    font-weight: 500;
-                    display: flex;
-                    align-items: center;
-                }
-                label{
-                        margin-left: 8px;
-                        var(--bilara-primary-text-color)
-                }
-                input{
-                    margin: 0;
-                    height: 16px
-                }
-                button {
-                     background-color: var(--bilara-tertiary-background-color);
-                    font-size: 18px;
-                    font-variant-caps: all-small-caps;
-                    font-weight: 600;
-                    height: 72px;
-                    width: 72px;
-                    margin: 8px 8px;
-                    border-radius: 50%;
-                    position: absolute;
-                    top: -20%;
-                  }
-                  button:hover{
-                     background-color: var(--bilara-primary-background-color);
-
-                  }
-                  .accept-button{
-                    color: var(--bilara-green);
-                    border: 4px solid var(--bilara-green);
-                                         left: -100px
-
-                  }
-                      .cancel-button{
-                    color: var(--bilara-red);
-                    border: 4px solid var(--bilara-red); 
-                                         right: -100px
-                  }
-            `
+        return dialogStyles
     }
 
     _closeOverlay() {
@@ -94,12 +95,12 @@ class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
     static get styles() {
         
         return [
-            super._styles,
-            css`
-            [disabled]{
-                color: orange;
-            }
-            `
+          dialogStyles,
+          css`
+          [disabled]{
+              color: orange;
+          }
+          `
         ]
     
     }
