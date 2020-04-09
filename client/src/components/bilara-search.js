@@ -31,6 +31,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
         -ms-overflow-style: -ms-autohiding-scrollbar;
         scrollbar-width: var(--scrollbar-width);
         scrollbar-color: var(--scrollbar-color) var(--scrollbar-track-color);
+        resize: horizontal;
       }
       #search::-webkit-scrollbar {
         height: var(--scrollbar-size);
