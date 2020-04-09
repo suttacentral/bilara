@@ -101,7 +101,7 @@ def search():
           "query": data.get('find-translation')
         })
     
-    query.extend({"muids": field} for field in data['extra-fields'].split(','))
+    query.extend({"muids": field} for field in data.get('extra-fields', '').split(','))
 
     r = search.generic_query(query, 0, 50, segment_id_filter=data.get('uid-filter'))
 
