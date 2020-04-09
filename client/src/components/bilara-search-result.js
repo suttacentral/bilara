@@ -90,6 +90,7 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
             _sourceField: String,
             _targetField: String,
             _sourceString: String,
+            _targetString: String,
             _replacementString: String,
             _originalString: String,
             _replaced: Boolean
@@ -97,10 +98,11 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
     }
 
     render() {
+        const uid = /(.*):/.exec(this._segmentId)[1];
         return html `
             <form class="result" id="${this._segmentId}" @submit="${this._submitResult}">
             <div class="result-location">
-            <a href="/translation/mn23_translation-en-sujato#mn23:43.1" title="Go to MN 23:43.1">MN 23:43.1. The Discourse on the Noble Search</a>
+            <a href="/translation/${uid}_${this._targetField}#${this._segmentId}" title="Go to ${this._segmentId}">${this._segmentId}.</a>
             ${this._replaced ? 
               html`<button type="button" class="revert-button" @click=${this._revert} title="Revert this replace">Revert</button>` :
               html`<button type="submit" class="replace-button" title="Replace this term">Replace</button>`
@@ -108,8 +110,8 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
             
             </div>
             
-            <div class="result-translation-text">Standing to one side, the god Kassapa <mark>recited</mark> this verse in the Buddha’s presence:</div>
-            <div class="result-root-text">Ekamantaṃ ṭhito kho māgadho devaputto bhagavantaṃ <mark>gāthāy</mark>a ajjhabhāsi:</div>
+            <div class="result-translation-text">${this._targetString}</div>
+            <div class="result-root-text">${this._sourceString}</div>
         </form>`
     }
 

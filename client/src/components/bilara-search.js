@@ -54,6 +54,14 @@ export class BilaraSearch extends connect(store)(LitElement) {
         margin: 0;
         color: var(--bilara-emphasized-text-color)
       }
+
+      .total {
+        margin: 0px 16px;
+        padding 16px 4px;
+        text-align: center;
+        background-color: var(--bilara-primary-background-color);
+        border-radius: 5px;
+      }
       
       details {
         padding: 4px 8px;
@@ -99,7 +107,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
       _sourceField: String,
       _targetField: String,
       _extraFindFields: Array,
-      _results: Array
+      _results: Array,
+      _time: Number,
+      _count: Number
     }
   }
   
@@ -116,10 +126,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
   constructor() {
     super();
-    this._results = [{
-      segmentId: 'mn23:43.1',
-      replaced: null
-    }];
+    this._results = null;
   }
 
   _renderForm(){
@@ -164,7 +171,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
       </span>
       </div>
       <label class="check-label">
-        <input type="checkbox" name="flags" value="match-caps" checked>
+        <input type="checkbox" name="flags" value="match-caps">
         Match caps
       </label>
       </form>
@@ -208,19 +215,34 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
     const responseData = await response.json();
 
+    this._results = responseData.results
+    this._time = responseData.time
+    this._total = responseData.total
+
     
     console.log(response);
     console.log(responseData);
-    
-    
-
   }
 
   _renderResults() {
+    if (!this._results) {
+      return html``
+    }
     return html`
       <section id="results">
-      ${repeat(this._results, (r) => JSON.stringify([r.segmentId, r.replaced]), (result, i) => 
-        html`<bilara-search-result></bilara-search-result>`
+      <div class="total">${this._total} results.</div>
+      ${repeat(this._results, (r) => JSON.stringify(r), (result, i) => {
+        const sourceString = result[this._sourceField],
+              targetString = result[this._targetField];
+        return html`<bilara-search-result
+                      ._segmentId=${result.segment_id}
+                      ._sourceField=${this._sourceField}
+                      ._targetField=${this._targetField}
+                      ._sourceString=${sourceString}
+                      ._targetString=${targetString}>
+          </bilara-search-result>`
+      }
+        
       )}
       </section>
       `
