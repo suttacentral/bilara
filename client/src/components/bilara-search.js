@@ -8,18 +8,64 @@ import { formStyles } from './shared-styles.js';
 import { formToJSON } from '../form.js';
 
 import './bilara-search-result.js'
+
+const DRAG_BORDER_SIZE = 4;
+const SEARCH_MIN_WIDTH = 200;
+const SEARCH_MAX_WIDTH = 400;
+
+function addDragBorder(element) {
+
+  let m_pos;
+
+  function resize(e) {
+    e.preventDefault();
+    const dx = m_pos - e.x;
+    m_pos = e.x;
+
+    let newWidth = (parseInt(getComputedStyle(element, '').width)  + dx);
+    console.log(newWidth);
+    newWidth = Math.min(newWidth, SEARCH_MAX_WIDTH);
+    newWidth = Math.max(newWidth, SEARCH_MIN_WIDTH);
+    localStorage.setItem('search.savedWidth', newWidth);
+    element.style.width = newWidth + "px";
+    
+  }
+
+  element.addEventListener("mousedown", (e) => {
+    if (e.offsetX < DRAG_BORDER_SIZE) {
+      m_pos = e.x;
+      document.addEventListener("mousemove", resize, false);
+      document.addEventListener("mouseup", () => {
+        document.removeEventListener("mousemove", resize, false);
+        console.log('Removed Event Listener');
+      }, false);
+    }
+  })
+}
+
 export class BilaraSearch extends connect(store)(LitElement) {
   static get styles() {
     return [
       formStyles,
       css`
-      #translation {
-        margin-bottom: 72px;
+      #search {
+        padding-left: ${DRAG_BORDER_SIZE}px;
       }
+
+      #search:after {
+        content: " ";
+          position: absolute;
+        left: 0;
+        top: 0;
+        width: ${DRAG_BORDER_SIZE}px;
+        height: 100%;
+        cursor: w-resize;        
+      }
+
       #search {
         background-color: var(--bilara-secondary-background-color);
-        min-width: 200px;
-        max-width: 400px;
+        min-width: ${SEARCH_MIN_WIDTH}px;
+        max-width: ${SEARCH_MAX_WIDTH}px;
         margin: 0 0 0 8px;
         position: sticky;
         padding: 0 0 24px 0;
@@ -31,7 +77,6 @@ export class BilaraSearch extends connect(store)(LitElement) {
         -ms-overflow-style: -ms-autohiding-scrollbar;
         scrollbar-width: var(--scrollbar-width);
         scrollbar-color: var(--scrollbar-color) var(--scrollbar-track-color);
-        resize: horizontal;
       }
       #search::-webkit-scrollbar {
         height: var(--scrollbar-size);
@@ -128,6 +173,16 @@ export class BilaraSearch extends connect(store)(LitElement) {
   constructor() {
     super();
     this._results = null;
+    
+  }
+
+  firstUpdated(changedProperties){
+    const search = this.shadowRoot.querySelector('#search');
+    const savedWidth = localStorage.getItem('search.savedWidth');
+    addDragBorder(search);
+    if (savedWidth) {
+      search.style.width = savedWidth + 'px';
+    }
   }
 
   _renderForm(){

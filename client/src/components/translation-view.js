@@ -38,6 +38,7 @@ store.addReducers({
   search: searchReducer
 });
 
+
 class TranslationView extends connect(store)(PageViewElement) {
   static get styles(){
     return [
@@ -46,6 +47,10 @@ class TranslationView extends connect(store)(PageViewElement) {
       :host {
         display: flex;
         justify-content: center;
+      }
+
+      #translation {
+        margin-bottom: 72px;
       }
 
       #container {
