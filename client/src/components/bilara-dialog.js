@@ -18,7 +18,23 @@ const dialogStyles = css`
     padding-top:5%;
     display: flex;
     justify-content: center;
-    align-items: center
+    align-items: center;
+    position: relative
+}
+:host::before{
+  content: "≋";
+  position: absolute;
+  left: -2rem;
+  font-size: 5rem;
+color: var(--bilara-primary-color)
+
+}
+:host::after{
+  content: "≋";
+    position: absolute;
+    right: -2rem;
+    font-size: 5rem;
+    color: var(--bilara-primary-color)
 }
 div{
     position: relative
@@ -49,7 +65,7 @@ button {
     height: 72px;
     width: 72px;
     margin: 8px 8px;
-    border-radius: 50%;
+    border-radius: 30% 70% 16px 16px;
     position: absolute;
     top: -20%;
   }
@@ -60,13 +76,15 @@ button {
   .accept-button{
     color: var(--bilara-green);
     border: 4px solid var(--bilara-green);
-                         left: -100px
+                         left: -100px;
+                          border-radius: 30% 70% 16px 16px;
 
   }
       .cancel-button{
     color: var(--bilara-red);
     border: 4px solid var(--bilara-red); 
-                         right: -100px
+                         right: -100px;
+                          border-radius: 70% 30% 16px 16px;
   }
 `
 
