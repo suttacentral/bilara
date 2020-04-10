@@ -34,9 +34,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
         resize: horizontal;
       }
      ::-webkit-resizer {
-  box-shadow: 0 0 2px 5px red;
   background-color: var(--bilara-secondary-color);
 }
+
       #search::-webkit-scrollbar {
         height: var(--scrollbar-size);
         width: var(--scrollbar-size);
