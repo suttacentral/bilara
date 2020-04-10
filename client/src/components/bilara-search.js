@@ -33,6 +33,10 @@ export class BilaraSearch extends connect(store)(LitElement) {
         scrollbar-color: var(--scrollbar-color) var(--scrollbar-track-color);
         resize: horizontal;
       }
+     ::-webkit-resizer {
+  box-shadow: 0 0 2px 5px red;
+  background-color: var(--bilara-secondary-color);
+}
       #search::-webkit-scrollbar {
         height: var(--scrollbar-size);
         width: var(--scrollbar-size);
@@ -100,6 +104,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
         background-color: var(--bilara-green);
         color: var(--bilara-secondary-background-color);
       }
+
       `]
   }
   
@@ -116,7 +121,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
   
   render(){
     return html`
-      <section id ="search">
+     <section dir="rtl" id ="search">
         ${this._renderDetails()}
         ${this._renderForm()}   
         ${this._renderResults()}     
@@ -132,7 +137,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
   _renderForm(){
     return html`
-    <form @submit=${this._submit}>
+    <form dir="ltr" @submit=${this._submit}>
       <input type="hidden" name="source-field" value="${this._sourceField}">
       <input type="hidden" name="target-field" value="${this._targetField}">
       ${ this._extraFindFields ? 
@@ -181,7 +186,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
   _renderDetails(){
     return html`
-  <details>
+  <details dir="ltr">
         <summary>How to use search</summary>
         <dl>
         <dt>Scope</dt>
