@@ -50,7 +50,9 @@ export const formStyles = css`
         padding: 4px 8px;
         width: 100%;
         border-radius: 12px;
-        background-color: var(--bilara-primary-background-color)
+        background-color: var(--bilara-primary-background-color);
+        color: var(--bilara-primary-text-color);
+        font-family: "source sans pro"
 
       }
       input::placeholder {
