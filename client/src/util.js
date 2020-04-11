@@ -41,3 +41,10 @@ export const featureFlags = {
 
 console.log(featureFlags);
 
+export function highlightMatch(string, searchString) {
+  if (!searchString) {
+    return string
+  }
+  const rex = searchString instanceof RegExp ? searchString : RegExp('('+searchString+')', 'gi');
+  return string.replace(rex, '<mark>$1</mark>');
+}

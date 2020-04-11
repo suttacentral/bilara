@@ -59,7 +59,11 @@ export class BilaraSearch extends connect(store)(LitElement) {
         top: 0;
         width: ${DRAG_BORDER_SIZE}px;
         height: 100%;
+<<<<<<< HEAD
+        cursor: ew-resize;        
+=======
         cursor: col-resize;        
+>>>>>>> b7d896f2d8a01f721e5e086ad7386e382c900404
       }
 
       #search {
@@ -271,7 +275,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
     const responseData = await response.json();
 
-    this._results = {results: responseData.results, query: data}
+    this._results = responseData.results
     this._time = responseData.time
     this._total = responseData.total
 
@@ -284,30 +288,18 @@ export class BilaraSearch extends connect(store)(LitElement) {
     if (!this._results) {
       return html``
     }
-    const results = this._results.results,
-          query = this._results.query;
     return html`
       <section id="results">
       <div class="total">${this._total} results.</div>
-      ${repeat(results, (r) => JSON.stringify(r), (result, i) => {
+      ${repeat(this._results, (r) => JSON.stringify(r), (result, i) => {
         const sourceString = result[this._sourceField],
               targetString = result[this._targetField];
         return html`<bilara-search-result
                       ._segmentId=${result.segment_id}
-                      ._source=${ {
-                        field: this._sourceFied,
-                        string: sourceString,
-                        original: sourceString,
-                        highlight: query['find-root']
-                      } }
-                      ._target=${ {
-                        field: this._targetField,
-                        string: targetString,
-                        replacement: query.replace,
-                        original: targetString,
-                        highlight: query['find-translation']
-                      } }
-                      >
+                      ._sourceField=${this._sourceField}
+                      ._targetField=${this._targetField}
+                      ._sourceString=${sourceString}
+                      ._targetString=${targetString}>
           </bilara-search-result>`
       }
         

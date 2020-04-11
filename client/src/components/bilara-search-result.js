@@ -15,6 +15,8 @@ import {
 
 import { formStyles } from './shared-styles';
 
+import { highlightMatch } from '../util.js'
+
 
 export class BilaraSearchResult extends connect(store)(LitElement) {
     static get styles(){
@@ -81,19 +83,34 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
           background-color: var(--bilara-magenta);
           color: var(--bilara-secondary-background-color);
         }
+        .submit-button {
+          color: var(--bilara-green);
+          border: 1px solid var(--bilara-magenta);
+          background-color: var(--bilara-primary-background-color);
+        }
+        .submit-button:hover {
+          background-color: var(--bilara-green);
+          color: var(--bilara-secondary-background-color);
+        }
         `
       ]
     }
     static get properties() {
+      /*
+      source: {
+        field: 'root-pli-ms',
+        string: 'whatever',
+        highlight: 'what',
+        original: 'whatever'
+      },
+      target: {}
+      */
         return {
             _segmentId: String,
-            _sourceField: String,
-            _targetField: String,
-            _sourceString: String,
-            _targetString: String,
-            _replacementString: String,
-            _originalString: String,
-            _replaced: Boolean
+            _target: Object,
+            _source: Object,
+            _replaced: Boolean,
+            _mode: String
         }
     }
 
@@ -103,28 +120,63 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
             <form class="result" id="${this._segmentId}" @submit="${this._submitResult}">
             <div class="result-location">
             <a href="/translation/${uid}_${this._targetField}#${this._segmentId}" title="Go to ${this._segmentId}">${this._segmentId}.</a>
-            ${this._replaced ? 
-              html`<button type="button" class="revert-button" @click=${this._revert} title="Revert this replace">Revert</button>` :
-              html`<button type="submit" class="replace-button" title="Replace this term">Replace</button>`
+            ${{
+              replace: html`<button type="button" class="replace-button" @click=${this._replace} title="Replace this term">Replace</button>`,
+              revert: html`<button type="button" class="revert-button" @click=${this._revert} title="Revert this replace">Revert</button>`,
+              submit: html`<button type="button" class="submit-button" @click=${this._submit} title="Submit this string">Submit</button>`
+            }[this._mode]
             }
             
             </div>
             
-            <div class="result-translation-text">${this._targetString}</div>
-            <div class="result-root-text">${this._sourceString}</div>
+            <div class="result-translation-text" contenteditable="plaintext-only" @input=${this._input}></div>
+            <div class="result-root-text"></div>
         </form>`
     }
 
-    _submitResult(e) {
+    firstUpdated(){
+      const target = this.shadowRoot.querySelector('.result-translation-text'),
+            source = this.shadowRoot.querySelector('.result-root-text');
+      
+      target.innerHTML = highlightMatch(this._target.string, this._target.highlight);
+      source.innerHTML = highlightMatch(this._source.string, this._source.highlight);
+
+      this._mode = 'replace';
+    }
+
+    _input(e) {
+      const el = e.target;
+      const text = el.innerText;
+      if (text == this._originalString) {
+        this._mode = 'replace';
+      } else {
+        this._mode = 'submit';
+      }
+    }
+
+    _replace(e) {
+      e.preventDefault();
+      const el = this.shadowRoot.querySelector('.result-translation-text'),
+            string = el.innerText;
+
+      console.log(el, string);
+      
+      el.innerHTML = string.replace(RegExp(this._target.highlight, 'i'), `<mark>${this._target.replacement}</mark>`);
+      this._mode = 'submit';
+    }
+
+    _submit(e) {
       console.log(e);
       e.preventDefault();
-      this._replaced = true;
+      this._mode = 'revert';
     }
 
     _revert(e) {
       console.log(e);
       e.preventDefault();
-      this._replaced = false;
+      const el = this.shadowRoot.querySelector('.result-translation-text');
+      el.innerHTML = this._target.original;
+      this._mode = 'submit';
     }
 }
 
