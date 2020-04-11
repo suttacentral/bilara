@@ -59,7 +59,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
         top: 0;
         width: ${DRAG_BORDER_SIZE}px;
         height: 100%;
-        cursor: w-resize;        
+        cursor: ew-resize;        
       }
 
       #search {
