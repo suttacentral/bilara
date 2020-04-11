@@ -45,10 +45,14 @@ export const formStyles = css`
       }
 
       input[type="search"] {
-        border: 1px solid var(--bilara-red);
+        border: 1px solid var(--bilara-primary-color);
         border-radius: 2px;
         padding: 4px 8px;
         width: 100%;
+        border-radius: 12px;
+        background-color: var(--bilara-primary-background-color);
+        color: var(--bilara-primary-text-color);
+        font-family: "source sans pro"
 
       }
       input::placeholder {
