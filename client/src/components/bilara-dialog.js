@@ -22,7 +22,7 @@ const dialogStyles = css`
     position: relative
 }
 :host::before{
-  content: "≋";
+  content: "≽";
   position: absolute;
   left: -2rem;
   font-size: 5rem;
@@ -30,7 +30,7 @@ color: var(--bilara-primary-color)
 
 }
 :host::after{
-  content: "≋";
+  content: "≼";
     position: absolute;
     right: -2rem;
     font-size: 5rem;
@@ -77,14 +77,14 @@ button {
     color: var(--bilara-green);
     border: 4px solid var(--bilara-green);
                          left: -100px;
-                          border-radius: 30% 70% 16px 16px;
+                          border-radius: 70% 30% 16px 16px;
 
   }
       .cancel-button{
     color: var(--bilara-red);
     border: 4px solid var(--bilara-red); 
                          right: -100px;
-                          border-radius: 70% 30% 16px 16px;
+                          border-radius: 30% 70% 16px 16px;
   }
 `
 
