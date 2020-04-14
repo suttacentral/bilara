@@ -5,7 +5,9 @@ import { store } from '../store.js';
 
 import { contentEditableValue } from '../util.js';
 
-export class BilaraCell extends LitElement{
+import { BilaraUpdatable } from './bilara-updatable.js';
+
+export class BilaraCell extends BilaraUpdatable{
   render() {
     return html`<style>
     div,
@@ -85,21 +87,9 @@ export class BilaraCell extends LitElement{
       field: String,
       _editable: Boolean,
       _value: String,
-      _pendingValue: String,
-      _committedValue: String,
-      _error: String,
-      _status: String
     }
   }
-  getStatus(){
-    return {
-      error: html`<span class="status error" title="${this._error}">❌</span>`,
-      modified: html`<span class="status modified" title="String not committed">⚠</span>`,
-      pending: html`<span class="status pending" title="Pending">✓</span>`,
-      committed: html`<span class="status committed" title="Committed">✓</span>`,
-    }[this._status] || html`<span class="status"></span>`;
 
-  }
   firstUpdated() {
     this._setValue(this._value);
     this._committedValue = this._value;
@@ -108,7 +98,6 @@ export class BilaraCell extends LitElement{
       this.setAttribute('tabindex', -1);
 
     }
-    
   }
 
   focus() {
@@ -142,51 +131,6 @@ export class BilaraCell extends LitElement{
     this._setValue(value);
     this.focus();
   }
-
-  _updateValue(value) {
-    const user = store.getState().app.user;   
-
-    let data = {
-      segmentId: this.segmentId,
-      field: this.field,
-      oldValue: this._committedValue,
-      value: value,
-      user: user.username
-    }
-
-    this._pendingValue = value;
-
-    this._status = 'pending';
-    
-    let request = fetch(`/api/segment/`, {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            headers: {
-                "Content-Type": "application/json",
-                "X-Bilara-Auth-Token": user.authToken,
-                "X-Bilara-Username": user.username,
-            },
-            body: JSON.stringify(data)
-        }).then( (res) => {
-          return res.json()
-        })
-        .then( (data) => {
-            if (data.error) {
-              this._error = data.error;
-              this._status = 'error';
-            } else {
-              this._status = 'committed';
-              this._error = false;
-              this._committedValue = data.value;
-            }            
-            this._pendingValue = null;
-        }).catch( (e) => {
-            this._error = 'fetch error';
-            this._status = 'error';
-            this._pendingValue = null;
-        })
- }
 
  _emitNavigationEvent() {
    let event = new CustomEvent('navigation-event', {

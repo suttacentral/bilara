@@ -18,6 +18,8 @@ import { updateMetadata } from 'pwa-helpers/metadata.js';
 
 import { repeat } from 'lit-html/directives/repeat';
 
+import { BilaraUpdatable } from './bilara-updatable.js';
+
 // This element is connected to the Redux store.
 import { store } from '../store.js';
 

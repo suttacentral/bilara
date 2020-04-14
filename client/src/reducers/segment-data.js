@@ -2,7 +2,7 @@ import {
     REQUEST_SEGMENT_DATA, RECEIVE_SEGMENT_DATA, FAIL_SEGMENT_DATA,
 } from '../actions/segment-data.js';
 import {
-    UPDATE_SEGMENT, QUEUE_SEGMENT, FOCUS_SEGMENT
+    UPDATE_SEGMENT, FOCUS_SEGMENT
 } from '../actions/segment.js';
 import {
     RESOLVE_PUSH
@@ -63,18 +63,6 @@ export const segmentData = (state = defaultState, action) => {
                         ...state.data[action.dataType],
                         [action.segmentId]: action.value
                     }
-                }
-            }
-        case QUEUE_SEGMENT:
-            return {
-                ...state,
-                pushState: {
-                    ...state.pushState,
-                    [action.data.segmentId]: 'pending'
-                },
-                uploadQueue: {
-                    ...state.uploadQueue, 
-                    [action.key]: action.data
                 }
             }
         case RESOLVE_PUSH:

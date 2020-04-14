@@ -5,7 +5,6 @@ import {
     connect
 } from 'pwa-helpers/connect-mixin.js';
 import {
-    LitElement,
     html,
     css
 } from 'lit-element';
@@ -17,8 +16,11 @@ import { formStyles } from './shared-styles';
 
 import { highlightMatch } from '../util.js'
 
+import { contentEditableValue } from '../util.js';
 
-export class BilaraSearchResult extends connect(store)(LitElement) {
+import { BilaraUpdatable } from './bilara-updatable.js';
+
+export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
     static get styles(){
       return [
         formStyles,
@@ -114,6 +116,15 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
         }
     }
 
+    getStatus(){
+      return {
+        error: html`<span class="status error" title="${this._error}">❌</span>`,
+        modified: html`<span class="status modified" title="String not committed">⚠</span>`,
+        pending: html`<span class="status pending" title="Pending">✓</span>`,
+        committed: html`<span class="status committed" title="Committed">✓</span>`,
+      }[this._status] || html`<span class="status"></span>`;
+    }
+
     render() {
         const uid = /(.*):/.exec(this._segmentId)[1];
         return html `
@@ -129,14 +140,22 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
             
             </div>
             
-            <div class="result-translation-text" contenteditable="plaintext-only" @input=${this._input}></div>
+            <div class="result-translation-text" contenteditable="${contentEditableValue}" @input=${this._input}></div>
             <div class="result-root-text"></div>
         </form>`
     }
 
+    get translation() {
+      return this.shadowRoot.querySelector('.result-translation-text');
+    }
+
+    get root() {
+      return this.shadowRoot.querySelector('.result-root-text');
+    }
+
     firstUpdated(){
-      const target = this.shadowRoot.querySelector('.result-translation-text'),
-            source = this.shadowRoot.querySelector('.result-root-text');
+      const target = this.translation,
+            source = this.root;
       
       target.innerHTML = highlightMatch(this._target.string, this._target.highlight);
       source.innerHTML = highlightMatch(this._source.string, this._source.highlight);
@@ -169,6 +188,16 @@ export class BilaraSearchResult extends connect(store)(LitElement) {
       console.log(e);
       e.preventDefault();
       this._mode = 'revert';
+
+      const user = store.getState().app.user;   
+
+      let data = {
+        segmentId: this._segmentId,
+        field: this._target.field,
+        oldValue: this._target.original,
+        value: this.translation.innerText,
+        user: user.username
+      }
     }
 
     _revert(e) {
