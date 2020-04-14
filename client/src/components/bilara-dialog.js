@@ -8,6 +8,9 @@ import { store } from '../store.js';
 
 import { updateTertiary } from '../actions/app.js';
 
+import { formToJSON } from '../form.js';
+
+
 const dialogStyles = css`
 :host {
      background-color: var(--bilara-black);
@@ -125,31 +128,33 @@ class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
 
     render() {
         return html`
-            <div>
-              <lion-checkbox-group id="columns">
+            <form  @submit=${this._accept}>
+              <div id="columns">
               ${repeat(this._fieldNames, (field) => html`
-              <lion-checkbox 
-               class="checkbox"
-                .choiceValue=${field}
-                label="${field}"
-                ?disabled="${this._lockedFields.includes(field)}"
-                ?checked="${this._existingFields.includes(field)}"
-                ></lion-checkbox>
+              <label class="checkbox">
+                <input name="columns" type="checkbox" value="${field}"
+                  ?disabled="${this._lockedFields.includes(field) ? 'disabled' : ''}"
+                  ?checked="${this._existingFields.includes(field)}"
+                >${field}</label>
                 `
                 )}
-              </lion-checkbox-group>
-              <button class="accept-button" @click=${this._accept}>Accept</button>
-              <button class="cancel-button" @click=${this._cancel}>Cancel</button>
+              </div>
+              <button type="submit" class="accept-button">Accept</button>
+              <button type="button" class="cancel-button" @click=${this._cancel}>Cancel</button>
 
-            </div>
+            </form>
     `
     }
 
     _accept(e) {
-        let selectedFields = e.currentTarget.parentNode.querySelector('#columns').modelValue;
+        e.preventDefault();
+        const data = formToJSON(e.target);
+        console.log(data);
+        
+        let selectedFields = data.columns;
         store.dispatch(updateTertiary(this._keyValue, selectedFields));
         this.dispatchEvent(new Event('close-overlay', {bubbles: true}));
-        window.location.reload(false);
+        //window.location.reload(false);
     }
     _cancel() {
         this.dispatchEvent(new Event('close-overlay', {bubbles: true}));

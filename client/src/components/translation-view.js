@@ -2,8 +2,6 @@ import { html, css } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { PageViewElement } from './page-view-element.js';
 
-import '@lion/checkbox-group/lion-checkbox-group.js';
-import '@lion/checkbox-group/lion-checkbox.js';
 import '@lion/dialog/lion-dialog.js';
 
 import './bilara-dialog.js';

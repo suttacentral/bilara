@@ -21,10 +21,7 @@
     "test:regenerate_screenshots": "mocha test/integration/screenshots-baseline/regenerate.js --timeout=15000"
   },
   "dependencies": {
-    "@lion/checkbox": "^0.3.16",
-    "@lion/checkbox-group": "^0.8.4",
     "@lion/dialog": "^0.4.9",
-    "@lion/input": "^0.5.18",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/polymer": "^3.3.1",
     "@webcomponents/webcomponentsjs": "^2.4.3",
