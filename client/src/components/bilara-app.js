@@ -213,6 +213,34 @@ class BilaraApp extends connect(store)(LitElement) {
   select option {
       font-weight:normal;
   }
+  details {
+    padding: 0 16px;
+    position: relative
+  }
+  details div{
+    position: absolute;
+    top: 29px;
+    display: block;
+    background-color: var(--bilara-black);
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+     width: 480px;
+     padding:  16px 16px 0;
+  }
+  details ul{
+    padding-left: 16px;
+    margin-top: 0;
+    list-style-type: circle
+  }
+    details ul ul{
+    list-style-type: none
+  }
+  details ol{
+    padding-left: 16px;
+    margin-top: 0
+  }
+  details a{
+    color: var(--bilara-primary-color)
+  }
       `
     ]
   }
@@ -228,6 +256,36 @@ class BilaraApp extends connect(store)(LitElement) {
     <header class="app-header">
     <div class="app-header-left">
        <a href="/browse"><h1 main-title>${this.appTitle}</h1></a>
+                   <details>
+      <summary>How to</summary>
+      <div>
+      <p>Bilara is a Computer Assisted Translation (CAT) webapp built by SuttaCentral to help translate Buddhist scripture.</p>
+      <b>Basic usage</b>
+      <ol><li>Navigate to a text.</li>
+      <li>Click on the translation column.</li>
+      <li> Write the translation for that segment.</li>
+      <li>If the Translation Memory (TM) shows a match, you can click it and modify as needed.</li>
+      <li>Press Enter.</li>
+      <li>Repeat until finished!</li>
+      </ol>
+      <b>Some tips</b>
+      <ul>
+            <li>Write plain text. Don’t input anything other than plain text.</li>
+            <li>Your translations are securely saved at Github using git version control, which keeps a full record of every change made. In emergency, contact admins, and they will restore your text if possible.</li>
+            <li>Github has a <a href="https://github.com/suttacentral/bilara-data/pulse" target="_blank">range of fancy stats</a>.</li>
+            <li>You can use a limited range of markdown: <ul>
+            <li><code>*asterisks*</code> for quoting foreign words (esp. Pali) (= <code>&lt;i&gt;</code>).</li>
+            <li><code>_underscore_</code> to emphasize words (= <code>&lt;em&gt;</code>).</li>
+            <li><code>**double asterisks**</code> for things that stand out, like numbers or headwords. You probably don't want to use this (= <code>&lt;b&gt;</code>).</li>
+            </ul>
+            </li>
+            <li>The little icons on the right indicate whether a string is properly committed or not.</li>
+            <li>Until we sort our user permissions, translators can edit any repo. 
+            <ul><li>⚠ DO NOT EDIT ANYONE ELSE’s WORK! ⚠</li></ul></li>
+            <li>You can drag and drop the columns in any order you like.</li>
+            <li>You can add more columns by clicking the ⊕ icon.</li>
+            </ul></div>
+      </details>
        </div>
        <div class="app-header-right">
 
@@ -259,7 +317,11 @@ class BilaraApp extends connect(store)(LitElement) {
       </main>
 
     <footer>
-      <p>Computer Aided Translation for SuttaCentral</p>
+
+
+      <p>Computer Assisted Translation for SuttaCentral</p>
+
+
              <select id="theme" @change="${this._selectTheme}">
        ${repeat(Object.keys(themes), (name) => {
          return html`
