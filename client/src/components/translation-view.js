@@ -49,41 +49,38 @@ class TranslationView extends connect(store)(PageViewElement) {
         justify-content: center;
       }
 
-      #translation {
-        margin-bottom: 72px;
+      #segments {
+        margin: 20px 0 72px 0;
       }
 
       #container {
         box-sizing: border-box;
         display: flex;
         flex-direction: row;
-        padding-top: 24px
+        padding-top: 22px
       }
 
       #field-headings {
-        display: flex;
-        justify-content: space-around;
+           display: grid;
+    grid-template-columns: minmax(240px, 720px) minmax(240px, 720px);
+    grid-column-gap: 24px;
         margin-bottom: 16px;
         position: sticky;
-        top: 34px;
         z-index: 10
       }
 
       .field{
         padding: 8px 12px 4px 12px;
-        margin: 8px 16px 16px 16px;
+        margin: 0px 16px 0px 16px;
         height: 20px;
         font-size: 80%;
         font-weight: 600;
         background-color: var(--bilara-secondary-color);
         color: white;
         white-space: nowrap;
-
-      }
-
-      .field {
         flex-basis: 50%;
         cursor: grab;
+        background: linear-gradient(var(--bilara-secondary-color), var(--bilara-primary-color));
       }
       .field:hover {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -175,8 +172,7 @@ class TranslationView extends connect(store)(PageViewElement) {
     ${ColumnStyles}
     <div id="container">
 
-      <section id="translation">
-      <div id="segments">
+      <section id="segments">
         ${ !this._segments ? 
           html`<bilara-spinning-hourglass></bilara-spinning-hourglass>` :
           html`
@@ -222,7 +218,7 @@ class TranslationView extends connect(store)(PageViewElement) {
                                           </bilara-segment>`}
           )}`
         }
-        </div>
+        
       </section>
 
       ${ this._segments && featureFlags.search

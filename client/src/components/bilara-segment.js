@@ -11,10 +11,10 @@ export class BilaraSegment extends connect(store)(LitElement){
     return html`
     ${ColumnStyles}
     <style>
-div.row {
-  display: flex;
-  justify-content: space-around;
-  border-radius: 2px;
+.segment {
+    display: grid;
+    grid-template-columns: minmax(240px, 720px) minmax(240px, 720px);
+    grid-column-gap: 24px;
 }
 div:focus-within {
   background-color: var(--bilara-secondary-background-color);
@@ -30,11 +30,15 @@ bilara-cell.string {
   max-width: 40rem;
   margin: 0 16px;
 }
+.string[field="variant-pli-ms"]{
+  color: var(--bilara-red);
+  font-style: italic
+}
 
     </style>
     
     ${ this.segmentId ? 
-      html`<div class="row" id="${this.segmentId}">
+      html`<div class="segment" id="${this.segmentId}">
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'];
@@ -52,7 +56,7 @@ bilara-cell.string {
       
       </div>
       ${ (this._isActive && this._matches) ? html`<bilara-matches ._matches=${this._matches}></bilara-matches>` : ''}
-    ` : html `<div class="row" id="fields">${this._orderedFields.map(field => {
+    ` : html `<div class="match-items" id="fields">${this._orderedFields.map(field => {
       return html`<span class="field-title">${field}</span>`
     })
   }</div>` }

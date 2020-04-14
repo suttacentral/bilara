@@ -26,6 +26,7 @@ export class BilaraCell extends LitElement{
     .string[contenteditable="plaintext-only"]:focus {
       border-radius: 8px;
       box-shadow: 0 0 0 1px var(--bilara-red);
+      height: inherit;
     }
 
     .string.empty:after {
@@ -67,7 +68,7 @@ export class BilaraCell extends LitElement{
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
     </style>
-    <div>
+
     <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
                   contenteditable="${this._editable == true ? contentEditableValue : 'false'}"
                   @keydown="${this._keydownEvent}"
@@ -76,7 +77,7 @@ export class BilaraCell extends LitElement{
                   @blur="${this._blur}"
                 ></span>
     ${this.getStatus()}
-                </div>`
+               `
   }
 
   static get properties(){
