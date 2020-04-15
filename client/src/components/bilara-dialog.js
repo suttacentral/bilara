@@ -154,7 +154,7 @@ class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
         let selectedFields = data.columns;
         store.dispatch(updateTertiary(this._keyValue, selectedFields));
         this.dispatchEvent(new Event('close-overlay', {bubbles: true}));
-        //window.location.reload(false);
+        window.location.reload(false);
     }
     _cancel() {
         this.dispatchEvent(new Event('close-overlay', {bubbles: true}));
