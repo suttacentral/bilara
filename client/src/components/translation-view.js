@@ -167,7 +167,7 @@ class TranslationView extends connect(store)(PageViewElement) {
   }
   render(){
     let fields = this._fields,
-        segmentIds = Object.keys(this._segments);
+        segmentIds = this._segments ? Object.keys(this._segments) : null;
     console.log('Render, ', this._orderedFields);
     return html`
     ${ColumnStyles}
