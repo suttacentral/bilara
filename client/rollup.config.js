@@ -11,6 +11,16 @@ const baseConfig = createSpaConfig({
   // use the outputdir option to modify where files are output
   outputDir: 'build',
   nodeResolve: { browser: true, dedupe: ['lit-html'] },
+  workbox: {
+    runtimeCaching: [
+      {
+        urlPattern: /api/,
+        handler: 'NetworkFirst'
+      }
+    ],
+    navigateFallback: '/index.html',
+    navigateFallbackDenylist: [/\/api\//, /.*\.json/]
+},
   
   // if you need to support older browsers, such as IE11, set the legacyBuild
   // option to generate an additional build just for this browser
@@ -29,7 +39,10 @@ export default merge(baseConfig, {
   input: './index.html',
   plugins: [
     copy({
-      targets: [{src: 'fonts/*', dest: 'build/fonts'}, {src: 'images/*', dest: 'build/images'}],
+      targets: [
+          {src: 'fonts/*', dest: 'build/fonts'}, 
+          {src: 'images/*', dest: 'build/images'},
+          {src: 'manifest.json', dest: 'build'}],
       flatten: false
     })
   ]
