@@ -427,6 +427,8 @@ def get_data(primary_long_id, root=None, tertiary=None):
 
     if tertiary:
         for muids_string in tertiary.split(','):
+            if muids_string in {result['targetField'], result['sourceField']}:
+                continue
             muids = muids_string.split('-')
             matches = get_matching_ids(uid, muids)
             if matches:
