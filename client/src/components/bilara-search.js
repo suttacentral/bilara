@@ -13,6 +13,7 @@ const DRAG_BORDER_SIZE = 4;
 const SEARCH_MIN_WIDTH = 200;
 const SEARCH_MAX_WIDTH = 400;
 
+
 function addDragBorder(element) {
 
   let m_pos;

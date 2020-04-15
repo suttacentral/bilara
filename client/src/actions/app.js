@@ -1,6 +1,4 @@
 import { fetchSegmentData } from './segment-data.js';
-import { query } from 'lit-element';
-import { store } from '../store.js';
 
 /**
 @license
