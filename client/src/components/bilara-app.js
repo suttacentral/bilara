@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 
 import { LitElement, html, css } from 'lit-element';
-import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
 import { installOfflineWatcher } from 'pwa-helpers/network.js';
@@ -17,8 +16,6 @@ import { installRouter } from 'pwa-helpers/router.js';
 import { updateMetadata } from 'pwa-helpers/metadata.js';
 
 import { repeat } from 'lit-html/directives/repeat';
-
-import { BilaraUpdatable } from './bilara-updatable.js';
 
 // This element is connected to the Redux store.
 import { store } from '../store.js';
@@ -348,13 +345,6 @@ class BilaraApp extends connect(store)(LitElement) {
       _activeSegmentId: { type: String },
       _theme: { type: String }
     }
-  }
-
-  constructor() {
-    super();
-    // To force all event listeners for gestures to be passive.
-    // See https://www.polymer-project.org/3.0/docs/devguide/settings#setting-passive-touch-gestures
-    setPassiveTouchGestures(true);
   }
 
   firstUpdated() {
