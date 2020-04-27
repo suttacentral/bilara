@@ -102,42 +102,54 @@ class Search:
     def get_views(self):
         return {obj["name"] for obj in self.db.views()}
 
-    def create_analyzers(self):
-        analyzers = self.get_analyzers()
+    def create_analyzers(self, force=False):
+        if force:
+            for analyzer in self.get_analyzers():
+                self.db.delete_analyzer(analyzer)
+                analyzers = []
 
-        if not "text_edge_ngrams" in analyzers:
-            self.db.create_analyzer(
-                "text_edge_ngrams",
-                "text",
-                {
-                    "edgeNgram": {"min": 5, "max": 5, "preserveOriginal": True},
-                    "locale": "en.utf-8",
-                    "case": "lower",
-                    "accent": False,
-                    "stemming": False,
-                    "stopwords": [],
-                    "streamType": "utf8",
-                },
-                ["frequency", "norm", "position"],
-            )
+        self.db.create_analyzer(
+            "text_edge_ngrams",
+            "text",
+            {
+                "edgeNgram": {"min": 5, "max": 5, "preserveOriginal": True},
+                "locale": "en.utf-8",
+                "case": "lower",
+                "accent": False,
+                "stemming": False,
+                "stopwords": [],
+                "streamType": "utf8",
+            },
+            ["frequency", "norm", "position"],
+        )
 
-        if not "normalizer" in analyzers:
-            self.db.create_analyzer(
-                "normalizer",
-                "text",
-                {
-                    "locale": "en.utf-8",
-                    "case": "lower",
-                    "accent": False,
-                    "stemming": False,
-                    "stopwords": [],
-                    "streamType": "utf8",
-                },
-                ["frequency", "norm", "position"],
-            )
+        self.db.create_analyzer(
+            "normalizer",
+            "text",
+            {
+                "locale": "en.utf-8",
+                "case": "lower",
+                "accent": False,
+                "stemming": False,
+                "stopwords": [],
+                "streamType": "utf8",
+            },
+            ["frequency", "norm", "position"],
+        )
 
-        if not "splitter" in analyzers:
-            self.db.create_analyzer("splitter", "delimiter", {"delimiter": "-"})
+        self.db.create_analyzer(
+            "cjk_ngram_analyzer",
+            "ngram",
+            {
+                "min": 1, 
+                "max": 5, 
+                "preserveOriginal": True,
+                "streamType": "utf8"
+            },
+            ["frequency", "norm", "position"],
+        )
+
+        self.db.create_analyzer("splitter", "delimiter", {"delimiter": "-"})
 
     def insert_or_update(self, collection, doc):
         if doc["_key"] in self.db[collection]:
@@ -177,6 +189,7 @@ class Search:
         if force:
             for name in collection_names:
                 db.delete_collection(name)
+                self.collection_names = set()
 
         for collection_name, group in itertools.groupby(
             self.yield_strings(files), lambda t: t[0]
@@ -195,6 +208,7 @@ class Search:
 
         
         self.collection_names = collection_names
+        print('Updating Search Views')
         self.create_search_view()
 
         print('TM Indexing Complete')
@@ -270,10 +284,16 @@ class Search:
     def create_search_view(self):
         links = {}
         for name in self.collection_names:
+            
             if "translation" in name or "root" in name:
+                
+                if {'jpn', 'lzh', 'zh', 'ko'}.intersection(name.split('-')):
+                    string_analyzer = "cjk_ngram_analyzer"
+                else:
+                    string_analyzer = "text_edge_ngrams"
                 links[name] = {
                     "fields": {
-                        "string": {"analyzers": ["text_edge_ngrams", "normalizer"]},
+                        "string": {"analyzers": [string_analyzer, "normalizer"]},
                         "muids": {"analyzers": ["identity", "splitter"]},
                         "segment_id": {"analyzers": ["identity"]},
                     }
