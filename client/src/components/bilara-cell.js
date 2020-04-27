@@ -4,7 +4,7 @@ import { LitElement, html } from 'lit-element';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 
-import { contentEditableValue } from '../util.js';
+import { contentEditableValue, selectText } from '../util.js';
 
 import { BilaraUpdatable } from './bilara-updatable.js';
 
@@ -47,6 +47,9 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
       right: -20px;
       top: 8px;
       display: none
+    }
+    :focus + .status.modified {
+        display: none;
     }
     .status.pending {
       display: inline-block;
@@ -124,13 +127,25 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
 
 
 
-  _setValue(value) {
-    this.shadowRoot.querySelector('.string').innerText = value || '';
+  _setValue(value, undoable) {
+    
+    const cell = this.shadowRoot.querySelector('.string');
+    if (undoable && document.execCommand) {
+      cell.focus();
+      selectText(cell);
+      document.execCommand("insertText", false, value);
+    } else {
+      cell.innerText = value || '';
+    }
     this._updateStatusValue(value);
   }
 
+  _keydown(e){
+   
+  }
+
   _matchValue(value) {
-    this._setValue(value);
+    this._setValue(value, true);
     this.focus();
   }
 
