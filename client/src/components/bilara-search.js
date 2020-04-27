@@ -159,6 +159,8 @@ export class BilaraSearch extends connect(store)(LitElement) {
       _count: Number
     }
   }
+
+  
   
   render(){
     return html`
@@ -224,11 +226,11 @@ export class BilaraSearch extends connect(store)(LitElement) {
       <button type="submit" class="find-button" title="search for the specified term">Find</button>
       </span>
       <span>
-        <button type="button" class="undo-button" title="Clear the search fields">Clear</button>
+        <button type="button" class="undo-button" @click="${this._clear}" title="Clear the search fields">Clear</button>
       </span>
       </div>
       <label class="check-label">
-        <input type="checkbox" name="flags" value="match-caps">
+        <input type="checkbox" name="flags" value="match-caps" disabled="disabled">
         Match caps
       </label>
       </form>
@@ -279,6 +281,18 @@ export class BilaraSearch extends connect(store)(LitElement) {
     
     console.log(response);
     console.log(responseData);
+  }
+
+  get form() {
+    return this.shadowRoot.querySelector('form');
+  }
+
+  _clear(e) {
+    console.log(e);
+    for (let ele of this.form) {
+      ele.value = null;
+    }
+    this._results = null;
   }
 
   _renderResults() {

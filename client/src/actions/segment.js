@@ -1,7 +1,7 @@
 export const UPDATE_SEGMENT = 'UPDATE_SEGMENT';
 export const FOCUS_SEGMENT = 'FOCUS_SEGMENT';
 
-export const updateSegment = (segmentId, field, value) => {
+export const updateSegment = (segmentId, field, value) => dispatch => {
   dispatch({
     type: UPDATE_SEGMENT,
     segmentId,

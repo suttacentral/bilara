@@ -2,12 +2,13 @@ import { LitElement, html } from 'lit-element';
 
 
 import { store } from '../store.js';
+import { connect } from 'pwa-helpers/connect-mixin.js';
 
 import { contentEditableValue } from '../util.js';
 
 import { BilaraUpdatable } from './bilara-updatable.js';
 
-export class BilaraCell extends BilaraUpdatable{
+export class BilaraCell extends connect(store)(BilaraUpdatable){
   render() {
     return html`<style>
     div,
@@ -34,7 +35,6 @@ export class BilaraCell extends BilaraUpdatable{
       content: "[ ]";
       opacity: 0.6;
     }
-
     .status {
       font-size: 12px;
       color: white;
@@ -44,9 +44,9 @@ export class BilaraCell extends BilaraUpdatable{
       text-align: center;
       border-radius: 50%;
       position: absolute;
-    right: -20px;
-    top: 8px;
-    display: none
+      right: -20px;
+      top: 8px;
+      display: none
     }
     .status.pending {
       display: inline-block;
@@ -77,12 +77,13 @@ export class BilaraCell extends BilaraUpdatable{
                   @input="${this._inputEvent}"
                   @blur="${this._blur}"
                 ></span>
-    ${this.getStatus()}
+    ${this.renderStatus()}
                 </div>`
   }
 
   static get properties(){
     return {
+      ...super.properties,
       segmentId: String,
       field: String,
       _editable: Boolean,
@@ -125,6 +126,7 @@ export class BilaraCell extends BilaraUpdatable{
 
   _setValue(value) {
     this.shadowRoot.querySelector('.string').innerText = value || '';
+    this._updateStatusValue(value);
   }
 
   _matchValue(value) {
@@ -153,7 +155,7 @@ export class BilaraCell extends BilaraUpdatable{
       const value = e.currentTarget.textContent;
       
       if (value != this._pendingValue && value != this._committedValue) {
-          this._updateValue(value);
+          this._commitValue(value, this.segmentId, this.field);
       }
 
       this._emitNavigationEvent();
@@ -165,7 +167,9 @@ export class BilaraCell extends BilaraUpdatable{
   
 
   _inputEvent(e) {
-    console.log(e);
+    const value = e.target.innerText;
+    console.log(value);
+    this._updateStatusValue(value);
   }
 }
 

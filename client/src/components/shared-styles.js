@@ -10,15 +10,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 import { html, css } from 'lit-element';
 
+
+
 export const sharedStyles = css`
   :host {
     display: block;
     box-sizing: border-box;
   }
 
-a{
- color: var(--bilara-primary-color);
-}
+  a{
+  color: var(--bilara-primary-color);
+  }
 
   .circle {
     display: block;

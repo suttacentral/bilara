@@ -250,6 +250,10 @@ class TranslationView extends connect(store)(PageViewElement) {
     }
   }
 
+  updated(changedProperties) {
+    console.log(changedProperties.get('_segments'));
+  }
+
   _fieldsKey(fields) {
     return JSON.stringify([...fields].sort())
   }

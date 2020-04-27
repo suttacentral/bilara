@@ -20,11 +20,12 @@ import { contentEditableValue } from '../util.js';
 
 import { BilaraUpdatable } from './bilara-updatable.js';
 
-export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
+export class BilaraSearchResult extends BilaraUpdatable {
     static get styles(){
       return [
         formStyles,
         css`
+
         .result {
           margin: 0;
           box-sizing: border-box
@@ -94,19 +95,51 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
           background-color: var(--bilara-green);
           color: var(--bilara-secondary-background-color);
         }
+
+        .status-wrapper {
+          position: relative;
+        }
+        
+        .status {
+          font-size: 12px;
+          color: white;
+          height: 16px;
+          line-height: 16px;
+          width: 16px;
+          text-align: center;
+          border-radius: 50%;
+          position: absolute;
+          right: -5px;
+          bottom: 0;
+          display: none
+        }
+        .status.pending {
+          display: inline-block;
+          background-color: rgb(125, 125, 125);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+        .status.committed {
+          display: inline-block;
+          background-color: green;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+        .status.modified {
+          display: inline-block;
+          background-color: var(--bilara-magenta);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+        :focus + .status.modified {
+            display: none;
+        }
+        .status.error {
+          display: inline-block;
+          background-color: var(--bilara-red);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
         `
       ]
     }
     static get properties() {
-      /*
-      source: {
-        field: 'root-pli-ms',
-        string: 'whatever',
-        highlight: 'what',
-        original: 'whatever'
-      },
-      target: {}
-      */
         return {
             _segmentId: String,
             _target: Object,
@@ -116,14 +149,6 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
         }
     }
 
-    getStatus(){
-      return {
-        error: html`<span class="status error" title="${this._error}">❌</span>`,
-        modified: html`<span class="status modified" title="String not committed">⚠</span>`,
-        pending: html`<span class="status pending" title="Pending">✓</span>`,
-        committed: html`<span class="status committed" title="Committed">✓</span>`,
-      }[this._status] || html`<span class="status"></span>`;
-    }
 
     render() {
         const uid = /(.*):/.exec(this._segmentId)[1];
@@ -137,11 +162,17 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
               submit: html`<button type="button" class="submit-button" @click=${this._submit} title="Submit this string">Submit</button>`
             }[this._mode]
             }
+
+            
             
             </div>
-            
+            <div class="status-wrapper">
             <div class="result-translation-text" contenteditable="${contentEditableValue}" @input=${this._input}></div>
+            ${this.renderStatus()}
+            </div>
+            
             <div class="result-root-text"></div>
+            
         </form>`
     }
 
@@ -161,6 +192,7 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
       source.innerHTML = highlightMatch(this._source.string, this._source.highlight);
 
       this._mode = 'replace';
+      this._updateStatusValue(this._target.string);
     }
 
     _input(e) {
@@ -171,16 +203,19 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
       } else {
         this._mode = 'submit';
       }
+      this._updateStatusValue(text);
     }
 
     _replace(e) {
       e.preventDefault();
       const el = this.shadowRoot.querySelector('.result-translation-text'),
-            string = el.innerText;
+            string = el.innerText,
+            newString = string.replace(RegExp(this._target.highlight, 'i'), `<mark>${this._target.replacement}</mark>`);
 
       console.log(el, string);
       
-      el.innerHTML = string.replace(RegExp(this._target.highlight, 'i'), `<mark>${this._target.replacement}</mark>`);
+      el.innerHTML = newString;
+      this._updateStatusValue(newString);
       this._mode = 'submit';
     }
 
@@ -188,16 +223,8 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
       console.log(e);
       e.preventDefault();
       this._mode = 'revert';
-
-      const user = store.getState().app.user;   
-
-      let data = {
-        segmentId: this._segmentId,
-        field: this._target.field,
-        oldValue: this._target.original,
-        value: this.translation.innerText,
-        user: user.username
-      }
+      
+      this._commitValue(this.translation.innerText, this._segmentId, this._target.field);
     }
 
     _revert(e) {
@@ -205,8 +232,18 @@ export class BilaraSearchResult extends connect(store)(BilaraUpdatable) {
       e.preventDefault();
       const el = this.shadowRoot.querySelector('.result-translation-text');
       el.innerHTML = this._target.original;
+      this._updateStatusValue(this._target.original);
       this._mode = 'submit';
     }
+
+
+    _keydownEvent(e) {
+      if (e.key == 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._submit(e);
+    }
+  }
 }
 
 
