@@ -1,5 +1,10 @@
 #bin/env bash
 
+
+if [ -x "./local.sh" ]; then
+./local.sh
+fi
+
 export FLASK_ENV=development
 
 (trap 'kill 0' SIGINT; ( cd server; flask run --port 5000 ) & (cd client; npx es-dev-server ) )
