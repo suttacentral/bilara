@@ -250,7 +250,7 @@ class Search:
                 try:
                     data = json.load(f)
                 except Exception as e:
-                    logging.error(file)
+                    logging.error(f'Error loading file: {file}')
                     problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'JSON Decode Error on line {e.lineno}')
                     continue
 
