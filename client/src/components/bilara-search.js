@@ -199,11 +199,11 @@ export class BilaraSearch extends connect(store)(LitElement) {
       }
       
       <label class="check-label">
-        <input type="radio" value="project" name="scope" checked>
+        <input type="radio" value="project" name="scope" disabled>
         This project
       </label>
       <label class="check-label">
-        <input type="radio" value="all" name="scope">
+        <input type="radio" value="all" name="scope" checked>
         All
       </label>
       <label class="search-label">
@@ -229,7 +229,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
         <button type="button" class="undo-button" @click="${this._clear}" title="Clear the search fields">Clear</button>
       </span>
       </div>
-      <label class="check-label">
+      <label class="check-label" style="display: none">
         <input type="checkbox" name="flags" value="match-caps" disabled="disabled">
         Match caps
       </label>
@@ -242,7 +242,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
   <details>
         <summary>How to use search</summary>
         <dl>
-        <dt>Scope</dt>
+        <dt>Scope (WIP)</dt>
         <dd>You can search either in your own translation project, or across the whole of Bilara. However, you can only replace text in your own project.</dd>
         <dt>Find</dt>
         <dd>Returns exact string match first. If you have one or more spaces, it returns entries with all strings first. <br><kbd>↵ Enter</kbd></dd>
@@ -250,7 +250,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
     <dd>If you search both translation and root, it will return segments that contain both. Does not alias diacriticals. You cannot replace in root. <br><kbd>↵ Enter</kbd></dd>
     <dt>Replace</dt>
     <dd>Replace the find term with the replace term in the chosen result. You cannot replace all. When you replace, the relevant item will disappear. <br><kbd>Ctrl</kbd> + <kbd>↵ Enter</kbd></dd>
-    <dt>Match caps</dt>
+    <dt>UID Filer</dt>
+    <dd>Only return results where the text UID matches the filter. '%' will match anything and '_' will match a single character. <br>If no '%' is included in the filter matches exactly that Sutta UID.</dd>"
+    <dt>Match caps (WIP)</dt>
     <dd>If the find term starts with a capital letter, so will the replace term. Uncheck to insert the exact replace term.</dd>
     <dt>Undo</dt>
     <dd>Undo replaced terms one at a time. The undone items will reappear.<br><kbd>Ctrl</kbd> + <kbd>Z</kbd></dd>
@@ -290,7 +292,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
   _clear(e) {
     console.log(e);
     for (let ele of this.form) {
-      ele.value = null;
+      if (ele.type != 'hidden') {
+        ele.value = null;
+      }
     }
     this._results = null;
   }

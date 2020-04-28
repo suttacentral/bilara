@@ -159,7 +159,8 @@ export class BilaraSearchResult extends BilaraUpdatable {
             ${{
               replace: html`<button type="button" class="replace-button" @click=${this._replace} title="Replace this term">Replace</button>`,
               revert: html`<button type="button" class="revert-button" @click=${this._revert} title="Revert this replace">Revert</button>`,
-              submit: html`<button type="button" class="submit-button" @click=${this._submit} title="Submit this string">Submit</button>`
+              submit: html`<button type="button" class="submit-button" @click=${this._submit} title="Submit this string">Submit</button>`,
+              noReplace: html``
             }[this._mode]
             }
 
@@ -167,7 +168,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
             
             </div>
             <div class="status-wrapper">
-            <div class="result-translation-text" contenteditable="${contentEditableValue}" @input=${this._input}></div>
+            <div class="result-translation-text" contenteditable="${contentEditableValue}" @input=${this._input} @keydown=${this._keydownEvent}></div>
             ${this.renderStatus()}
             </div>
             
@@ -191,7 +192,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
       target.innerHTML = highlightMatch(this._target.string, this._target.highlight);
       source.innerHTML = highlightMatch(this._source.string, this._source.highlight);
 
-      this._mode = 'replace';
+      this._mode = this._target.replacement ? 'replace' : 'noReplace';
       this._updateStatusValue(this._target.string);
     }
 

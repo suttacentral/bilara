@@ -36,7 +36,7 @@ export const contentEditableValue = (()=>{
 })();
 
 export const featureFlags = {
-  search: !!window.location.host.match(/localhost\b/)
+  search: true, //!!window.location.host.match(/localhost\b/)
 }
 
 console.log(featureFlags);

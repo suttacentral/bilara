@@ -322,7 +322,12 @@ class Search:
         self._build_complete.wait()
 
         tab = '  '
-        
+
+        if segment_id_filter and '%' not in segment_id_filter:
+            if ':' not in segment_id_filter:
+                segment_id_filter += ':'
+            segment_id_filter += '%'
+
         query_components.sort(key=lambda obj: obj.get('query') is None)
 
         constructed_query = ConstructedQuery(self)
