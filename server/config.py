@@ -49,4 +49,4 @@ try:
     import local_config
     config.update(local_config.config)
 except ImportError:
-    logging.warn('local_config.py does not exist')
+    logging.warning('local_config.py does not exist')
