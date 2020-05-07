@@ -53,10 +53,13 @@ def build_rules(publications):
             
         
 _cached_rules = {}
-def get_permissions(path, github_id):
+def get_base_permissions(path, github_id):
     """
     Check what permissions a user has for a path
     """
+    if github_id and 'login' in github_id:
+        github_id = github_id['login']
+    print(f'Check permissions for {github_id} @ {path}')
     path = str(path)
     mtime = publications_file.stat().st_mtime_ns
     rules = _cached_rules.get(mtime)
@@ -79,3 +82,13 @@ def get_permissions(path, github_id):
             if rex.search(path):
                 return key
     return result
+
+def get_permissions(path, github_id):
+    permission = get_base_permissions(path, github_id)
+    # Downgrade permissions for non-translations
+    if not regex.match(r'\b(?:translation)\b', path):
+        if permission == Permission.SUGGEST:
+            permission = Permission.VIEW
+    
+    return permission
+

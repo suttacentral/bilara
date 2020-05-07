@@ -150,6 +150,21 @@ def test_build_rules():
 def test_get_permissions():
     filepath = 'translation/en/sujato/sutta/dn/dn1.json'
 
+    
     assert permissions.get_permissions(filepath, 'sujato') == Permission.EDIT
     assert permissions.get_permissions(filepath, 'brahmali') == Permission.SUGGEST
     assert permissions.get_permissions(filepath, 'bob') == Permission.VIEW
+
+    assert permissions.get_permissions(filepath, {'login': 'sujato'}) == Permission.EDIT
+
+def test_root_permissions():
+    filepath = 'root/pli/ms/sutta/dn/dn1.json'
+
+    assert permissions.get_permissions(filepath, 'sujato') == Permission.VIEW
+    assert permissions.get_permissions(filepath, 'bob') == Permission.VIEW
+
+def test_comment_permissions():
+    filepath = 'comment/en/sujato/sutta/dn/dn1.json'
+
+    assert permissions.get_permissions(filepath, 'sujato') == Permission.EDIT
+    assert permissions.get_permissions(filepath, 'brahmali') == Permission.VIEW
