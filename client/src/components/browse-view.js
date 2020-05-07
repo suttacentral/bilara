@@ -44,6 +44,7 @@ class NavItem extends LitElement {
     left: 8px;
     color: var(--bilara-green);
       }
+
       [open=""]:before{
 transform: rotate(90deg);
     top: 10px;
@@ -68,9 +69,15 @@ transform: rotate(90deg);
         background-color: var(--bilara-secondary-background-color)
       }
 
+      .edit .navigable {
+        font-weight: 800;
+      }
+
       .more:after {
         content: '▶';
       }
+
+
 
       a{
         text-decoration: none;
@@ -78,6 +85,8 @@ transform: rotate(90deg);
       a:hover{
       text-decoration: underline
     }
+
+
       
       .progress-track {
           position: relative;
@@ -129,7 +138,7 @@ transform: rotate(90deg);
     
     
     return html`
-      <div class="${isFile ? "document" : "division"}">${ 
+      <div class="${isFile ? "document" : "division"}  ${(this._tree._permission || '').toLowerCase()}">${ 
           isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
         ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%" data-progress="${progressPercent}"></span></span>` : null}

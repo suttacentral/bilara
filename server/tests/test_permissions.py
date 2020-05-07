@@ -1,6 +1,8 @@
 import pytest
 import permissions
 
+from permissions import Permission
+
 
 pubs = {
     "scpub1": {
@@ -119,25 +121,25 @@ def test_source_url_to_path():
 def test_build_rules():
     expected = {
         "sujato": {
-            "edit": [
+            Permission.EDIT: [
                 "sujato",
                 "translation/en/sujato/sutta/kn/thag",
                 "translation/en/sujato/sutta/dn",
             ],
-            "suggest": [
+             Permission.SUGGEST: [
                 "*"
             ],
-            "view": ["*"]
+            Permission.VIEW: ["*"]
         },
         "brahmali": {
-            "edit": [
+            Permission.EDIT: [
                 "brahmali",
                 "translation/en/brahmali/vinaya"
             ],
-            "suggest": [
+             Permission.SUGGEST: [
                 "*"
             ],
-            "view": ["*"]
+            Permission.VIEW: ["*"]
         }
     }
 
@@ -148,6 +150,6 @@ def test_build_rules():
 def test_get_permissions():
     filepath = 'translation/en/sujato/sutta/dn/dn1.json'
 
-    assert permissions.get_permissions(filepath, 'sujato') == {"edit": True, "suggest": True, "view": True}
-    assert permissions.get_permissions(filepath, 'brahmali') == {"edit": False, "suggest": True, "view": True}
-    assert permissions.get_permissions(filepath, 'bob') == {"edit": False, "suggest": True, "view": True}
+    assert permissions.get_permissions(filepath, 'sujato') == Permission.EDIT
+    assert permissions.get_permissions(filepath, 'brahmali') == Permission.SUGGEST
+    assert permissions.get_permissions(filepath, 'bob') == Permission.VIEW

@@ -1,3 +1,5 @@
+import json
+from log import logging
 import regex
 
 def numericsortkey(string, _split=regex.compile(r'(\d+)').split):
@@ -26,3 +28,14 @@ def bilarasortkey(string):
     
             
         
+def json_load(file):
+    with file.open('r') as f:
+        try:
+            return json.load(f)
+        except Exception as e:
+            logging.error(file)
+            raise e
+
+def json_save(data, file):
+    with file.open('w') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)

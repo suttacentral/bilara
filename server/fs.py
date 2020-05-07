@@ -20,6 +20,9 @@ import git_fs
 from search import search
 from log import problemsLog
 
+from permissions import get_permissions, Permission
+
+from util import json_load, json_save
 REPO_DIR = config.REPO_DIR
 
 class NoMatchingEntry(Exception):
@@ -271,29 +274,17 @@ def get_matching_id(uid, muids=None):
     else:
         raise ValueError(f'Multiple matches for {uid}, {muids}')
 
-def json_load(file):
-    with file.open('r') as f:
-        try:
-            return json.load(f)
-        except Exception as e:
-            logging.error(file)
-            raise e
-
-def json_save(data, file):
-    with file.open('w') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def load_json(result):
-    _meta = result.get('_meta', {})
-    _meta['path'] = result.get('path')
+def load_json(entry):
+    _meta = entry.get('_meta', {})
+    _meta['path'] = entry.get('path')
     
-    json_file = get_file(result['path'])
-    return {**_meta, 'segments': json_load(json_file)}
+    json_file = get_file(entry['path'])
+    return {**deepcopy(_meta), 'segments': json_load(json_file)}
 
 def load_entry(long_id):
     entry = _file_index[long_id]
     result = load_json(entry)
-    return deepcopy(result)
+    return result
 
 def get_child_property_value(obj, name):
     if '_meta' in obj:
@@ -318,12 +309,15 @@ def get_matching_entry(uid, muids):
     return _file_index[long_id]
 
 
-def update_result(result, long_id, entry, role=None):
+def update_result(result, long_id, entry, role=None, user=None):
     segments = entry.pop('segments')
     uid, muids = get_uid_and_muids(long_id)
     field = '-'.join(muids)
-    entry['editable'] = True if role == 'target' else False
+    
+    
     entry = deepcopy(entry)
+    entry['permission'] = get_permissions(entry['path'], github_id=user['login'].name if user else None).name
+    entry['editable'] = True if role == 'target' else False
     result['fields'][field] = entry
     result['fields'][field]['role'] = role or muids[0]
     for segment_id, segment_value in segments.items():
@@ -333,7 +327,7 @@ def update_result(result, long_id, entry, role=None):
     
     return result
 
-def get_data(primary_long_id, root=None, tertiary=None):
+def get_data(primary_long_id, user=None, root=None, tertiary=None):
     """
 
     Returns a result that looks like this:
@@ -462,19 +456,23 @@ def sum_counts(subtree):
     counts = {'_translated_count': 0, '_root_count': 0}
 
     for key, child in subtree.items():
+        if key.startswith('_'):
+            continue
         if '_root' in child:
             counts['_root_count'] += child['_root']
             counts['_translated_count'] += child.get('_translated', 0)
         else:
-            if key.startswith('_'):
-                continue
             child_counts = sum_counts(child)
             for prop in ['_translated_count', '_root_count']:
                 counts[prop] += child_counts[prop]
     subtree.update(counts)
     return counts
 
-def get_condensed_tree(path):
+def calculate_permissions(tree, user):
+    pass
+
+def get_condensed_tree(path, user):
+    print(f'Using user {user}')
     if not _build_started.is_set():
         make_file_index()
     _build_complete.wait()
@@ -484,18 +482,29 @@ def get_condensed_tree(path):
 
     def recurse(subtree):
         result = {}
+        highest_permission = Permission.NONE
         for key, value in subtree.items():
             if value.get('path', '').endswith('.json'):
                 result[key] = stats_calculator.get_completion(value)
                 result[key]['_type'] = 'document'
+                permission = get_permissions(value.get('path'), user['login'])
+                if not highest_permission:
+                    highest_permission = permission
+                else:
+                    highest_permission = max(highest_permission, permission)
+                result[key]['_permission'] = permission.name
+                
             elif key.startswith('_meta'):
-                pass
+                continue
             else:
-                result[key] = recurse(value)
+                permission, result[key] = recurse(value)
                 result[key]['_type'] = 'node'
-        return result
+                result[key]['_permission'] = permission.name
+                highest_permission = max(permission, highest_permission)
+            
+        return highest_permission, result
 
-    tree = recurse(tree)
+    _, tree = recurse(tree)
     sum_counts(tree)
     return tree
 
@@ -526,6 +535,11 @@ def update_segment(segment, user):
     
     filepath = _file_index[long_id]['path']
     file = get_file(filepath)
+
+    permission = get_permissions(filepath, user)
+    if permission != Permission.EDIT:
+        logging.error('User not allowed to edit')
+        return {"error": "Inadequate Permission"}
     
     with git_fs._lock:
         file_data = json_load(file)

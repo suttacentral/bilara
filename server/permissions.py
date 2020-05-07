@@ -1,7 +1,16 @@
+
 import json
 import regex
+from enum import IntEnum
 from config import config
-from fs import json_load
+from util import json_load, json_save
+
+class Permission(IntEnum):
+    NONE = 0
+    VIEW = 1
+    SUGGEST = 2
+    EDIT = 3
+
 
 REPO_DIR = config.REPO_DIR
 
@@ -32,12 +41,12 @@ def build_rules(publications):
                 continue
             if github_id not in result:
                 result[github_id] = {
-                    "edit": [github_id],
-                    "suggest": ["*"],
-                    "view": ["*"]
+                    Permission.EDIT: [github_id],
+                    Permission.SUGGEST: ["*"],
+                    Permission.VIEW: ["*"]
                 }
-            if source_path not in result[github_id]["edit"]:
-                result[github_id]["edit"].append(source_path)
+            if source_path not in result[github_id][Permission.EDIT]:
+                result[github_id][Permission.EDIT].append(source_path)
             
     
     return result
@@ -45,22 +54,28 @@ def build_rules(publications):
         
 _cached_rules = {}
 def get_permissions(path, github_id):
+    """
+    Check what permissions a user has for a path
+    """
+    path = str(path)
     mtime = publications_file.stat().st_mtime_ns
     rules = _cached_rules.get(mtime)
     if not rules:
         _cached_rules.clear()
         _cached_rules[mtime] = rules = build_rules(json_load(publications_file))
     
-    result = {"edit": False, "suggest": True, "view": True}
+    result = Permission.VIEW
     if github_id not in rules:
         return result
     
-    for key in ["edit", "suggest", "view"]:
+    for key in reversed(Permission):
+        if key is Permission.NONE:
+            continue
         parts = rules[github_id][key]
         if '*' in parts:
-            result[key] = True
+            return key
         else:
             rex = regex.compile('|'.join(rf'\b{part}\b' for part in parts))
             if rex.search(path):
-                result[key] = True
+                return key
     return result

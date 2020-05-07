@@ -35,9 +35,6 @@ config = Config({
     'PUSHOVER_TOKEN': '',
     'PUSHOVER_ADMIN_KEY': '',
 
-
-    
-
     'LOCAL_USERNAME': 'Bob',
     'LOCAL_LOGIN': 'Bob',
     'LOCAL_EMAIL': 'bob@example.com'

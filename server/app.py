@@ -49,9 +49,10 @@ Session(app)
 
 @app.route("/api/segments/<long_id>", methods=["GET"])
 def segments(long_id):
+    user = get_user_details()
     root = request.args.get("root")
     tertiary = request.args.get("tertiary")
-    result = fs.get_data(long_id, root=root, tertiary=tertiary)
+    result = fs.get_data(long_id, user=user, root=root, tertiary=tertiary)
     return jsonify(result)
 
 
@@ -65,7 +66,8 @@ def update():
 
 @app.route("/api/nav/")
 def nav():
-    return jsonify(fs.get_condensed_tree(["translation"]))
+    user = get_user_details()
+    return jsonify(fs.get_condensed_tree(["translation"], user=user))
 
 @app.route("/api/problems/")
 def problems():
