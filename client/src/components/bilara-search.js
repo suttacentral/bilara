@@ -199,24 +199,33 @@ export class BilaraSearch extends connect(store)(LitElement) {
       }
       
       <label class="check-label">
-        <input type="radio" value="project" name="scope" disabled>
+        <input type="radio" value="project" name="scope" checked disabled>
         This project
       </label>
       <label class="check-label">
-        <input type="radio" value="all" name="scope" checked>
+        <input type="radio" value="all" name="scope" disabled>
         All
       </label>
       <label class="search-label">
-        Find in translation
-        <input type="search" name="find-translation" placeholder="recited">
+        Find in ${this._targetField}
+        <input type="search" data-field="${this._targetField}" placeholder="recited">
       </label>
-      <label class="search-label">
-        Find in root
-        <input type="search" name="find-root" placeholder="gāthāy">
-      </label>
-      <label class="search-label" >Replace in translation
+      <label class="search-label" >Replace in ${this._targetField}
         <input type="search" name="replace" placeholder="shouted">
       </label>
+      <label class="search-label">
+        Find in ${this._sourceField}
+        <input type="search" data-field="${this._sourceField}" placeholder="gāthāy">
+      </label>
+      ${repeat(this._extraFindFields, (field) => {
+        return html`
+        <label class="search-tertiary">
+          Find in ${field}
+          <input type="search" data-field="${field}">
+        </label>        
+        `
+      })}
+
       <label class="search-label">
         UID filter
         <input type="search" name="uid-filter" placeholder="dn%">
