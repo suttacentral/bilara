@@ -162,7 +162,31 @@ class TranslationView extends connect(store)(PageViewElement) {
       transform: scale(0, 0);
       opacity: .2;
       transition: 0s;
-    }`
+    }
+
+    .permission {
+      font-weight: bold;
+      padding: 0px 5px;
+      border-radius: 50%;
+    }
+
+    .view .permission {
+      background-color: red;
+    }
+
+    .suggest .permission {
+      background-color: yellow;
+    }
+
+    .edit .permission {
+      background-color: green;
+    }
+    
+    .secondary .permission {
+      display: inline;
+    }
+
+    `
     ]
   }
   render(){
@@ -180,7 +204,9 @@ class TranslationView extends connect(store)(PageViewElement) {
           html`
             <div id="field-headings">
             ${repeat(Object.values(this._orderedFields), fieldName => {
-              return html`<span class="field"
+              const primary = fieldName == this._targetField,
+                    permission = this._fields[fieldName].permission.toLowerCase();
+              return html`<span class="field${primary ? ' primary' : ' secondary' } ${permission}"
                                 field="${fieldName}"
                                 draggable="true"
                                 title="Drag and drop columns in any order"
@@ -188,8 +214,10 @@ class TranslationView extends connect(store)(PageViewElement) {
                                 @dragover="${this._dragoverHandler}"
                                 @dragstart="${this._dragstartHandler}"
                                 ondragenter="return false"
-
-              >${fieldName}</span>`
+              >
+              <span class="name">${fieldName}</span>
+              <span class="permission">${permission}</span>
+              </span>`
             })}
             <lion-dialog .config=${{ hidesOnEsc: true}}>
               <span slot="invoker" class="adder ripple">+</span>

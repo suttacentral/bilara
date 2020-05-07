@@ -316,7 +316,7 @@ def update_result(result, long_id, entry, role=None, user=None):
     
     
     entry = deepcopy(entry)
-    entry['permission'] = get_permissions(entry['path'], github_id=user['login'].name if user else None).name
+    entry['permission'] = get_permissions(entry['path'], github_id=user).name
     entry['editable'] = True if role == 'target' else False
     result['fields'][field] = entry
     result['fields'][field]['role'] = role or muids[0]
@@ -402,7 +402,7 @@ def get_data(primary_long_id, user=None, root=None, tertiary=None):
     primary_entry = load_entry(primary_long_id)
     primary_type = primary_entry['category']['uid']
 
-    update_result(result, primary_long_id, primary_entry, role='target')
+    update_result(result, primary_long_id, primary_entry, role='target', user=user)
     result['targetField'] = primary_long_id.split('_')[1]
 
     uid, _ = get_uid_and_muids(primary_long_id)
@@ -413,7 +413,7 @@ def get_data(primary_long_id, user=None, root=None, tertiary=None):
             root_long_id = get_matching_id(uid, [muid, root_lang, root_edition])
             root_entry = load_entry(root_long_id)
             role = 'source' if muid == 'root' else muid
-            update_result(result, root_long_id, root_entry, role=role)
+            update_result(result, root_long_id, root_entry, role=role, user=user)
             if role == 'source':
                 result['sourceField'] = root_long_id.split('_')[1]
         except NoMatchingEntry:
@@ -428,7 +428,7 @@ def get_data(primary_long_id, user=None, root=None, tertiary=None):
             if matches:
                 for long_id in matches:
                     entry = load_entry(long_id)
-                    update_result(result, long_id, entry, role='tertiary')
+                    update_result(result, long_id, entry, role='tertiary', user=user)
     
     try:
         sorted_results = sorted(result['segments'].items(), key=lambda t: bilarasortkey(t[0]))
