@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit-element';
+import { LitElement, html, css } from 'lit-element';
 
 
 import { store } from '../store.js';
@@ -9,8 +9,8 @@ import { contentEditableValue, selectText } from '../util.js';
 import { BilaraUpdatable } from './bilara-updatable.js';
 
 export class BilaraCell extends connect(store)(BilaraUpdatable){
-  render() {
-    return html`<style>
+  static get styles() {
+    return css`
     div,
     span.string {
       display: inline-flex;
@@ -23,11 +23,11 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
       height: 100%
     }
 
-    .string[contenteditable="plaintext-only"] {
-      font-family: "source serif variable";
-    }
-    .string[contenteditable="plaintext-only"]:focus {
+    .string.editable {
       border-radius: 8px;
+      background-color: var(--bilara-secondary-background-color);
+    }
+    .string.editable:focus {
       box-shadow: 0 0 0 1px var(--bilara-red);
     }
 
@@ -71,9 +71,12 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
       background-color: var(--bilara-red);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     }
-    </style>
+    `
+  }
+  render() {
+    return html`
     <div>
-    <span   class="string" tabindex="${this._editable == 'true' ? 0 : -1}"
+    <span   class="string${ this._editable ? ' editable' : ''}" tabindex="${this._editable == 'true' ? 0 : -1}"
                   contenteditable="${this._editable == true ? contentEditableValue : 'false'}"
                   @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"

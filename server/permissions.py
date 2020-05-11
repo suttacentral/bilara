@@ -59,7 +59,6 @@ def get_base_permissions(path, github_id):
     """
     if github_id and 'login' in github_id:
         github_id = github_id['login']
-    print(f'Check permissions for {github_id} @ {path}')
     path = str(path)
     mtime = publications_file.stat().st_mtime_ns
     rules = _cached_rules.get(mtime)

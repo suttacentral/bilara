@@ -165,21 +165,23 @@ class TranslationView extends connect(store)(PageViewElement) {
     }
 
     .permission {
+      background-color: rgba(0,0,0,0.2);
       font-weight: bold;
       padding: 0px 5px;
-      border-radius: 50%;
+      border: 2px solid black;
+      border-radius: 25%;
     }
 
     .view .permission {
-      background-color: red;
+      border-color: red;
     }
 
     .suggest .permission {
-      background-color: yellow;
+      border-color: yellow;
     }
 
     .edit .permission {
-      background-color: green;
+      border-color: green;
     }
     
     .secondary .permission {
@@ -216,7 +218,7 @@ class TranslationView extends connect(store)(PageViewElement) {
                                 ondragenter="return false"
               >
               <span class="name">${fieldName}</span>
-              <span class="permission">${permission}</span>
+              <span class="permission" title="You may ${permission}.">${permission}</span>
               </span>`
             })}
             <lion-dialog .config=${{ hidesOnEsc: true}}>

@@ -37,13 +37,14 @@ bilara-cell.string {
       html`<div class="row" id="${this.segmentId}">
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
-                language = fieldData['language'];
+                language = fieldData['language'],
+                editable = fieldData.permission == 'EDIT';
           return html`
             <bilara-cell class="string"
               lang="${language ? language['uid'] : undefined}"
               segmentId="${this.segmentId}"
               field="${field}"
-              ._editable="${fieldData['editable']}"
+              ._editable="${ editable }"
               ._value="${this._segment[field] || ''}"
               @focus="${this._focusEvent}"
             ></bilara-cell>`
