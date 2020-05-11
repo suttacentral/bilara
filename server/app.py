@@ -50,6 +50,7 @@ Session(app)
 @app.route("/api/segments/<long_id>", methods=["GET"])
 def segments(long_id):
     user = get_user_details()
+    print(user)
     root = request.args.get("root")
     tertiary = request.args.get("tertiary")
     result = fs.get_data(long_id, user=user, root=root, tertiary=tertiary)
@@ -248,11 +249,7 @@ def init():
     fs.make_file_index()
 
 
-#if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-#    init()
-#else:
-@app.before_first_request
-def warmup():
-    init()
+
+init()
 
 
