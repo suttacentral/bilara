@@ -86,6 +86,7 @@ flex-basis: 50%;
     }
 
     _mousedownEvent(e) {
+      this.clicked = true;
       this.isDragging = false;
     }
 
@@ -96,7 +97,7 @@ flex-basis: 50%;
     _mouseupEvent(e) {
       if (this.isDragging) {
         this.isDragging = false;
-      } else {
+      } else if (this.clicked) {
         const string = e.target.textContent;
         this.dispatchEvent(new CustomEvent('match', {
             detail: {string},
@@ -104,6 +105,7 @@ flex-basis: 50%;
             composed: true
           }))
       }
+      this.clicked = false;
     }
 
   

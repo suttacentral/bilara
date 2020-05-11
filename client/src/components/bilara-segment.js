@@ -49,14 +49,19 @@ bilara-cell.string {
             ></bilara-cell>`
         })
       }
-      
+
       </div>
-      ${ (this._isActive && this._matches) ? html`<bilara-matches ._matches=${this._matches}></bilara-matches>` : ''}
+      ${this.renderMatches()}
+      
     ` : html `<div class="row" id="fields">${this._orderedFields.map(field => {
       return html`<span class="field-title">${field}</span>`
     })
   }</div>` }
     `
+  }
+
+  renderMatches() {
+    return (this._isActive && this._matches) ? html`<bilara-matches ._matches=${this._matches}></bilara-matches>` : '';
   }
 
   static get properties(){
