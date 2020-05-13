@@ -9,4 +9,4 @@ docker start sc-elasticsearch
 
 (cd server; pip install -r requirements.txt)
 
-(trap 'kill 0' SIGINT; ( cd server; flask run --port $PROXY_PORT ) & (cd client; node server.js --port $PORT --proxy-port $PROXY_PORT) )
+(trap 'kill 0' SIGINT; ( cd server; poetry flask run --port $PROXY_PORT ) & (cd client; node server.js --port $PORT --proxy-port $PROXY_PORT) )

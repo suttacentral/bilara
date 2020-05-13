@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd server
-python -c "from search import search; search.index(force=True)"
+poetry run python -c "from search import search; search.index(force=True)"

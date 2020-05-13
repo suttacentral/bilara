@@ -2,6 +2,6 @@
 
 (cd client; npm install)
 
-(cd server; pip install -r requirements.txt)
+(cd server; poetry install)
 
 ./run-dev-fast

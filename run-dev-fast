@@ -7,4 +7,4 @@ fi
 
 export FLASK_ENV=development
 
-(trap 'kill 0' SIGINT; ( cd server; flask run --port 5000 ) & (cd client; npx es-dev-server ) )
+(trap 'kill 0' SIGINT; ( cd server; poetry run flask run --port 5000 ) & (cd client; npx es-dev-server ) )

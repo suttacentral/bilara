@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "bilara-server"
+version = "0.1.0"
+description = ""
+authors = ["Blake Walsh <blakeofthepath@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Flask = "^1.1.2"
+Flask-Cors = "^3.0.8"
+Flask-OAuthlib = "^0.9.5"
+Flask-Session = "^0.3.1"
+GitPython = "^3.1.2"
+gunicorn = "^20.0.4"
+pyexcel = "^0.6.1"
+pyexcel-ezodf = "^0.3.4"
+pyexcel-io = "^0.5.20"
+pyexcel-ods3 = "^0.5.3"
+pyexcel-odsr = "^0.5.2"
+pyexcel-text = "^0.2.7"
+pyexcel-xlsx = "^0.5.8"
+PyGithub = "^1.51"
+python-arango = "^5.4.0"
+regex = "^2020.5.7"
+requests = "^2.23.0"
+tqdm = "^4.46.0"
+werkzeug = "0.16.1"
+pushover = "^0.5"
+cryptography = "^2.9.2"
+cachetools = "^4.1.0"
+
+[tool.poetry.dev-dependencies]
+ipython = "^7.14.0"
+flask-shell-ipython = "^0.4.1"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+dev = "flask run"
+
