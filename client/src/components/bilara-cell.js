@@ -152,9 +152,10 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
     this.focus();
   }
 
- _emitNavigationEvent() {
+ _emitNavigationEvent(steps) {
+   if (steps === undefined) steps = 1;
    let event = new CustomEvent('navigation-event', {
-      detail: { field: this.field, steps: 1 },
+      detail: { field: this.field, steps: steps },
       bubbles: true,
       composed: true
      
@@ -180,6 +181,22 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
     } else {
       this._status = null;
     }
+
+
+    if (e.ctrlKey) {
+      if (e.key == 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._emitNavigationEvent(1);
+      } else if (e.key == 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._emitNavigationEvent(-1);
+      }
+      
+    }
+
+    
   }
 
   
