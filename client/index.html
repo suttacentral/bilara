@@ -109,10 +109,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     src: url('/fonts/SourceSerifVariable-Italic.ttf.woff2') format('woff2')
 }
 
+:root{
+--bilara-sans: 'Source Sans Variable', sans-serif;
+--bilara-serif: 'Source Serif Variable', serif;
+}
+
       body {
         margin: 0;
         /* The default was a font-stack that tries to use the system-default sans-serifs first. But remember SSS: system sans sucks. */
-        font-family: 'Source Sans Variable', serif;
+        font-family: var(--bilara-sans);
         line-height: 1.5;
         min-height: 100vh;
       }

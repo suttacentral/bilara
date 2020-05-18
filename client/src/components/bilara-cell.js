@@ -12,65 +12,97 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
   static get styles() {
     return css`
     div,
-    span.string {
-      display: inline-flex;
-      width: 100%;
-      position: relative
-    }
-    [contenteditable] {
-      outline: 0px solid transparent;
-      padding: 4px 8px;
-      height: 100%
-    }
+span.string
+{
+    position: relative;
 
-    .string.editable {
-      border-radius: 8px;
-      background-color: var(--bilara-secondary-background-color);
-    }
-    .string.editable:focus {
-      box-shadow: 0 0 0 1px var(--bilara-red);
-    }
+    display: inline-flex;
 
-    .string.empty:after {
-      content: "[ ]";
-      opacity: 0.6;
-    }
-    .status {
-      font-size: 12px;
-      color: white;
-      height: 16px;
-      line-height: 16px;
-      width: 16px;
-      text-align: center;
-      border-radius: 50%;
-      position: absolute;
-      right: -20px;
-      top: 8px;
-      display: none
-    }
-    :focus + .status.modified {
-        display: none;
-    }
-    .status.pending {
-      display: inline-block;
-      background-color: rgb(125, 125, 125);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    }
-    .status.committed {
-      display: inline-block;
-      background-color: green;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    }
-    .status.modified {
-      display: inline-block;
-      background-color: var(--bilara-magenta);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    }
-    .status.error {
-      display: inline-block;
-      background-color: var(--bilara-red);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    }
+    width: 100%;
+}
+
+[contenteditable]
+{
+    height: 100%;;
+    padding: 4px 8px;
+
+    outline: 0 solid transparent;
+}
+
+.string.editable
+{
+  font-family: var(--bilara-serif)
+}
+
+.string.editable:focus
+{
+    box-shadow: 0 0 0 1px var(--bilara-red);
+}
+
+.string.empty:after
+{
+    content: '[ ]';
+
+    opacity: .6;
+}
+
+.status
+{
+    font-size: 12px;
+    line-height: 16px;
+
+    position: absolute;
+    top: 8px;
+    right: -20px;
+
+    display: none;;
+
+    width: 16px;
+    height: 16px;
+
+    text-align: center;
+
+    color: white;
+    border-radius: 50%;
+}
+
+:focus + .status.modified
+{
+    display: none;
+}
+
+.status.pending
+{
+    display: inline-block;
+
+    background-color: rgb(125, 125, 125);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.status.committed
+{
+    display: inline-block;
+
+    background-color: green;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.status.modified
+{
+    display: inline-block;
+
+    background-color: var(--bilara-magenta);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.status.error
+{
+    display: inline-block;
+
+    background-color: var(--bilara-red);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
     `
   }
   render() {

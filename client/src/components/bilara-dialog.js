@@ -12,83 +12,127 @@ import { formToJSON } from '../form.js';
 
 
 const dialogStyles = css`
-:host {
-     background-color: var(--bilara-black);
-    border-radius: 50%;
-    border: 4px solid var(--bilara-magenta);
+:host
+{
+    position: relative;;
+
+    display: flex;
+
     width: 400px;
     height: auto;
-    padding-top:5%;
-    display: flex;
+    padding-top: 5%;
+
+    border: 4px solid var(--bilara-magenta);
+    border-radius: 50%;
+    background-color: var(--bilara-black);
+
     justify-content: center;
     align-items: center;
-    position: relative
 }
-:host::before{
-  content: "≽";
-  position: absolute;
-  left: -2rem;
-  font-size: 5rem;
-color: var(--bilara-primary-color)
 
+:host::before
+{
+    font-size: 5rem;
+
+    position: absolute;
+    left: -2rem;
+
+    content: '≽';
+
+    color: var(--bilara-primary-color);
 }
-:host::after{
-  content: "≼";
+
+:host::after
+{
+    font-size: 5rem;
+
     position: absolute;
     right: -2rem;
-    font-size: 5rem;
-    color: var(--bilara-primary-color)
+
+    content: '≼';
+
+    color: var(--bilara-primary-color);
 }
-div{
-    position: relative
+
+div
+{
+    position: relative;
 }
-#columns{
-    padding-bottom: 30%
+
+#columns
+{
+    padding-bottom: 30%;
 }
-.checkbox{
-    padding: 8px 0;
-    color: white;
+
+.checkbox
+{
     font-weight: 500;
+
     display: flex;
+
+    padding: 8px 0;
+
+    color: white;
+
     align-items: center;
 }
-label{
-        margin-left: 8px;
-        var(--bilara-primary-text-color)
+
+label
+{
+    margin-left: 8px;
+
+    color: var(--bilara-primary-text-color);
 }
-input{
+
+input
+{
+    height: 16px;;
     margin: 0;
-    height: 16px
 }
-button {
-     background-color: var(--bilara-tertiary-background-color);
+
+button
+{
     font-size: 18px;
-    font-variant-caps: all-small-caps;
     font-weight: 600;
-    height: 72px;
-    width: 72px;
-    margin: 8px 8px;
-    border-radius: 30% 70% 16px 16px;
+
     position: absolute;
     top: -20%;
-  }
-  button:hover{
-     background-color: var(--bilara-primary-background-color);
 
-  }
-  .accept-button{
+    width: 80px;
+    height: 80px;
+    margin: 8px 8px;
+
+    border-radius: 30% 70% 16px 16px;
+    background-color: var(--bilara-secondary-background-color);
+
+    font-variant-caps: all-small-caps;
+}
+
+button:hover
+{
+    background-color: var(--bilara-primary-background-color);
+}
+
+.accept-button
+{
+    top: 0;
+    left: 0;
+
     color: var(--bilara-green);
     border: 4px solid var(--bilara-green);
-                         left: -100px;
-                          border-radius: 70% 30% 16px 16px;
+    border-radius: 70% 30% 16px 16px;
+}
 
-  }
-      .cancel-button{
+.cancel-button
+{
+       top: 0;
+    right: 0;
+
     color: var(--bilara-red);
-    border: 4px solid var(--bilara-red); 
-                         right: -100px;
-                          border-radius: 30% 70% 16px 16px;
-  }
+    border: 4px solid var(--bilara-red);
+    border-radius: 30% 70% 16px 16px;
+}
+
 `
 
 class BilaraDialog extends LitElement {

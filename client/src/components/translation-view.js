@@ -42,151 +42,209 @@ class TranslationView extends connect(store)(PageViewElement) {
     return [
       sharedStyles,
       css`
-      :host {
-        display: flex;
-        justify-content: center;
-      }
+      :host
+{
+    display: flex;
 
-      #translation {
-        margin-bottom: 72px;
-      }
+    justify-content: center;
+}
 
-      #container {
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: row;
-        padding-top: 24px
-      }
+#translation
+{
+    margin-bottom: 72px;
+}
 
-      #field-headings {
-        display: flex;
-        justify-content: space-around;
-        margin-bottom: 16px;
-        position: sticky;
-        top: 34px;
-        z-index: 10
-      }
+#container
+{
+    display: flex;
+    flex-direction: row;
 
-      .field{
-        padding: 8px 12px 4px 12px;
-        margin: 8px 16px 16px 16px;
-        height: 20px;
-        font-size: 80%;
-        font-weight: 600;
-        background-color: var(--bilara-secondary-color);
-        color: white;
-        white-space: nowrap;
+    box-sizing: border-box;
+    padding-top: 24px;
+}
 
-      }
+#field-headings
+{
+    position: sticky;
+    z-index: 10;;
+    top: 34px;
 
-      .field {
-        flex-basis: 50%;
-        cursor: grab;
-      }
-      .field:hover {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      }
-      .field:active {
-        cursor: grabbing;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      }
-      .field:before {
-        display: inline-block;
-        content: " ";
-        background-image: url(../images/drag_indicator-24px.svg);
-        height: 12px;
-        width: 16px;
-        background-repeat: no-repeat;
-        vertical-align: middle;
-        opacity: 70%
-      }
-      lion-dialog{
-      	position: relative;
+    display: flex;
+
+    margin-bottom: 16px;
+
+    justify-content: space-around;
+}
+
+.field
+{
+    font-size: 80%;
+    font-weight: 600;
+
+    height: 20px;
+    margin: 8px 16px 16px 16px;
+    padding: 8px 12px 4px 12px;
+
+    white-space: nowrap;
+
+    color: white;
+    background-color: var(--bilara-secondary-color);
+}
+
+.field
+{
+    cursor: grab;
+
+    flex-basis: 50%;
+}
+
+.field:hover
+{
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.field:active
+{
+    cursor: grabbing;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.field:before
+{
+    display: inline-block;
+
+    width: 16px;
+    height: 12px;
+
+    content: ' ';
+    vertical-align: middle;
+
+    opacity: 70%;;
+    background-image: url(../images/drag_indicator-24px.svg);
+    background-repeat: no-repeat;
+}
+
+lion-dialog
+{
+    position: relative;
     z-index: inherit;
-    }
-                .adder {
-            padding: 0;
-            margin: 4px 16px 16px 16px;
-        width: 24px;
-        height: 24px;
-        right: -12px;
-        top: 8px;
-        font-size: 20px;
-        line-height: 24px;
-            text-align: center;
-            font-weight: 600;
-            background-color: var(--bilara-magenta);
-            color: var(--bilara-primary-background-color);
-            white-space: nowrap;
-            position: absolute;
-            cursor: pointer;
+}
 
-            border-radius: 50%;
-          }
-                .adder:hover {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-          }
-          .adder:active {
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-          }
-          .adder:before{
-            content: " ";
-            background-color: var(--bilara-primary-background-color);
-            border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        right: -8px;
-        top: -6px;
-      display: inline-block;
-        position: absolute;
-        z-index: -1;
-          }
-    .ripple:after {
-      content: "";
-      display: block;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      background-image: radial-gradient(circle, var(--bilara-primary-background-color) 10%, transparent 10.01%);
-      background-repeat: no-repeat;
-      background-position: 50%;
-      transform: scale(10, 10);
-      opacity: 0;
-      transition: transform .5s, opacity 1s;
-    }
-    .ripple:active:after {
-      transform: scale(0, 0);
-      opacity: .2;
-      transition: 0s;
-    }
+.adder
+{
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
 
-    .permission {
-      background-color: rgba(0,0,0,0.2);
-      font-weight: bold;
-      padding: 0px 5px;
-      border: 2px solid black;
-      border-radius: 25%;
-    }
+    position: absolute;
+    top: 8px;
+    right: -12px;
 
-    .view .permission {
-      border-color: red;
-    }
+    width: 24px;
+    height: 24px;
+    margin: 4px 16px 16px 16px;
+    padding: 0;
 
-    .suggest .permission {
-      border-color: yellow;
-    }
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
 
-    .edit .permission {
-      border-color: green;
-    }
-    
-    .secondary .permission {
-      display: inline;
-    }
+    color: var(--bilara-primary-background-color);
+    border-radius: 50%;
+    background-color: var(--bilara-magenta);
+}
+
+.adder:hover
+{
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.adder:active
+{
+    cursor: pointer;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.adder:before
+{
+    position: absolute;
+    z-index: -1;
+    top: -6px;
+    right: -8px;
+
+    display: inline-block;
+
+    width: 36px;
+    height: 36px;
+
+    content: ' ';
+
+    border-radius: 50%;
+    background-color: var(--bilara-primary-background-color);
+}
+
+.ripple:after
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    content: '';
+    transition: transform .5s, opacity 1s;
+    transform: scale(10, 10);
+    pointer-events: none;
+
+    opacity: 0;
+    background-image: radial-gradient(circle, var(--bilara-primary-background-color) 10%, transparent 10.01%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.ripple:active:after
+{
+    transition: 0s;
+    transform: scale(0, 0);
+
+    opacity: .2;
+}
+
+.permission
+{
+    padding: 0 0.5em;
+    margin-left: 1em;
+
+    border-radius: 50%;
+
+    cursor: help;
+}
+
+.view .permission
+{
+    background-color: var(--bilara-red);
+}
+
+.suggest .permission
+{
+    background-color: var(--bilara-yellow);
+}
+
+.edit .permission
+{
+    background-color: var(--bilara-green);
+}
+
+.secondary .permission
+{
+    display: inline;
+}
+
 
     `
     ]

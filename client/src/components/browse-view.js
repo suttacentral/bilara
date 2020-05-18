@@ -28,102 +28,136 @@ class NavItem extends LitElement {
     return [
       sharedStyles,
       css`
-      :host {
-        margin: 0 0 0 1rem;
-        display: block;
-         white-space: nowrap;
-         overflow: visible;
-         position: relative
-      }
-      :host:before{
-        content: "▶";
-        display: inline-block;
-        position: absolute;
-        font-size: 0.75em;
+      :host
+{
+    position: relative;;
+
+    display: block;
+    overflow: visible;
+
+    margin: 0 0 0 1rem;
+
+    white-space: nowrap;
+}
+
+:host:before
+{
+    font-size: .75em;
+
+    position: absolute;
     top: 10px;
     left: 8px;
+
+    display: inline-block;
+
+    content: '▶';
+
     color: var(--bilara-green);
-      }
+}
 
-      [open=""]:before{
-transform: rotate(90deg);
+[open='']:before
+{
     top: 10px;
     left: 8px;
-     color: var(--bilara-magenta)
-      }
 
-      .division {
-        display: block;
-        margin: 2px 0;
-        padding: 2px 0;
-        cursor: pointer;
-      }
+    transform: rotate(90deg);
 
-      .navigable{
-        padding: 4px 24px 4px 24px;
-           font-weight: 500;
-           display: inline-block;
-           border-radius: 4px
-      }
-      .navigable:hover{
-        background-color: var(--bilara-secondary-background-color)
-      }
+    color: var(--bilara-magenta);
+}
 
-      .edit .navigable {
-        font-weight: 800;
-      }
+.division
+{
+    display: block;
 
-      .more:after {
-        content: '▶';
-      }
+    margin: 2px 0;
+    padding: 2px 0;
 
+    cursor: pointer;
+}
 
+.navigable
+{
+    font-weight: 500;
 
-      a{
-        text-decoration: none;
-      }
-      a:hover{
-      text-decoration: underline
-    }
+    display: inline-block;
 
+    padding: 4px 24px 4px 24px;
 
-      
-      .progress-track {
-          position: relative;
-          display: inline-block;
-          width: 5em;
-          height:12px;
-          margin: 6px 0;
-          background-color: var(--bilara-tertiary-background-color);
-          border-radius: 4px;
-          float: right;
-          right: 1rem;
-      }
-      .progress-bar:before{
-        content: attr(data-progress) "%";
-        position: absolute;
-        display: inline-block;
-        color: white;
-        font-size: 0.55em;
-        z-index: 1;
-        vertical-align: middle;
-        font-weight: 600;
-        top: -1px;
-        left: 4px;
-        text-shadow: 0px 0px 1px var(--bilara-black);
-        font-weight: 800
-      }
+    border-radius: 4px;
+}
 
-      .progress-bar {
-          width: attr(data-progress %);
-          position: absolute;
-          display: inline-block;
-          height: 100%;
-          background-color: var(--bilara-green);
-          border-radius: 4px;
-           float: right;
-          width: attr(data-progress)%;
-      }
+.navigable:hover
+{
+    background-color: var(--bilara-secondary-background-color);
+}
+
+.edit .navigable
+{
+    font-weight: 900;
+}
+
+.more:after
+{
+    content: '▶';
+}
+
+a
+{
+    text-decoration: none;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
+
+.progress-track
+{
+    position: relative;
+    right: 1rem;
+
+    display: inline-block;
+    float: right;
+
+    width: 5em;
+    height: 12px;
+    margin: 6px 0;
+
+    border-radius: 4px;
+    background-color: var(--bilara-tertiary-background-color);
+}
+
+.progress-bar:before
+{
+    font-size: .55em;
+    font-weight: 800;
+
+    position: absolute;
+    z-index: 1;
+    top: -1px;
+    left: 4px;
+
+    display: inline-block;
+
+    content: attr(data-progress) '%';
+    vertical-align: middle;
+
+    color: white;
+    text-shadow: 0 0 1px var(--bilara-black);
+}
+
+.progress-bar
+{
+    position: absolute;
+
+    display: inline-block;
+    float: right;
+
+    height: 100%;
+
+    border-radius: 4px;
+    background-color: var(--bilara-green);
+}
       `
     ]
   }
@@ -190,61 +224,84 @@ class BrowseView extends connect(store)(PageViewElement) {
     return [
       sharedStyles,
       css`
-      .browse{
-        border: 3px solid var(--bilara-tertiary-background-color);
-         padding: 108px;
-         min-width: 600px;
-         height: fit-content;
-         margin: 144px 0;
-         border-radius: 600px
-        }
-        h2{
-          text-align: center;
-      font-weight: 500;
-      margin: 0 0 16px 0;
-      font-style: italic;
-      font-size: 16px;
-        }
-  
-        .problems {
-          font-size: 0.8em;
-        }
-  .total:before{
-  content: ""
-  }
-        .error {
-          padding: 0.5em;
-          border: 1px solid var(--bilara-red);
-          border-radius: 3px;
-          margin: 0.25em;
-        }
-  
-        .file {
-          font-family: mono;
-          font-size: 0.8em;
-        }
-  
-        .link {
-          text-decoration: none;
-          color: var(--bilara-blue);
-        }
-  
-        .link svg {
-          width: 1em;
-          height: 1em;
-        }
-  
-        .link::after {
-          content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);    
-     }
-  
-        .msg {
-          display: block;
-          background-color: var(--bilara-secondary-background-color);
-        }
-        .heart{
-          color: var(--bilara-red)
-        }
+     .browse
+{
+    min-width: 600px;
+    height: fit-content;
+    margin: 144px 0;
+    padding: 108px;
+
+    border: 3px solid var(--bilara-tertiary-background-color);
+    border-radius: 600px;
+}
+
+h2
+{
+    font-family: var(--bilara-serif);
+    font-size: 1em;
+    font-weight: 500;
+    font-style: italic;
+
+    margin: 0 0 1em 0;
+
+    text-align: center;
+}
+
+.problems
+{
+    font-size: .8em;
+}
+
+.total:before
+{
+    content: '';
+}
+
+.error
+{
+    margin: .25em;
+    padding: .5em;
+
+    border: 1px solid var(--bilara-red);
+    border-radius: 3px;
+}
+
+.file
+{
+    font-family: mono;
+    font-size: .8em;
+}
+
+.link
+{
+    text-decoration: none;
+
+    color: var(--bilara-blue);
+}
+
+.link svg
+{
+    width: 1em;
+    height: 1em;
+}
+
+.link::after
+{
+    content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);
+}
+
+.msg
+{
+    display: block;
+
+    background-color: var(--bilara-secondary-background-color);
+}
+
+.heart
+{
+    color: var(--bilara-red);
+}
+
       `
     ]
 
