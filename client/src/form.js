@@ -1,15 +1,6 @@
 /* This code from https://www.learnwithjason.dev/blog/get-form-values-as-json/ */
 
 /**
- * Checks that an element has a non-empty `name` and `value` property.
- * @param  {Element} element  the element to check
- * @return {Bool}             true if the element is an input, false if not
- */
-const isValidElement = element => {
-  return element.name && element.value;
-};
-
-/**
  * Checks if an element’s value can be saved (e.g. not an unselected checkbox).
  * @param  {Element} element  the element to check
  * @return {Boolean}          true if the value should be added, false if not
@@ -42,61 +33,26 @@ const getSelectValues = options => [].reduce.call(options, (values, option) => {
 }, []);
 
 /**
- * A more verbose implementation of `formToJSON()` to explain how it works.
- *
- * NOTE: This function is unused, and is only here for the purpose of explaining how
- * reducing form elements works.
- *
- * @param  {HTMLFormControlsCollection} elements  the form elements
- * @return {Object}                               form data as an object literal
- */
-const formToJSON_deconstructed = elements => {
-  
-  // This is the function that is called on each element of the array.
-  const reducerFunction = (data, element) => {
-    
-    // Add the current field to the object.
-    data[element.name] = element.value;
-    
-    // For the demo only: show each step in the reducer’s progress.
-    console.log(JSON.stringify(data));
-
-    return data;
-  };
-  
-  // This is used as the initial value of `data` in `reducerFunction()`.
-  const reducerInitialValue = {};
-  
-  // To help visualize what happens, log the inital value, which we know is `{}`.
-  console.log('Initial `data` value:', JSON.stringify(reducerInitialValue));
-  
-  // Now we reduce by `call`-ing `Array.prototype.reduce()` on `elements`.
-  const formData = [].reduce.call(elements, reducerFunction, reducerInitialValue);
-  
-  // The result is then returned for use elsewhere.
-  return formData;
-};
-
-/**
  * Retrieves input data from a form and returns it as a JSON object.
  * @param  {HTMLFormControlsCollection} elements  the form elements
  * @return {Object}                               form data as an object literal
  */
 export const formToJSON = elements => [].reduce.call(elements, (data, element) => {
-
+  const name = element.name || element.getAttribute('data-field');
   // Make sure the element has the required properties and should be added.
-  if (isValidElement(element) && isValidValue(element)) {
+  if (name && isValidValue(element)) {
 
     /*
      * Some fields allow for more than one value, so we need to check if this
      * is one of those fields and, if so, store the values as an array.
      */
+    
     if (isCheckbox(element)) {
-      data[element.name] = (data[element.name] || []).concat(element.value);
+      data[name] = (data[name] || []).concat(element.value);
     } else if (isMultiSelect(element)) {
-      data[element.name] = getSelectValues(element);
+      data[name] = getSelectValues(element);
     } else {
-      data[element.name] = element.value;
+      data[name] = element.value;
     }
   }
 

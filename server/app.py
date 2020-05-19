@@ -93,26 +93,27 @@ def search():
     data = request.get_json()
 
     query = []
-    if data['source-field']:
+    source_field = data['source-field']
+    if source_field:
         query.append({
-          "muids": data['source-field'],
-          "query": data.get('find-root') # can be None
+          "muids": source_field,
+          "query": data.get(source_field) # can be None
         })
-    if data['target-field']:
+    target_field = data['target-field']
+    if target_field:
         query.append({
-          "muids": data['target-field'],
-          "query": data.get('find-translation')
+          "muids": target_field,
+          "query": data.get(target_field)
         })
     
     query.extend({"muids": field} for field in data.get('extra-fields', '').split(','))
 
-    r = search.generic_query(query, 0, 50, segment_id_filter=data.get('uid-filter'))
 
-    result = {
-      'total': r.count(),
-      'time': r.statistics()['execution_time'],
-      'results': list(r)
-    }
+    user = get_user_details()
+
+    result = search.search_query(query, 0, 50, segment_id_filter=data.get('uid-filter'), user=user)
+
+
 
     return jsonify(result)
 

@@ -16,7 +16,8 @@ from log import problemsLog
 
 from .highlight import highlight_matching
 
-#from git_fs import get_deleted_file_data
+from permissions import get_permissions, Permission
+import fs
 
 repo_dir = config.REPO_DIR
 
@@ -304,9 +305,6 @@ class Search:
         else:
             self.db.create_arangosearch_view("strings_view", {"links": links})
 
-    def search_query(self, query_components, offset, limit):
-        search.search_query(self)
-
     def generic_query(self, query_components, offset, limit, segment_id_filter):
         """
         >>> search.generic_query([{
@@ -328,7 +326,7 @@ class Search:
                 segment_id_filter += ':'
             segment_id_filter += '%'
 
-        query_components.sort(key=lambda obj: obj.get('query') is None)
+        query_components.sort(key=lambda obj: not obj.get('query'))
 
         constructed_query = ConstructedQuery(self)
         parts = []
@@ -438,4 +436,37 @@ class Search:
             "segment_ids": result['segment_ids']
         } for result in results]
 
+    def search_query(self, *args, user, **kwargs):
+        r = self.generic_query(*args, **kwargs)
+        result = {
+            'total': r.count(),
+            'time': r.statistics()['execution_time'],
+            'results': []
+        }
 
+        
+        for entry in r:
+            segment_id = entry['segment_id']
+            uid = entry['segment_id'].split(':')[0]
+
+            segments = {}
+            for key, string in entry.items():
+                if key == 'segment_id':
+                    continue
+                muids = key.split('-')
+                try:
+                    path = fs.get_matching_entry(uid, muids)
+                    permission = get_permissions(str(path), user)
+                except fs.NoMatchingEntry:
+                    permission = Permission.NONE
+                
+                segments[key] = {
+                    'string': string,
+                    'permission': permission.name
+                }
+            result['results'].append({
+                'segment_id': segment_id,
+                'segments': segments
+            })
+        return result
+                
