@@ -1,38 +1,28 @@
-import os
-import json
 import logging
-import pathlib
 
 from urllib.parse import urlencode
 from flask import (
     Flask,
     redirect,
-    url_for,
     session,
     request,
     jsonify,
-    render_template_string,
-    Response,
-    stream_with_context,
-    send_from_directory,
-    jsonify,
 )
 from flask_session import Session
-from flask_oauthlib.client import OAuth, OAuthException
+from flask_oauthlib.client import OAuth
 from flask_cors import CORS
 from github import Github, BadCredentialsException
 from config import config
-from requests import get
 import import_export
 
 import auth
 
 
-from log import segments_logger
+from log import segments_logger, problemsLog
 from search import search
-from log import problemsLog
 
-
+import fs
+import git_fs
 
 app = Flask(__name__)
 
@@ -70,13 +60,14 @@ def nav():
     user = get_user_details()
     return jsonify(fs.get_condensed_tree(["translation"], user=user))
 
+
 @app.route("/api/problems/")
 def problems():
     return jsonify(problemsLog.load())
 
+
 @app.route("/api/tm/")
 def tm_get():
-    from search import search
 
     string = request.args.get("string")
     root_lang = request.args.get("root_lang")
@@ -88,8 +79,7 @@ def tm_get():
 
 
 @app.route("/api/search/", methods=["POST"])
-def search():
-    from search import search
+def general_search():
     data = request.get_json()
 
     query = []
@@ -97,7 +87,7 @@ def search():
     if source_field:
         query.append({
           "muids": source_field,
-          "query": data.get(source_field) # can be None
+          "query": data.get(source_field)  # can be None
         })
     target_field = data['target-field']
     if target_field:
@@ -105,22 +95,21 @@ def search():
           "muids": target_field,
           "query": data.get(target_field)
         })
-    
+
     query.extend({"muids": field} for field in data.get('extra-fields', '').split(','))
 
-
     user = get_user_details()
+    filter = data.get('uid-filter')
 
-    result = search.search_query(query, 0, 50, segment_id_filter=data.get('uid-filter'), user=user)
-
-
+    result = search.search_query(query, 0, 50, segment_id_filter=filter, user=user)
 
     return jsonify(result)
+
 
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
-    fs.git_fs.githook(data)
+    git_fs.githook(data)
     return "Okay", 200
 
 
@@ -243,14 +232,9 @@ def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _ca
     return user
 
 
-import fs
-
-def init():    
+def init():
     problemsLog.clear()
     fs.make_file_index()
 
 
-
 init()
-
-
