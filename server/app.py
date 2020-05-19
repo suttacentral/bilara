@@ -20,7 +20,7 @@ import auth
 
 from log import segments_logger, problemsLog
 from search import search
-
+from segment_updates import update_segment
 import fs
 import git_fs
 
@@ -52,7 +52,7 @@ def update():
     segment = request.get_json()
     segments_logger.debug(segment)
     user = get_user_details()
-    return jsonify(fs.update_segment(segment=segment, user=user))
+    return jsonify(update_segment(segment=segment, user=user))
 
 
 @app.route("/api/nav/")
