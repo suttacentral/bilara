@@ -17,6 +17,7 @@ from log import problemsLog
 from .highlight import highlight_matching
 
 from permissions import get_permissions, Permission
+
 import fs
 
 repo_dir = config.REPO_DIR
