@@ -1,6 +1,8 @@
 
 import json
 import regex
+import logging
+from log import problemsLog
 from enum import IntEnum
 from config import config
 from util import json_load, json_save
@@ -31,7 +33,13 @@ def source_url_to_path(url):
 def build_rules(publications):
     result = {}
     for pub_id, entry in publications.items():
-        source_path = source_url_to_path(entry['source_url'])
+        try:
+            source_path = source_url_to_path(entry['source_url'])
+        except ValueError as e:
+            problemsLog.add(
+                file=str(publications_file.relative_to(REPO_DIR)),
+                msg=f"In {entry['publication_number']}: {e.args[0]} "
+            )
         github_ids = [entry.get('author_github_handle')]
         for collaborator in entry.get("collaborator", []):
             github_ids.append(collaborator.get('author_github_handle'))

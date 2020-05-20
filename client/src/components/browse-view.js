@@ -250,7 +250,19 @@ h2
 .problems
 {
     font-size: .8em;
+    max-width: 800px;
+    margin: auto;
 }
+
+.problems .dontpanic:after {
+  content: "DON'T PANIC";
+  position: absolute;
+  font-size: 600%;
+  opacity: 0.1;
+  vertical-align: top;
+  
+}
+
 
 .total:before
 {
@@ -308,6 +320,7 @@ h2
   }
   render(){
     return html`
+    <div class="wrap">
     <section class="browse">
     <h2>Translate your little <span class="heart">💚</span> out, ${this._username}!</h2>
       ${ this._dataTree ? html`
@@ -316,6 +329,7 @@ h2
     </section>
     
     ${this._renderProblems()}
+    </div>
     `
   }
 
@@ -323,17 +337,23 @@ h2
     if (!this._problems || this._problems.length == 0) return html``
 
     return html`
+    
     <section class="problems">
     <hr>
-    <p>Some errors occured while attempting to load the data and require human intervention. You can likely use
-    Bilara without issue, except in relation to the files where errors occurred.</p>
+    <p><span class="dontpanic"></span> Some errors occured while attempting to load the data and require human intervention. You can likely use
+    Bilara without issue, except in relation to the files where errors occurred. These errors will almost always be caused by manual edits of JSON files.</p>
+    <p>Every user of Bilara will see these errors and it is possible that you did not introduce the 
+    errors, that they will not effect your work, and you may disregard them and carry on with your work.</p>
+    
+    
     <div class="errors">
     ${repeat(this._problems, (entry) => {
         return html`<div class="error"><span class="file">${entry.file} <a class="link" href="${entry.href_root}${entry.file}"></a></span>  <span class="msg">${entry.msg}</span></div>`
       })
     }
     </div>
-    </section>` 
+    </section>
+    ` 
   }
 
   static get properties() { 

@@ -318,22 +318,26 @@ export class BilaraSearch extends connect(store)(LitElement) {
       <section id="results">
       <div class="total">${this._total} results.</div>
       ${repeat(results, (r) => JSON.stringify(r), (result, i) => {
-        const sourceString = result[this._sourceField],
-              targetString = result[this._targetField];
+        const sourceField = this._sourceField,
+              targetField = this._targetField,
+              sourceString = result.segments[sourceField].string,
+              targetString = result.segments[targetField].string,
+              targetPermission = result.segments[targetField].permission;
         return html`<bilara-search-result
                       ._segmentId=${result.segment_id}
                       ._source=${ {
-                        field: this._sourceFied,
+                        field: sourceField,
                         string: sourceString,
                         original: sourceString,
                         highlight: query['find-root']
                       } }
                       ._target=${ {
-                        field: this._targetField,
+                        field: targetField,
                         string: targetString,
                         replacement: query.replace,
                         original: targetString,
-                        highlight: query['find-translation']
+                        highlight: query['find-translation'],
+                        permission: targetPermission
                       } }
                       >
           </bilara-search-result>`
