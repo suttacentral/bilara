@@ -230,15 +230,23 @@ class StatsCalculator:
             missing.append("root lang")
         if not root_edition:
             missing.append("root edition")
-        if missing:
-            msg = f'{", ".join(missing)} not found, please check author and project'
-            print(str(translation["path"]), msg, file=sys.stderr)
-            problemsLog.add(file=str(translation["path"]), msg=msg)
-            total_count = translated_count
-        else:
+        #if missing:
+            # msg = f'{", ".join(missing)} not found, please check author and project'
+            # print(str(translation["path"]), msg, file=sys.stderr)
+            # problemsLog.add(file=str(translation["path"]), msg=msg)
+            #total_count = translated_count
+        #else:
+        try:
             root_entry = get_matching_entry(uid, ["root", root_lang, root_edition])
             root_count = self.count_strings(root_entry)
             total_count = max(root_count, translated_count)
+        except NoMatchingEntry:
+            total_count = translated_count
+            problemsLog.add(
+                    file=translation['path'],
+                    msg="Root entry could not be determined"
+            )
+        
         return {"_translated": translated_count, "_root": total_count}
 
     def count_strings(self, entry):
@@ -256,7 +264,9 @@ class StatsCalculator:
 stats_calculator = StatsCalculator()
 
 
-def get_matching_ids(uid, muids=None):
+def get_matching_ids(uid, muids=None, permit_none=True):
+    if permit_none and muids is not None:
+        muids = [muid for muid in muids if muid is not None]
     try:
         result = _uid_index[uid].copy()
         if muids:
@@ -267,8 +277,8 @@ def get_matching_ids(uid, muids=None):
         raise NoMatchingEntry(f'No match for "{e.args[0]} for query {uid}, {muids}')
 
 
-def get_matching_id(uid, muids=None):
-    result = get_matching_ids(uid, muids)
+def get_matching_id(uid, muids=None, permit_none=True):
+    result = get_matching_ids(uid, muids, permit_none)
     if len(result) == 1:
         (result,) = result
         return result
@@ -309,9 +319,12 @@ def get_match(matches):
     return match
 
 
-def get_matching_entry(uid, muids):
-    long_id = get_matching_id(uid, muids)
-    return _file_index[long_id]
+def get_matching_entry(uid, muids, permit_none=True):
+    long_id = get_matching_id(uid, muids, permit_none)
+    try:
+        return _file_index[long_id]
+    except KeyError:
+        raise NoMatchingEntry("No matches for {uid}, {muids}")
 
 
 def update_result(result, long_id, entry, role=None, user=None):
@@ -420,6 +433,8 @@ def get_data(primary_long_id, user=None, root=None, tertiary=None):
             if role == "source":
                 result["sourceField"] = root_long_id.split("_")[1]
         except NoMatchingEntry:
+            if muid == 'root':
+                logging.error(f'No matching root entry for {primary_long_id}')
             pass
 
     if tertiary:
