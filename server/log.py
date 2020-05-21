@@ -41,14 +41,17 @@ class ProblemLogger:
         
     def add(self, entry=None, **kwargs):
         entries = self.load()
+        
         if entry:
-            entries.append(entry)
+            new_entry = entry
         elif kwargs:
             kwargs['href_root'] = self.href_root
-            entries.append(kwargs)
+            new_entry = kwargs
         else:
             raise ValueError('No Problem : entry should be a string, or some kwargs defined')
-
+        
+        if new_entry not in entries:
+            entries.append(new_entry)
         with self.file.open('w') as f:
             json.dump(entries, f, ensure_ascii=False, indent=2)
     

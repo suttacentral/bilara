@@ -2,6 +2,7 @@
 import json
 import regex
 import logging
+import threading
 from log import problemsLog
 from enum import IntEnum
 from config import config
@@ -16,8 +17,8 @@ class Permission(IntEnum):
 
 REPO_DIR = config.REPO_DIR
 
-
-publications_file = REPO_DIR / '_publication.json'
+publications_file_name = '_publication.json'
+publications_file = REPO_DIR / publications_file_name
 
 with publications_file.open() as f:
     pass
@@ -37,7 +38,7 @@ def build_rules(publications):
             source_path = source_url_to_path(entry['source_url'])
         except ValueError as e:
             problemsLog.add(
-                file=str(publications_file.relative_to(REPO_DIR)),
+                file=publications_file_name,
                 msg=f"In {entry['publication_number']}: {e.args[0]} "
             )
         github_ids = [entry.get('author_github_handle')]
@@ -73,6 +74,7 @@ def get_base_permissions(path, github_id):
     if not rules:
         _cached_rules.clear()
         _cached_rules[mtime] = rules = build_rules(json_load(publications_file))
+        threading.Thread(target=validate_permissions, args=(rules,)).start()
     
     result = Permission.VIEW
     if github_id not in rules:
@@ -99,3 +101,23 @@ def get_permissions(path, github_id):
     
     return permission
 
+def validate_permissions(permissions):
+    files = REPO_DIR.glob('**/*.json')
+    files = [str(file.relative_to(REPO_DIR)) 
+             for file in files 
+             if not any(part for part in file.parts if part.startswith('.'))]
+
+    for user, user_permissions in permissions.items():
+        for paths in user_permissions.values():
+            for path in paths:
+                if path == '*':
+                    continue
+                for file in files:
+                    if file.startswith(path):
+                        break
+                else:
+                    problemsLog.add(file=publications_file_name,
+                                    msg=f"No files match path: {path}")
+
+#warmup
+get_permissions('/', '')
