@@ -220,6 +220,9 @@ class Search:
     def update_partial(self, added=[], modified=[]):
         if modified or added:
             files = [repo_dir / filepath for filepath in set(added).union(set(modified))]
+            files = [file for file in files if 
+                     file.suffix == '.json' and
+                     not any(part.startswith('.') for part in file.parts)]
             self.index(files=files, force=False)
 
     def files_removed(self, files_and_data):
@@ -254,6 +257,8 @@ class Search:
 
     def yield_strings(self, files):
         for file in files:
+            if file.suffix != '.json':
+                continue
             if '_' not in file.name:
                 logging.error(f'Invalid filename: {file}')
                 problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'Not a valid filename: "_" missing')
