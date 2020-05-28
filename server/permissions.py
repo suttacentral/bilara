@@ -29,7 +29,13 @@ def source_url_to_path(url):
     if m:
         return m[1]
     else:
-        raise ValueError(f'Invalid Source URL {url}')
+        if url is None:
+            reason = '[source_url not defined]'
+        elif not url:
+            reason = '[source_url is empty]'
+        else:
+            reason = '[source_url is not a valid github URL]'
+        raise ValueError(f'Invalid Source URL {url}: {reason}')
 
 def build_rules(publications):
     result = {}
@@ -45,13 +51,19 @@ def build_rules(publications):
         for collaborator in entry.get("collaborator", []):
             github_ids.append(collaborator.get('author_github_handle'))
         
+        if not any(github_ids) and 'parent_publication' not in entry:
+            problemsLog.add(
+                file=publications_file_name,
+                msg=f"Publication {pub_id} has no author or collaborator"
+            )
+        
         for github_id in github_ids:
             if not github_id:
                 continue
             if github_id not in result:
                 result[github_id] = {
-                    Permission.EDIT: [github_id],
-                    Permission.SUGGEST: ["*"],
+                    Permission.EDIT: [],
+                    Permission.SUGGEST: [],
                     Permission.VIEW: ["*"]
                 }
             if source_path not in result[github_id][Permission.EDIT]:
@@ -62,6 +74,17 @@ def build_rules(publications):
             
         
 _cached_rules = {}
+
+def get_rules():
+    mtime = publications_file.stat().st_mtime_ns
+    rules = _cached_rules.get(mtime)
+    if not rules:
+        _cached_rules.clear()
+        _cached_rules[mtime] = rules = build_rules(json_load(publications_file))
+        threading.Thread(target=validate_permissions, args=(rules,)).start()
+    return rules
+
+
 def get_base_permissions(path, github_id):
     """
     Check what permissions a user has for a path
@@ -69,12 +92,8 @@ def get_base_permissions(path, github_id):
     if github_id and 'login' in github_id:
         github_id = github_id['login']
     path = str(path)
-    mtime = publications_file.stat().st_mtime_ns
-    rules = _cached_rules.get(mtime)
-    if not rules:
-        _cached_rules.clear()
-        _cached_rules[mtime] = rules = build_rules(json_load(publications_file))
-        threading.Thread(target=validate_permissions, args=(rules,)).start()
+    
+    rules = get_rules()
     
     result = Permission.VIEW
     if github_id not in rules:
@@ -95,19 +114,21 @@ def get_base_permissions(path, github_id):
 def get_permissions(path, github_id):
     permission = get_base_permissions(path, github_id)
     # Downgrade permissions for non-translations
-    if not regex.match(r'\b(?:translation)\b', path):
-        if permission == Permission.SUGGEST:
-            permission = Permission.VIEW
-    
+    # if not regex.match(r'\b(?:translation)\b', path):
+    if permission == Permission.SUGGEST:
+        permission = Permission.VIEW
+
     return permission
 
-def validate_permissions(permissions):
+def validate_permissions(rules=None):
+    if not rules:
+        rules = get_rules()
     files = REPO_DIR.glob('**/*.json')
     files = [str(file.relative_to(REPO_DIR)) 
              for file in files 
              if not any(part for part in file.parts if part.startswith('.'))]
 
-    for user, user_permissions in permissions.items():
+    for user, user_permissions in rules.items():
         for paths in user_permissions.values():
             for path in paths:
                 if path == '*':
@@ -118,6 +139,12 @@ def validate_permissions(permissions):
                 else:
                     problemsLog.add(file=publications_file_name,
                                     msg=f"No files match path: {path}")
+
+#    authors = json_load(REPO_DIR / '_author.json')
+#    for uid, entry in authors.items():
+#        if entry['type'] == 'translator':
+#            if uid not in rules:
+#                problemsLog.add(file=publications_file_name, msg=f'Translator "{uid}" does not have permissions defined')
 
 #warmup
 get_permissions('/', '')
