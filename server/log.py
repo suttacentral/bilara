@@ -2,6 +2,7 @@ import os
 import json
 import pathlib
 import logging
+import time
 from logging.handlers import RotatingFileHandler
 
 
@@ -37,10 +38,15 @@ class ProblemLogger:
     
     def clear(self):
         if self.file.exists():
-            self.file.unlink()
-        
+            if time.time() - self.file.stat().st_mtime > 10:
+                self.file.unlink()
+    
+    @staticmethod
+    def to_key(entry):
+        return json.dumps(entry, sort_keys=True)
     def add(self, entry=None, **kwargs):
         entries = self.load()
+        seen = {self.to_key(entry) for entry in entries}
         
         if entry:
             new_entry = entry
@@ -49,9 +55,11 @@ class ProblemLogger:
             new_entry = kwargs
         else:
             raise ValueError('No Problem : entry should be a string, or some kwargs defined')
-        
-        if new_entry not in entries:
+
+        if self.to_key(new_entry) not in seen:
             entries.append(new_entry)
+            print(new_entry)
+        
         with self.file.open('w') as f:
             json.dump(entries, f, ensure_ascii=False, indent=2)
     
