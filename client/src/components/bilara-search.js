@@ -278,7 +278,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
     const response = await fetch('/api/search/', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "X-Bilara-Auth-Token": user.authToken,
+        "X-Bilara-Username": user.username
       },
       body: JSON.stringify(data)
     });

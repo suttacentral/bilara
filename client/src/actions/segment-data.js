@@ -8,8 +8,10 @@ export const fetchSegmentData = (filename, root, tertiary ) => (dispatch, getSta
 
     let uploadQueue = JSON.parse(localStorage.getItem('uploadQueue') || '{}');
 
-    let state = getState();
-    console.log('State', state);
+    const state = getState(),
+          user = state.app.user;
+    
+          console.log('State', state);
 
     let url = new URL(`/api/segments/${filename}`, window.location.origin);
     if (root) {
@@ -19,17 +21,23 @@ export const fetchSegmentData = (filename, root, tertiary ) => (dispatch, getSta
         url.searchParams.set('tertiary', tertiary)
     }
 
-    return fetch(url, {mode: 'cors'})
-        .then(res => res.json())
-        .then(data => {
-            Object.values(uploadQueue).map((queuedSegment) => {
-                const segmentId = queuedSegment.segmentId;
-                if (data.segments[filename][segmentId]) {
-                    data.segments[filename][segmentId] = queuedSegment.value;
-                }
-            });
-            dispatch(receiveSegmentData(filename, data));
-        }).catch( (e) => {console.log(e); dispatch(failSegmentData(filename))});
+    return fetch(url, {
+        mode: 'cors',
+        headers: {
+            "X-Bilara-Auth-Token": user.authToken,
+            "X-Bilara-Username": user.username
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        Object.values(uploadQueue).map((queuedSegment) => {
+            const segmentId = queuedSegment.segmentId;
+            if (data.segments[filename][segmentId]) {
+                data.segments[filename][segmentId] = queuedSegment.value;
+            }
+        });
+        dispatch(receiveSegmentData(filename, data));
+    }).catch( (e) => {console.log(e); dispatch(failSegmentData(filename))});
 }
 
 const requestSegmentData = (filename, ) => {
