@@ -1,3 +1,4 @@
+import arango
 from arango import ArangoClient
 
 import pathlib
@@ -190,8 +191,11 @@ class Search:
 
         if force:
             for name in collection_names:
-                db.delete_collection(name)
-                self.collection_names = set()
+                try:
+                    db.delete_collection(name)
+                except arango.exceptions.CollectionDeleteError:
+                    pass
+            self.collection_names = set()
 
         for collection_name, group in itertools.groupby(
             self.yield_strings(files), lambda t: t[0]
