@@ -10,8 +10,10 @@ Backend is built from python, with Translation Memory and Search/Replace powered
 
 Front end is built on LitElement.
 
-We have taken the liberty of naming some color themes in Pali. Thanks to Ethan Schoonover for [Solarized and Lunarized themes](https://ethanschoonover.com/solarized/) (= suriya and candima), and to Mina Markham for [Yoncé theme](https://yoncetheme.com/) (= gandhabba).
+We have taken the liberty of adapting some color themes and renaming them in Pali. Thanks to Ethan Schoonover for [Solarized and Lunarized themes](https://ethanschoonover.com/solarized/) (= suriya and candima), to Mina Markham for [Yoncé theme](https://yoncetheme.com/) (= gandhabba), and to Zeno Rocha for [Dracula theme](https://draculatheme.com/) (= mara).
 
 ## Dev Installation
 
 https://github.com/suttacentral/bilara/wiki/Dev-Installation
+
+https://github.com/suttacentral/bilara/wiki/Dev-Installation-Ubuntu-20.04

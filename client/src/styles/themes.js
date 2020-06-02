@@ -155,6 +155,27 @@ export const themes = {
         --bilara-footer-height: 108px;
         color: var(--bilara-primary-text-color)
 `,
+'mara': css`
+        --bilara-primary-color: #6272a4;
+        --bilara-secondary-color: #6272a4;
+        --bilara-primary-background-color: #282a36;
+        --bilara-secondary-background-color:  #44475a;
+        --bilara-tertiary-background-color: #44475a;
+        --bilara-primary-text-color: #f8f8f2;
+        --bilara-emphasized-text-color:  white;
+        --bilara-secondary-text-color: #e8e8e2;
+        --bilara-yellow: #d36d00;
+        --bilara-orange: #ffb86c;
+        --bilara-red: #ff5555;
+        --bilara-magenta: #ff79c6;
+        --bilara-violet: #bd93f9;
+        --bilara-blue: #8be9fd;
+        --bilara-cyan: #8be9fd;
+        --bilara-green: #06c436;
+        --bilara-black: #282a36;
+        --bilara-footer-height: 108px;
+        color: var(--bilara-primary-text-color)
+`,
 'niraya': css`
         --bilara-primary-color: #666;
         --bilara-secondary-color: firebrick;
