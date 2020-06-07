@@ -272,8 +272,9 @@ export class BilaraSearch extends connect(store)(LitElement) {
 
   async _submit(e) {
     e.preventDefault();
-    const data = formToJSON(e.target);
-    console.log(data);
+    const data = formToJSON(e.target),
+          state = store.getState(),
+          user = state.app.user;
 
     const response = await fetch('/api/search/', {
       method: 'POST',
