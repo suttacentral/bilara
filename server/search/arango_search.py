@@ -336,7 +336,11 @@ class Search:
                 segment_id_filter += ':'
             segment_id_filter += '%'
 
+
+        
+
         query_components.sort(key=lambda obj: not obj.get('query'))
+        print(query_components)
 
         constructed_query = ConstructedQuery(self)
         parts = []
@@ -345,20 +349,23 @@ class Search:
         for n, component in enumerate(query_components):
             muids = component['muids']
             query = component.get('query')
+            mandatory = component['mandatory']
             constructed_query.bind_vars[f'muids{n}'] = muids
-            if query:
+            if query or mandatory:
                 parts.extend([
                     tab * n + f'FOR doc{n} IN strings_view',
                     tab * (n + 1) + f'SEARCH ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc{n}.muids, "splitter")',
-                    tab * (n + 1)  + f'AND ANALYZER(PHRASE(doc{n}.string, @query{n}), "normalizer")'
                 ])
+                if query:
+                     parts.append(tab * (n + 1)  + f'AND ANALYZER(PHRASE(doc{n}.string, @query{n}), "normalizer")')
                 if n == 0:
                     if segment_id_filter:
                         parts.append(tab * (n + 1) + f'FILTER doc{n}.segment_id LIKE @segment_id_filter')
                         constructed_query.bind_vars['segment_id_filter'] = segment_id_filter.lower()
                 if n > 0:
                     parts.append(tab * (n + 1) + f'AND doc{n}.segment_id == doc0.segment_id')
-                constructed_query.bind_vars[f'query{n}'] = query
+                if query:
+                    constructed_query.bind_vars[f'query{n}'] = query
                 return_parts.append(tab + f'@muids{n}: doc{n}.string')
             else:
                 return_parts.append(f'''
@@ -368,10 +375,8 @@ class Search:
         AND ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc.muids, "splitter")
       LIMIT 1
       RETURN doc
-  ).string''' )
-            
-            
-            
+  ).string''')
+
         parts.append('LIMIT @offset, @limit')
         constructed_query.bind_vars.update({'offset': offset, 'limit': limit})
         parts.append('RETURN {\n' + ',\n'.join(return_parts) + '\n}')

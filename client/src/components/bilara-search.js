@@ -342,6 +342,7 @@ export class BilaraSearch extends connect(store)(LitElement) {
                         highlight: query['find-translation'],
                         permission: targetPermission
                       } }
+                      ._segments=${result.segments}
                       >
           </bilara-search-result>`
       }

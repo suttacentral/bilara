@@ -87,16 +87,22 @@ def general_search():
     if source_field:
         query.append({
           "muids": source_field,
-          "query": data.get(source_field)  # can be None
+          "query": data.get(source_field),  # can be None,
+          "mandatory": True
         })
     target_field = data['target-field']
     if target_field:
         query.append({
           "muids": target_field,
-          "query": data.get(target_field)
+          "query": data.get(target_field),
+          "mandatory": True
         })
 
-    query.extend({"muids": field} for field in data.get('extra-fields', '').split(','))
+    query.extend({
+        "muids": field,
+        "query": data.get(field),
+        "mandatory": bool(data.get(field))
+        } for field in data.get('extra-fields', '').split(','))
 
     user = get_user_details()
     filter = data.get('uid-filter')

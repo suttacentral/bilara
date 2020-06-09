@@ -87,7 +87,10 @@ def load_state():
         print("Loaded saved file index")
         _build_complete.set()
     except Exception:
-        saved_state_file.unlink()
+        try:
+            saved_state_file.unlink()
+        except FileNotFoundError:
+            pass
 
 
 _build_started = Event()

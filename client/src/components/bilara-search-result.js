@@ -144,6 +144,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
             _segmentId: String,
             _target: Object,
             _source: Object,
+            _segments: Object,
             _replaced: Boolean,
             _mode: String
         }
@@ -163,16 +164,19 @@ export class BilaraSearchResult extends BilaraUpdatable {
               noReplace: html``
             }[this._mode]
             }
-
-            
-            
             </div>
             <div class="status-wrapper">
             <div class="result-translation-text" contenteditable="${contentEditableValue}" @input=${this._input} @keydown=${this._keydownEvent}></div>
             ${this.renderStatus()}
             </div>
-            
             <div class="result-root-text"></div>
+            ${repeat(Object.keys(this._segments), (field, i) => {
+              const segment = this._segments[field];
+              if (field != this._target.field && field != this._source.field) {
+                return html`<div class="result-tertiary-text">${segment.string}</div>`
+              }
+              return html``
+            })}
             
         </form>`
     }
