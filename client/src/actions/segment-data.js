@@ -2,7 +2,6 @@ export const REQUEST_SEGMENT_DATA = 'REQUEST_SEGMENT_DATA';
 export const RECEIVE_SEGMENT_DATA = 'RECEIVE_SEGMENT_DATA';
 export const FAIL_SEGMENT_DATA = 'FAIL_SEGMENT_DATA';
 
-
 export const fetchSegmentData = (filename, root, tertiary ) => (dispatch, getState) => {
     dispatch(requestSegmentData(filename, ));
 

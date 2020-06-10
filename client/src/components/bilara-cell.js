@@ -172,7 +172,7 @@ span.string
     } else {
       cell.innerText = value || '';
     }
-    this._updateStatusValue(value);
+    this._updateStatusValue(value, this.segmentId, this.field);
   }
 
   _keydown(e){
@@ -236,7 +236,7 @@ span.string
   _inputEvent(e) {
     const value = e.target.innerText;
     console.log(value);
-    this._updateStatusValue(value);
+    this._updateStatusValue(value, this.segmentId, this.field);
   }
 }
 

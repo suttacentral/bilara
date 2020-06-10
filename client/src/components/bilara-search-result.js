@@ -208,7 +208,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
       } else {
         this._mode = 'submit';
       }
-      this._updateStatusValue(text);
+      this._updateStatusValue(text, this._segmentId);
     }
 
     _replace(e) {
@@ -220,7 +220,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
       console.log(el, string);
       
       el.innerHTML = newString;
-      this._updateStatusValue(newString);
+      this._updateStatusValue(newString, this._segmentId);
       this._mode = 'submit';
     }
 
@@ -237,7 +237,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
       e.preventDefault();
       const el = this.shadowRoot.querySelector('.result-translation-text');
       el.innerHTML = this._target.original;
-      this._updateStatusValue(this._target.original);
+      this._updateStatusValue(this._target.original, this._segmentId);
       this._mode = 'submit';
     }
 

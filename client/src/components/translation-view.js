@@ -334,7 +334,8 @@ lion-dialog
       _suggestions: { type: Object },
       _orderedFields: { type: Array, reflect: true },
       _potentialFields: { type: Array },
-      _pushState: { type: Object }
+      _pushState: { type: Object },
+      _modified: { type: Object }
     }
   }
 
@@ -357,6 +358,19 @@ lion-dialog
 
     return ordering[key];
   }
+ 
+  firstUpdated(){
+    window.addEventListener('beforeunload', (e) => {
+      return this._beforeUnload(e);
+    });
+  }
+
+  _beforeUnload(e) {
+    if (Object.values(this._modified).some(v => v)) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  }
 
   _saveFieldOrder(fields) {
     const key = this._fieldsKey(fields);
@@ -374,6 +388,7 @@ lion-dialog
       this._targetField = state.segmentData.data.targetField;
       this._orderedFields = this._getFieldOrder(Object.keys(this._fields), state.app.pref.ordering);
       this._potentialFields = state.segmentData.data.potential;
+      this._modified = state.segmentData.modified;
     } else {
       this._segments = null;
     }

@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
 
-import { updateSegment } from '../actions/segment.js';
+import { updateSegment, updateModified } from '../actions/segment.js';
 
 export class BilaraUpdatable extends connect(store)(LitElement){
   static get properties(){
@@ -24,7 +24,7 @@ export class BilaraUpdatable extends connect(store)(LitElement){
     }[this._status] || html`<span class="status"></span>`;
   }
 
-  _updateStatusValue(value){
+  _updateStatusValue(value, segmentId, field){
     
     if (this._committedValue == null) {
       this._committedValue = value;
@@ -33,8 +33,11 @@ export class BilaraUpdatable extends connect(store)(LitElement){
       this._currentValue = value;
       if (value != this._committedValue) {
         this._status = 'modified';
+        console.log('WTF');
+        store.dispatch(updateModified(segmentId + field, true));
       } else {
         this._status = null;
+        store.dispatch(updateModified(segmentId + field, false));
       }
     }
   }

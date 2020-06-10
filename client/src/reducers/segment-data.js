@@ -1,8 +1,8 @@
 import {
-    REQUEST_SEGMENT_DATA, RECEIVE_SEGMENT_DATA, FAIL_SEGMENT_DATA,
+    REQUEST_SEGMENT_DATA, RECEIVE_SEGMENT_DATA, FAIL_SEGMENT_DATA
 } from '../actions/segment-data.js';
 import {
-    UPDATE_SEGMENT, FOCUS_SEGMENT
+    UPDATE_SEGMENT, FOCUS_SEGMENT, UPDATE_MODIFIED
 } from '../actions/segment.js';
 import {
     RESOLVE_PUSH
@@ -20,7 +20,8 @@ const getSavedQueue = () => {
 
 const defaultState = {
   uploadQueue: getSavedQueue() || {}, 
-  pushState: {}
+  pushState: {},
+  modified: {}
 }
 
 export const segmentData = (state = defaultState, action) => {
@@ -40,7 +41,8 @@ export const segmentData = (state = defaultState, action) => {
                 data: action.data,
                 filename: filename,
                 failure: false,
-                isFetching: false
+                isFetching: false,
+                modified: {}
             }
         case FAIL_SEGMENT_DATA:
             return {
@@ -48,6 +50,11 @@ export const segmentData = (state = defaultState, action) => {
                 filename: filename,
                 failure: true,
                 isFetching: false
+            }
+        case UPDATE_MODIFIED:
+            return {
+                ...state,
+                modified: {...state.modified, [action.key]: action.modified}
             }
         case FOCUS_SEGMENT:
             return {
