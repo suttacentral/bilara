@@ -40,7 +40,11 @@ def update_segment(segment, user):
         return {"error": "Inadequate Permission"}
 
     with git_fs._lock:
-        file_data = json_load(file)
+        try:
+            file_data = json_load(file)
+        except FileNotFoundError:
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file_data = {}
         current_value = file_data.get(segment_id)
         result = {}
         if current_value and current_value != segment.get("oldValue"):

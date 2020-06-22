@@ -112,6 +112,8 @@ def get_base_permissions(path, github_id):
     return result
 
 def get_permissions(path, github_id):
+    if 'comment' in path:
+        path = path.replace('comment', 'translation')
     permission = get_base_permissions(path, github_id)
     # Downgrade permissions for non-translations
     # if not regex.match(r'\b(?:translation)\b', path):

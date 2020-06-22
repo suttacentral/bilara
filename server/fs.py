@@ -146,7 +146,6 @@ def make_file_index(force=False):
                 subtree[file.name] = recurse(file, meta_definitions=meta_definitions)
                 subtree[file.name]["_meta"] = meta
             elif file.suffix == ".json":
-
                 mtime = file.stat().st_mtime_ns
                 path = str(file.relative_to(REPO_DIR))
                 obj = subtree[long_id] = {"path": path, "mtime": mtime, "_meta": meta}
@@ -167,6 +166,23 @@ def make_file_index(force=False):
                         if muid not in muid_index:
                             muid_index[muid] = set()
                         muid_index[muid].add(long_id)
+                
+                    # Create Virtual Files
+                    if 'translation' in muids:
+                        uid, muids = long_id.split('_')
+                        muids = muids.replace('translation', 'comment')
+                        comment_stem = f"{uid}_{muids}"
+                        if comment_stem in uid_index:
+                            continue
+                        parent = pathlib.Path('comment') / file.relative_to(REPO_DIR / 'translation').parent
+                        virtual_file = parent / (comment_stem + '.json')
+                        meta = {part: meta_definitions[part] for part in muids.split('-') if part in meta_definitions}
+                        obj = {"uid": uid, "path": str(virtual_file), "mtime": None, "_meta": meta}
+                        uid_index[uid].add(comment_stem)
+                        file_index[comment_stem] = obj
+                        for muid in muids.split('-'):
+                            muid_index[muid].add(comment_stem)
+
 
         return subtree
 
@@ -296,7 +312,12 @@ def load_json(entry):
     _meta["path"] = entry.get("path")
 
     json_file = get_file(entry["path"])
-    return {**deepcopy(_meta), "segments": json_load(json_file)}
+
+    if json_file.exists():
+        segments = json_load(json_file)
+    else:
+        segments = {}
+    return {**deepcopy(_meta), "segments": segments}
 
 
 def load_entry(long_id):
