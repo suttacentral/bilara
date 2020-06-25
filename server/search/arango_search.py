@@ -1,5 +1,5 @@
 import arango
-from arango import ArangoClient
+from arango import ArangoClient, ViewDeleteError
 
 import pathlib
 import json
@@ -190,7 +190,11 @@ class Search:
             files = self.iter_all_files()
 
         if force:
-            self.db.delete_view('strings_view')
+            try:
+                self.db.delete_view('strings_view')
+            except ViewDeleteError:
+                pass
+            
             for name in collection_names:
                 try:
                     db.delete_collection(name)
