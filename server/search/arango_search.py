@@ -84,7 +84,10 @@ class Search:
     @property
     def collection_names(self):
         try:
-            return set(self.db["meta"]["collection_names"]["value"])
+            saved_names = set(self.db["meta"]["collection_names"]["value"])
+            collection_names = {d['name'] for d in self.db.collections()}
+            return saved_names.intersection(collection_names)
+
         except TypeError:
             return set()
     
