@@ -105,6 +105,7 @@ def make_file_index(force=False):
     global _file_index
     global _meta_definitions
     global _special_uid_mapping
+    global _legal_ids
 
     if not force:
         load_state()
@@ -114,6 +115,12 @@ def make_file_index(force=False):
     _muid_index = muid_index = {}
     _uid_index = uid_index = {}
     _file_index = file_index = {}
+    _legal_ids = set()
+
+    for file in sorted(REPO_DIR.glob('root/**/*.json')):
+        with file.open() as f:
+            data = json.load(f)
+            _legal_ids.update(data.keys())
 
     def recurse(folder, meta_definitions=None):
         subtree = {}
@@ -554,3 +561,6 @@ def get_parent_uid(uid):
         return uid
 
     return _special_uid_mapping[uid]
+
+def is_id_legal(segment_id):
+    return segment_id in _legal_ids

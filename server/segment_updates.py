@@ -2,7 +2,7 @@ import logging
 import git_fs
 from config import config
 from util import bilarasortkey
-from fs import get_file_path, get_file, get_parent_uid
+from fs import get_file_path, get_file, get_parent_uid, is_id_legal
 from util import json_load, json_save
 from permissions import Permission, get_permissions
 
@@ -20,6 +20,10 @@ def update_segment(segment, user):
     """
 
     segment_id = segment["segmentId"]
+
+    if not is_id_legal(segment_id):
+        logging.error(f"Invalid Segment ID: {segment_id}")
+        return {"error": "Invalid Segment ID"}
 
     uid, _ = segment_id.split(":")
     parent_uid = get_parent_uid(uid)

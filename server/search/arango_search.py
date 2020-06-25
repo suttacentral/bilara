@@ -190,6 +190,7 @@ class Search:
             files = self.iter_all_files()
 
         if force:
+            self.db.delete_view('strings_view')
             for name in collection_names:
                 try:
                     db.delete_collection(name)
