@@ -145,6 +145,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
             _target: Object,
             _source: Object,
             _segments: Object,
+            _replacement: String,
             _replaced: Boolean,
             _mode: String
         }
@@ -156,7 +157,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
         return html `
             <form class="result" id="${this._segmentId}" @submit="${this._submitResult}">
             <div class="result-location">
-            <a href="/translation/${uid}_${this._targetField}#${this._segmentId}" title="Go to ${this._segmentId}">${this._segmentId}.</a>
+            <a href="/translation/${uid}_${this._target.field}#${this._segmentId}" title="Go to ${this._segmentId}">${this._segmentId}.</a>
             ${{
               replace: html`<button type="button" class="replace-button" @click=${this._replace} title="Replace this term">Replace</button>`,
               revert: html`<button type="button" class="revert-button" @click=${this._revert} title="Revert this replace">Revert</button>`,
@@ -195,9 +196,12 @@ export class BilaraSearchResult extends BilaraUpdatable {
       
       target.innerHTML = highlightMatch(this._target.string, this._target.highlight);
       source.innerHTML = highlightMatch(this._source.string, this._source.highlight);
-
-      this._mode = this._target.replacement ? 'replace' : 'noReplace';
       this._updateStatusValue(this._target.string);
+    }
+
+    stateChanged(state) {
+      this._replaceValue = state.search.search.replaceValue;
+      this._mode = typeof(this._replaceValue) == 'string' ? 'replace' : 'noReplace';
     }
 
     _input(e) {
@@ -215,9 +219,10 @@ export class BilaraSearchResult extends BilaraUpdatable {
       e.preventDefault();
       const el = this.shadowRoot.querySelector('.result-translation-text'),
             string = el.innerText,
+            replacement = this._replaceValue,
             newString = string.replace(RegExp(this._target.highlight, 'i'), `<mark>${this._target.replacement}</mark>`);
 
-      console.log(el, string);
+      console.log(el, this._target.highlight, string, newString);
       
       el.innerHTML = newString;
       this._updateStatusValue(newString, this._segmentId);
