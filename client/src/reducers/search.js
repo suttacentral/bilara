@@ -2,7 +2,7 @@ import {
   FETCH_SUGGESTIONS, RECEIVE_SUGGESTIONS, UPDATE_REPLACE
 } from '../actions/search.js';
 
-export const searchReducer = (state = {suggestions: {} }, action) => {
+export const searchReducer = (state = {suggestions: {}, search: {} }, action) => {
     switch (action.type) {
         case FETCH_SUGGESTIONS:
             return {
