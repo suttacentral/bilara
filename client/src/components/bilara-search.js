@@ -7,6 +7,8 @@ import { formStyles } from './shared-styles.js';
 
 import { formToJSON } from '../form.js';
 
+import { updateReplace } from '../actions/search.js';
+
 import './bilara-search-result.js'
 
 const DRAG_BORDER_SIZE = 4;
@@ -210,8 +212,8 @@ export class BilaraSearch extends connect(store)(LitElement) {
         Find in ${this._targetField}
         <input type="search" data-field="${this._targetField}" placeholder="recited">
       </label>
-      <label class="search-label" >Replace in ${this._targetField}
-        <input type="search" name="replace" placeholder="shouted">
+      <label class="search-label" >Replacement
+        <input type="search" name="replace" placeholder="shouted" @keyup=${this._updateReplaceValue}>
       </label>
       <label class="search-label">
         Find in ${this._sourceField}
@@ -268,6 +270,11 @@ export class BilaraSearch extends connect(store)(LitElement) {
     </dl>
         </details>
         `
+  }
+
+  _updateReplaceValue(e) {
+    console.log(e.target.value);
+    store.dispatch(updateReplace(e.target.value));
   }
 
   async _submit(e) {
@@ -332,14 +339,14 @@ export class BilaraSearch extends connect(store)(LitElement) {
                         field: sourceField,
                         string: sourceString,
                         original: sourceString,
-                        highlight: query['find-root']
+                        highlight: query[sourceField]
                       } }
                       ._target=${ {
                         field: targetField,
                         string: targetString,
                         replacement: query.replace,
                         original: targetString,
-                        highlight: query['find-translation'],
+                        highlight: query[targetField],
                         permission: targetPermission
                       } }
                       ._segments=${result.segments}

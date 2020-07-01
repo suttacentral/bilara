@@ -1,5 +1,5 @@
 import {
-  FETCH_SUGGESTIONS, RECEIVE_SUGGESTIONS
+  FETCH_SUGGESTIONS, RECEIVE_SUGGESTIONS, UPDATE_REPLACE
 } from '../actions/search.js';
 
 export const searchReducer = (state = {suggestions: {} }, action) => {
@@ -20,7 +20,14 @@ export const searchReducer = (state = {suggestions: {} }, action) => {
                     [action.key]: action.data
                 }
             }
-            
+        case UPDATE_REPLACE:
+            return {
+                ...state,
+                search: {
+                    ...state.search,
+                    replaceValue: action.replaceValue
+                }
+            }
         default:
             return state
     }

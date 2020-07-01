@@ -1,5 +1,6 @@
 export const FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS';
-export const RECEIVE_SUGGESTIONS = 'RECEIVE_SUGGESTIONS'
+export const RECEIVE_SUGGESTIONS = 'RECEIVE_SUGGESTIONS';
+export const UPDATE_REPLACE = 'UPDATE_REPLACE';
 
 export const makeSearchKey = (...args) => {
     return args.join('_');
@@ -33,3 +34,9 @@ export const receiveSuggestions = (key, data) => {
     }
 }
 
+export const updateReplace = (replaceValue) => {
+    return {
+        type: UPDATE_REPLACE,
+        replaceValue
+    }
+}
