@@ -30,10 +30,18 @@ bilara-cell.string {
   margin: 0 16px;
 }
 
+.segmentId {
+  float: left;
+  margin-top: 0.5em;
+  font-size: 0.8em;
+  width: 1em;
+}
+
     </style>
     
     ${ this.segmentId ? 
       html`<div class="row" id="${this.segmentId}">
+      <span class="segmentId">${this.segmentId.split(':')[1]}</span>
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'],
