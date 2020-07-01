@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit-element';
+import { classMap } from 'lit-html/directives/class-map';
 import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -37,10 +38,14 @@ bilara-cell.string {
   width: 1em;
 }
 
+.bookmarked {
+  background: var(--bilara-yellow);
+}
+
     </style>
     
     ${ this.segmentId ? 
-      html`<div class="row" id="${this.segmentId}">
+      html`<div class=${classMap({row: true, bookmarked: this._bookmarked})} id="${this.segmentId}">
       <span class="segmentId">${this.segmentId.split(':')[1]}</span>
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
@@ -84,7 +89,8 @@ bilara-cell.string {
       _matches: {type: Object},
       _rootLang: String,
       _translationLang: String,
-      _tertiaryLang: String
+      _tertiaryLang: String,
+      _bookmarked: Boolean
     }
   }
 
@@ -105,6 +111,11 @@ bilara-cell.string {
     this.addEventListener('navigation-event', (e) => {
       this.navigate(e.detail.steps, e.detail.field)
     })
+
+    if (this.segmentId == window.location.hash.slice(1)) {
+      this._bookmarked = true;
+      setTimeout(()=>this.scrollIntoView({block: 'center'}), 1);
+    }
 
   }
 
