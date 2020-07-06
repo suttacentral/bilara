@@ -252,7 +252,6 @@ lion-dialog
   render(){
     let fields = this._fields,
         segmentIds = this._segments ? Object.keys(this._segments) : null;
-    console.log('Render, ', this._orderedFields);
     return html`
     ${ColumnStyles}
     <div id="container">
@@ -275,7 +274,7 @@ lion-dialog
                                 @dragstart="${this._dragstartHandler}"
                                 ondragenter="return false"
               >
-              <span class="name">${fieldName}</span>
+              <span class="name" data-field="${fieldName}">${fieldName}</span>
               <span class="permission" title="You may ${permission}.">${permission}</span>
               </span>`
             })}
@@ -374,8 +373,6 @@ lion-dialog
 
   _saveFieldOrder(fields) {
     const key = this._fieldsKey(fields);
-    console.log('Calling Update Ordering');
-    //debugger
     store.dispatch(updateOrdering(key, fields));
   }
 
@@ -399,19 +396,28 @@ lion-dialog
     this._activeSegmentId = state.segmentData.activeSegmentId;
   }
 
+  _getField(event) {
+    let node;
+    if (event.target.classList.contains('permission')) {
+      node = event.target.parentNode;
+    } else {
+      node = event.target;
+    }
+    
+    return node.querySelector('[data-field]').getAttribute('data-field');
+  }
+
   _dropHandler(event) {
-    let fromField = event.dataTransfer.getData("fromField");
-    let toField = event.target.innerText;
-    console.log(fromField, toField);
-    let fields = [...this._orderedFields];
-    let fromIndex = fields.indexOf(fromField),
+    const fromField = event.dataTransfer.getData("fromField");
+    const toField = this._getField(event);
+    const fields = [...this._orderedFields];
+    const fromIndex = fields.indexOf(fromField),
         toIndex = fields.indexOf(toField);
     
     fields[fromIndex] = toField;
     fields[toIndex] = fromField;
     this._saveFieldOrder(fields);
     this._orderedFields = fields;
-    let savedSegments = this._segments;
   }
 
   _dragoverHandler(event){
@@ -419,7 +425,8 @@ lion-dialog
   }
 
   _dragstartHandler(event) {
-    event.dataTransfer.setData("fromField", event.target.innerText);
+    const field = this._getField(event);
+    event.dataTransfer.setData("fromField", field);
   }
 
   _swapFields(event) {
