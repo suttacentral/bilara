@@ -304,7 +304,7 @@ class Search:
         links = {}
         for name in self.collection_names:
             
-            if "translation" in name or "root" in name:
+            if "translation" in name or "root" in name or "comment" in name:
                 
                 if {'jpn', 'lzh', 'zh', 'ko'}.intersection(name.split('-')):
                     string_analyzer = "cjk_ngram_analyzer"
