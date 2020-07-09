@@ -15,10 +15,10 @@ class Permission(IntEnum):
     EDIT = 3
 
 
-REPO_DIR = config.REPO_DIR
+WORKING_DIR = config.WORKING_DIR
 
 publications_file_name = '_publication.json'
-publications_file = REPO_DIR / publications_file_name
+publications_file = WORKING_DIR / publications_file_name
 
 with publications_file.open() as f:
     pass
@@ -125,8 +125,8 @@ def get_permissions(path, github_id):
 def validate_permissions(rules=None):
     if not rules:
         rules = get_rules()
-    files = REPO_DIR.glob('**/*.json')
-    files = [str(file.relative_to(REPO_DIR)) 
+    files = WORKING_DIR.glob('**/*.json')
+    files = [str(file.relative_to(WORKING_DIR)) 
              for file in files 
              if not any(part for part in file.parts if part.startswith('.'))]
 
@@ -142,7 +142,7 @@ def validate_permissions(rules=None):
                     problemsLog.add(file=publications_file_name,
                                     msg=f"No files match path: {path}")
 
-#    authors = json_load(REPO_DIR / '_author.json')
+#    authors = json_load(WORKING_DIR / '_author.json')
 #    for uid, entry in authors.items():
 #        if entry['type'] == 'translator':
 #            if uid not in rules:

@@ -15,9 +15,9 @@ from tqdm import tqdm
 
 from config import config
 
-repo_dir = config.REPO_DIR
-root_dir = repo_dir / "root"
-translation_dir = repo_dir / "translation"
+WORKING_DIR = config.WORKING_DIR
+root_dir = WORKING_DIR / "root"
+translation_dir = WORKING_DIR / "translation"
 
 es = Elasticsearch()
 
@@ -46,7 +46,7 @@ def yield_all_segment_data():
                 if "_meta" in data:
                     data.pop("_meta")
 
-                rel_path = file.relative_to(repo_dir)
+                rel_path = file.relative_to(WORKING_DIR)
 
                 for segment_id, string in data.items():
                     doc = composed_docs[segment_id]

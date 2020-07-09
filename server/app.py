@@ -16,13 +16,11 @@ from config import config
 import import_export
 
 import auth
-
-
 from log import segments_logger, problemsLog
-from search import search
-from segment_updates import update_segment
-import fs
 import git_fs
+import fs
+from segment_updates import update_segment
+from search import search
 
 app = Flask(__name__)
 

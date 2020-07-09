@@ -21,7 +21,7 @@ from permissions import get_permissions, Permission
 
 import fs
 
-repo_dir = config.REPO_DIR
+WORKING_DIR = config.WORKING_DIR
 
 
 class ConstructedQuery:
@@ -49,6 +49,7 @@ class Search:
         self.db = client.db(username="bilara", password="bilara", name="bilara")
         self._cursor_cache = TTLCache(1000, 3600)
         self._build_complete = Event()
+        self._verbose = False
         if self.needs_init():
             self.init()
             self.index()
@@ -231,7 +232,7 @@ class Search:
     
     def update_partial(self, added=[], modified=[]):
         if modified or added:
-            files = [repo_dir / filepath for filepath in set(added).union(set(modified))]
+            files = [WORKING_DIR / filepath for filepath in set(added).union(set(modified))]
             files = [file for file in files if 
                      file.suffix == '.json' and
                      not any(part.startswith('.') for part in file.parts)]
@@ -239,7 +240,7 @@ class Search:
 
     def files_removed(self, files_and_data):
         for filepath, data in files_and_data:
-            file = repo_dir / filepath
+            file = WORKING_DIR / filepath
             uid, muids = file.name.split('_')
             
             if not data:
@@ -259,7 +260,7 @@ class Search:
         return regex.sub(r"[^a-zA-Z0-9_:.@()+,=;$!*'%-]", '.', string)
 
     def iter_all_files(self):
-        for folder in repo_dir.iterdir():
+        for folder in WORKING_DIR.iterdir():
             if not folder.is_dir() or folder.name.startswith('.'):
                 continue
             for file in folder.glob('**/*.json'):
@@ -273,7 +274,7 @@ class Search:
                 continue
             if '_' not in file.name:
                 logging.error(f'Invalid filename: {file}')
-                problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'Not a valid filename: "_" missing')
+                problemsLog.add(file=str(file.relative_to(WORKING_DIR)), msg=f'Not a valid filename: "_" missing')
                 continue
             uid, muids = file.stem.split("_")
             if not uid:
@@ -284,7 +285,7 @@ class Search:
                     data = json.load(f)
                 except Exception as e:
                     logging.error(f'Error loading file: {file}')
-                    problemsLog.add(file=str(file.relative_to(repo_dir)), msg=f'JSON Decode Error on line {e.lineno}')
+                    problemsLog.add(file=str(file.relative_to(WORKING_DIR)), msg=f'JSON Decode Error on line {e.lineno}')
                     continue
 
             for segment_id, string in data.items():
@@ -332,6 +333,12 @@ class Search:
             "muids": "translation-en-sujato",
             "query": "teaching"
         }])
+
+        example searches:
+        Das große Kapitel
+        The Great Chapter
+        Mahāvagga
+
 
         """
 
@@ -433,14 +440,19 @@ class Search:
                 }}
 
         """
-
-        return self.execute(composed_query, bind_vars={
+        
+        bind_vars = {
             "query": query,
             "a_muids": a_muids,
             "b_muids": b_muids,
             "exclude_id": exclude_id,
             "limit": limit or 5
-        })
+        }
+        if self._verbose:
+            print(composed_query)
+            print(bind_vars)
+
+        return self.execute(composed_query, bind_vars=bind_vars)
     
     
     def tm_query(self, query, root_lang, translation_lang, exclude_id, limit=5):

@@ -14,9 +14,10 @@ from permissions import get_permissions, Permission
 
 from util import json_load
 
-REPO_DIR = config.REPO_DIR
+WORKING_DIR = config.WORKING_DIR
 
 saved_state_file = pathlib.Path("./.saved_state.pickle")
+
 
 
 class NoMatchingEntry(Exception):
@@ -30,7 +31,7 @@ def get_file_path(long_id):
 def get_file(filepath):
     if filepath.startswith("/"):
         filepath = filepath[1:]
-    return REPO_DIR / filepath
+    return WORKING_DIR / filepath
 
 
 def strip_suffix(file):
@@ -117,7 +118,7 @@ def make_file_index(force=False):
     _file_index = file_index = {}
     _legal_ids = set()
 
-    for file in sorted(REPO_DIR.glob('root/**/*.json')):
+    for file in sorted(WORKING_DIR.glob('root/**/*.json')):
         with file.open() as f:
             data = json.load(f)
             _legal_ids.update(data.keys())
@@ -154,7 +155,7 @@ def make_file_index(force=False):
                 subtree[file.name]["_meta"] = meta
             elif file.suffix == ".json":
                 mtime = file.stat().st_mtime_ns
-                path = str(file.relative_to(REPO_DIR))
+                path = str(file.relative_to(WORKING_DIR))
                 obj = subtree[long_id] = {"path": path, "mtime": mtime, "_meta": meta}
                 if "_" in long_id:
                     uid, muids = get_uid_and_muids(file)
@@ -181,7 +182,7 @@ def make_file_index(force=False):
                         comment_stem = f"{uid}_{muids}"
                         if comment_stem in uid_index:
                             continue
-                        parent = pathlib.Path('comment') / file.relative_to(REPO_DIR / 'translation').parent
+                        parent = pathlib.Path('comment') / file.relative_to(WORKING_DIR / 'translation').parent
                         virtual_file = parent / (comment_stem + '.json')
                         meta = {part: meta_definitions[part] for part in muids.split('-') if part in meta_definitions}
                         obj = {"uid": uid, "path": str(virtual_file), "mtime": None, "_meta": meta}
@@ -194,7 +195,7 @@ def make_file_index(force=False):
         return subtree
 
     _meta_definitions = {}
-    _tree_index = recurse(REPO_DIR, {})
+    _tree_index = recurse(WORKING_DIR, {})
     _uid_index = uid_index
     _muid_index = muid_index
     _file_index = file_index
@@ -214,7 +215,7 @@ _uid_index = None
 
 def make_special_uid_mapping():
     uid_mapping = {}
-    for file in REPO_DIR.glob("root/**/*.json"):
+    for file in WORKING_DIR.glob("root/**/*.json"):
         if "blurbs" in str(file):
             continue
         with file.open() as f:

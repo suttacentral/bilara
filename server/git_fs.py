@@ -6,10 +6,7 @@ import time
 
 import notify
 
-
 import atexit
-
-from search import search
 
 _lock = threading.RLock()
 master = 'master'
@@ -17,28 +14,39 @@ PUSH_DELAY = 15
 working_branch = 'master'
 
 from config import config
+GIT_REMOTE_REPO = config.GIT_REMOTE_REPO
 REPO_DIR = config.REPO_DIR
-repo = Repo(REPO_DIR)
-git = repo.git
+CHECKOUTS_DIR = config.CHECKOUTS_DIR
 
-def checkout_branch(branch_name):
-    if repo.active_branch.name == branch_name:
-        return repo.active_branch
-    
-    if branch_name in repo.branches:
-        try:
-            git.checkout(branch_name)
-        except GitCommandError:
-            git.stash()
-            print(f'Checkout failed for branch {branch_name} : stashing and trying again')
-            try:
-                git.checkout_branch_name
-            except GitCommandError:
-                print(f'Could not check out branch {branch_name}')
-                raise
-    else:
-        git.checkout('-b', branch_name, master)
-    return repo.active_branch
+if REPO_DIR.exists():
+    base_repo = Repo(REPO_DIR)
+else:
+    print('Pulling Repo (one time only)')
+    base_repo = Repo.clone_from(GIT_REMOTE_REPO, REPO_DIR, multi_options=['--no-checkout'])
+
+class Branch:
+    repo = None
+    path = None
+    name = None
+    def __init__(self, branch_name):        
+        name = branch_name
+        branch_dir = CHECKOUTS_DIR / branch_name
+        self.path = CHECKOUTS_DIR / branch_name
+        if branch_dir.exists():
+            self.repo = Repo(branch_dir)
+        else:
+            self.repo = Repo.clone_from(
+                GIT_REMOTE_REPO,
+                branch_dir,
+                multi_options=[f'--reference={REPO_DIR}', '--single-branch', f'--branch={branch_name}']
+            )
+
+
+published = Branch(config.PUBLISHED_BRANCH_NAME)
+unpublished = Branch(config.UNPUBLISHED_BRANCH_NAME)
+ready_to_publish = Branch(config.READY_TO_PUBLISH_BRANCH_NAME)
+
+git = unpublished.repo.git
 
 def create_empty_commit(user, branch_name):
     git.commit(allow_empty=True, m=f'Translations by {user["login"]}', author=f'{user["name"]} <{user["email"]}>')
@@ -50,8 +58,6 @@ def update_file(file, user):
     global _pending_commit
     file = str(file).lstrip('/')
     with _lock:
-        branch = checkout_branch(working_branch)
-
         commit_message = f'Translations by {user["login"]} to {file}'
 
         if _pending_commit and branch.commit.message == commit_message:
@@ -75,16 +81,14 @@ def update_file(file, user):
 def update_files(user, files):
     global _pending_commit
     with _lock:
-        branch = checkout_branch(working_branch)
         if _pending_commit:
             finalize_commit(working_branch)
 
-        
         git.add(files)
         git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
-        finalize_commit(branch_name)
+        finalize_commit(branch)
 
-def githook(webhook_payload, branch_name=working_branch):
+def githook(webhook_payload, branch_name=config.UNPUBLISHED_BRANCH_NAME):
     ref = webhook_payload['ref'].split('/')[-1]
     if ref != branch_name:
         return
@@ -109,25 +113,27 @@ def githook(webhook_payload, branch_name=working_branch):
     if added or removed:
         import app
         app.init()
+
     
+    from search import search
     #search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
     search.update_partial(added, modified)
 
 
 
-def finalize_commit(branch_name=working_branch):
+def finalize_commit():
     global _pending_commit
     if not _pending_commit:
         return
-    branch = checkout_branch(branch_name)
+    
     if not config.GIT_SYNC_ENABLED:
         print('Not Pushing because disabled in config')
         _pending_commit = None
         return
-    print(f'Pushing to {branch_name}... ', end='')
+    print(f'Pushing to {UNPUBLISHED_BRANCH_NAME}... ', end='')
     for i in range(0, 3):
         try:
-            git.push('-u', 'origin', master)
+            git.push('-u', 'origin', UNPUBLISHED_BRANCH_NAME)
             print('Success')
             break
         except GitCommandError:
