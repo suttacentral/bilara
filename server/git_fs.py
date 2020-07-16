@@ -136,10 +136,10 @@ def finalize_commit():
         print('Not Pushing because disabled in config')
         _pending_commit = None
         return
-    print(f'Pushing to {UNPUBLISHED_BRANCH_NAME}... ', end='')
+    print(f'Pushing to {unpublished.name}... ', end='')
     for i in range(0, 3):
         try:
-            git.push('-u', 'origin', UNPUBLISHED_BRANCH_NAME)
+            git.push('-u', 'origin', unpublished.name)
             print('Success')
             break
         except GitCommandError:
