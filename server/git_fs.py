@@ -92,7 +92,7 @@ def update_files(user, files):
 
         git.add(files)
         git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
-        finalize_commit(branch)
+        finalize_commit()
 
 def githook(webhook_payload, branch_name=config.UNPUBLISHED_BRANCH_NAME):
     ref = webhook_payload['ref'].split('/')[-1]
