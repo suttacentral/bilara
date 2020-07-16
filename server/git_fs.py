@@ -26,8 +26,13 @@ else:
 
 class Branch:
     repo = None
+    branch = None
     path = None
     name = None
+    @property
+    def branch(self):
+        return self.repo.active_branch
+    
     def __init__(self, branch_name):        
         name = branch_name
         branch_dir = CHECKOUTS_DIR / branch_name
@@ -56,6 +61,7 @@ _pending_commit = None
 
 def update_file(file, user):
     global _pending_commit
+    branch = unpublished.branch
     file = str(file).lstrip('/')
     with _lock:
         commit_message = f'Translations by {user["login"]} to {file}'
@@ -65,7 +71,7 @@ def update_file(file, user):
             git.add(file)
             git.commit(amend=True, no_edit=True)
         else:
-            finalize_commit(working_branch)
+            finalize_commit()
 
             git.add(file)
             try:
@@ -82,7 +88,7 @@ def update_files(user, files):
     global _pending_commit
     with _lock:
         if _pending_commit:
-            finalize_commit(working_branch)
+            finalize_commit()
 
         git.add(files)
         git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')

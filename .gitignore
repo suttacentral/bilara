@@ -1,5 +1,6 @@
 /server/log
 /repo
+/checkouts
 node_modules
 .vscode
 *.gpg
