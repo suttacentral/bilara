@@ -94,7 +94,7 @@ def update_files(user, files):
         git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
         finalize_commit()
 
-def githook(webhook_payload, branch_name=config.UNPUBLISHED_BRANCH_NAME):
+def githook(webhook_payload, branch_name=unpublished.name):
     ref = webhook_payload['ref'].split('/')[-1]
     if ref != branch_name:
         return
@@ -104,7 +104,7 @@ def githook(webhook_payload, branch_name=config.UNPUBLISHED_BRANCH_NAME):
     removed = []
     
     for commit in webhook_payload['commits']:
-        if commit['id'] == repo.active_branch.commit.hexsha:
+        if commit['id'] == unpublished.branch.commit.hexsha:
             return 
         added.extend(commit['added'])
         modified.extend(commit['modified'])
