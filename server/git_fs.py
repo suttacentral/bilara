@@ -1,5 +1,8 @@
+import pathlib
+from collections import defaultdict
 from git import Repo, GitCommandError
 from config import config
+
 
 import threading
 import time
@@ -34,7 +37,7 @@ class Branch:
         return self.repo.active_branch
     
     def __init__(self, branch_name):        
-        name = branch_name
+        self.name = branch_name
         branch_dir = CHECKOUTS_DIR / branch_name
         self.path = CHECKOUTS_DIR / branch_name
         if branch_dir.exists():
@@ -49,7 +52,7 @@ class Branch:
 
 published = Branch(config.PUBLISHED_BRANCH_NAME)
 unpublished = Branch(config.UNPUBLISHED_BRANCH_NAME)
-ready_to_publish = Branch(config.READY_TO_PUBLISH_BRANCH_NAME)
+#review = Branch(config.REVIEW_BRANCH_NAME)
 
 git = unpublished.repo.git
 
@@ -124,6 +127,57 @@ def githook(webhook_payload, branch_name=unpublished.name):
     from search import search
     #search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
     search.update_partial(added, modified)
+
+
+def get_publication_stats():
+    file_stats = base_repo.git.diff('unpublished..published', '--numstat')
+
+    result = defaultdict(int)
+
+    for line in file_stats.split('\n'):
+        if line:
+            added, deleted, filepath = line.split()
+            result[filepath] = int(added)+int(deleted)
+            parts = pathlib.Path(filepath).parts
+
+            for i in range(0, len(parts)):
+                result['/'.join(parts[0:i])] += 1
+
+    return dict(result)
+
+def get_file_map(branch_name):
+    files = {}
+
+    r = base_repo.git.ls_tree('-r', branch_name)
+    
+    for line in r.split('\n'):
+        if line:
+            p, t, sha, filepath  = line.split()
+            files[filepath] = sha
+    return files
+
+def compare_branches():
+    published_files = get_file_map(published.name)
+    unpublished_files = get_file_map(unpublished.name)
+
+    result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
+    for filepath, sha in unpublished_files.items():
+        if filepath not in published_files:
+            state = 'UNPUBLISHED'
+        else:
+            if published_files[filepath] == sha:
+                state = 'PUBLISHED'
+            else:
+                state = 'MODIFIED'
+        result[filepath] = state
+
+        parts = pathlib.Path(filepath).parts
+        for i in range(0, len(parts)):
+            result['/'.join(parts[0:i])][state] += 1
+    
+    return dict(result)
+            
+        
 
 
 

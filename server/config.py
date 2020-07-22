@@ -34,7 +34,7 @@ config = Config({
 
     'PUBLISHED_BRANCH_NAME': 'published',
     'UNPUBLISHED_BRANCH_NAME': 'unpublished',
-    'READY_TO_PUBLISH_BRANCH_NAME': 'ready_to_publish',
+    'REVIEW_BRANCH_NAME': 'review',
 
     'SECRET': 'CHANGE ME',
     
