@@ -29,6 +29,7 @@ bilara-cell.string {
   padding: 0 8px;
   max-width: 40rem;
   margin: 0 16px;
+  word-break: break-word;
 }
 
 .segmentId {
