@@ -10,6 +10,8 @@ from threading import Event
 
 from log import problemsLog
 
+import git_fs
+
 from permissions import get_permissions, Permission
 
 from util import json_load
