@@ -12,9 +12,7 @@ import notify
 import atexit
 
 _lock = threading.RLock()
-master = 'master'
 PUSH_DELAY = 15
-working_branch = 'master'
 
 from config import config
 GIT_REMOTE_REPO = config.GIT_REMOTE_REPO
@@ -32,23 +30,28 @@ class Branch:
     branch = None
     path = None
     name = None
+
+    def get_checkout_dir(self):
+        return CHECKOUTS_DIR / self.name
+
     @property
     def branch(self):
         return self.repo.active_branch
-    
+
+    def get_or_create_repo(self):
+        return Repo.clone_from(
+            GIT_REMOTE_REPO,
+            self.path,
+            multi_options=[f'--reference={REPO_DIR}', '--single-branch', f'--branch={branch_name}']
+        )
     def __init__(self, branch_name):        
         self.name = branch_name
-        branch_dir = CHECKOUTS_DIR / branch_name
-        self.path = CHECKOUTS_DIR / branch_name
-        if branch_dir.exists():
-            self.repo = Repo(branch_dir)
+        self.path = self.get_checkout_dir()
+        if self.path.exists():
+            self.repo = Repo(self.path)
         else:
-            self.repo = Repo.clone_from(
-                GIT_REMOTE_REPO,
-                branch_dir,
-                multi_options=[f'--reference={REPO_DIR}', '--single-branch', f'--branch={branch_name}']
-            )
-
+            self.repo = self.get_or_create_repo()
+        
 
 published = Branch(config.PUBLISHED_BRANCH_NAME)
 unpublished = Branch(config.UNPUBLISHED_BRANCH_NAME)
@@ -129,7 +132,7 @@ def githook(webhook_payload, branch_name=unpublished.name):
     search.update_partial(added, modified)
 
 
-def get_publication_stats():
+def get_publication_line_counts():
     file_stats = base_repo.git.diff('unpublished..published', '--numstat')
 
     result = defaultdict(int)
@@ -156,7 +159,7 @@ def get_file_map(branch_name):
             files[filepath] = sha
     return files
 
-def compare_branches():
+def get_publication_state():
     published_files = get_file_map(published.name)
     unpublished_files = get_file_map(unpublished.name)
 

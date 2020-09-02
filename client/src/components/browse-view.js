@@ -111,6 +111,13 @@ a:hover
     text-decoration: underline;
 }
 
+
+.publish {
+  position: absolute;
+  left: 5em;
+  height: 100%;
+}
+
 .progress-track
 {
     position: relative;
@@ -167,15 +174,22 @@ a:hover
           isFile = this._tree._type == 'document',
           filename = this._name,
           lang = 'en',
-          progressPercent = this._calculateProgressPercent(translated, root);
+          progressPercent = this._calculateProgressPercent(translated, root),
+          canPublish = this._tree._permission == 'EDIT';
 
     
     
     return html`
-      <div class="${isFile ? "document" : "division"}  ${(this._tree._permission || '').toLowerCase()}">${ 
-          isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
+      <div class="${isFile ? "document" : "division"}  ${(this._tree._permission || '').toLowerCase()}">
+      ${ isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
-        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track"><span class="progress-bar" style="width: ${progressPercent}%" data-progress="${progressPercent}"></span></span>` : null}
+
+        
+        ${ translated ? html`<span title="${translated} / ${root}" class="progress-track">
+                                <span class="progress-bar" style="width: ${progressPercent}%" data-progress="${progressPercent}"></span>
+                                <span class="publish">${ canPublish ? html`<button>Publish</button>`: html``}</span>
+                            </span>` : null}
+        
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
           ${this.open ? repeat(Object.keys(this._tree || []), (key)=>key, (name, index) => {
             if (name.match(/^_/)) {
@@ -187,9 +201,14 @@ a:hover
       </div>`
   }
 
+  firstUpdated() {
+    this._hasChildren = Object.keys(this._tree).some((k) => {return !/^_/.exec(k)})
+  }
   _onClick(e) {
-    e.currentTarget.open = !e.currentTarget.open;
     e.stopPropagation();
+    if (!e.currentTarget._hasChildren) return    
+    e.currentTarget.open = !e.currentTarget.open;
+    
   }
 
   _navigate(e) {
@@ -204,6 +223,7 @@ a:hover
     return {
       _name: {type: String},
       _tree: {type: Object},
+      _hasChildren: {type: Boolean},
       open: {type: Boolean, reflect: true}
     }
   }
