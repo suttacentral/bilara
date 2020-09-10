@@ -1,3 +1,4 @@
+import logging
 import pathlib
 from collections import defaultdict
 from git import Repo, GitCommandError
@@ -141,15 +142,24 @@ def get_publication_state():
         parts = pathlib.Path(filepath).parts
         for i in range(0, len(parts)):
             result['/'.join(parts[0:i])][state] += 1
+
     
     return dict(result)
 
-def create_publish(path, user):
-    branch = git_pr.PRBranch(path)
-    branch.copy_files()
-    branch.commit()
-    branch.push()
-    branch.create_pr()
+def create_publish_request(path, user):
+    try:
+        branch = git_pr.PRBranch(path, user)
+        branch.copy_files()
+        branch.commit()
+        branch.push()
+        branch.create_pr()
+        return {'url': ''}
+    except Exception as e:
+        logging.exception()
+        return {'error': str(e) }
+
+
+
 
 def finalize_commit():
     global _pending_commit
