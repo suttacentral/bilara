@@ -38,8 +38,9 @@ class PRBranch(GitBranch):
         repo.git.checkout('HEAD', b=self.name)
         return repo
     
-    def __init__(self, relative_path):
+    def __init__(self, relative_path, user):
         self.relative_path = relative_path
+        self.user = user
         name = self.make_path_name(relative_path)
         super().__init__(branch_name=name)
 
@@ -52,8 +53,14 @@ class PRBranch(GitBranch):
             shutil.copy(file, new_file)
             self.repo.git.add(str(new_file))
 
-    def create_pr(self):       
-        gh_repo.create_pull(title=f"New translations for {str(self.relative_path)}", body="", head=self.name, base=git_fs.published.name)
+    def create_pr(self):
+        user = self.user
+        r = gh_repo.create_pull(
+            title=f"New translations for {str(self.relative_path)}",
+            body="Request made by {user['login'] if user else '???'}",
+            head=self.name,
+            base=git_fs.published.name)
+        return {'url': r.html_url}
 
     def commit(self):
         return super().commit(f"Publishing translations for {str(self.relative_path)}")
@@ -62,5 +69,5 @@ class PRBranch(GitBranch):
         self.copy_files()
         self.commit()
         self.push()
-        self.create_pr()
+        return self.create_pr()
     

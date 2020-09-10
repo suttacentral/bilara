@@ -110,6 +110,14 @@ def general_search():
     return jsonify(result)
 
 
+@app.route("/api/publish", methods=["POST"])
+def publish_request():
+    data = request.get_json()
+    path = data['path']
+    user = get_user_details()
+    result = git_fs.create_publish_request(path, user)
+    return result
+
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()

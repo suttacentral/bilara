@@ -521,6 +521,11 @@ def sum_counts(subtree):
     return counts
 
 
+
+
+
+
+
 def get_condensed_tree(path, user):
     print(f"Using user {user}")
     if not _build_started.is_set():
@@ -529,15 +534,19 @@ def get_condensed_tree(path, user):
     tree = _tree_index
     for part in path:
         tree = tree[part]
+    
+    publication_state = git_fs.get_publication_state()
 
-    def recurse(subtree):
+    def recurse(subtree, parents=None, may_publish=False):
         result = {}
         highest_permission = Permission.NONE
+        children_may_publish = False
         for key, value in subtree.items():
-            if value.get("path", "").endswith(".json"):
+            path = value.get("path", "")
+            if path.endswith(".json"):
                 result[key] = stats_calculator.get_completion(value)
                 result[key]["_type"] = "document"
-                permission = get_permissions(value.get("path"), user["login"])
+                permission = get_permissions(path, user["login"])
                 if not highest_permission:
                     highest_permission = permission
                 else:
@@ -547,14 +556,23 @@ def get_condensed_tree(path, user):
             elif key.startswith("_meta"):
                 continue
             else:
-                permission, result[key] = recurse(value)
+                
+                path = '/'.join(parents + [key])
+                dir_permission = get_permissions(path, user["login"])
+                may_publish = dir_permission == Permission.EDIT          
+                print(path, dir_permission)
+                permission, result[key] = recurse(value, parents=parents + [key], may_publish=may_publish)
                 result[key]["_type"] = "node"
                 result[key]["_permission"] = permission.name
                 highest_permission = max(permission, highest_permission)
 
+            if may_publish:
+                result[key]['_publish_state'] = publication_state[path]                
+            
+
         return highest_permission, result
 
-    _, tree = recurse(tree)
+    _, tree = recurse(tree, parents=path)
     sum_counts(tree)
     return tree
 
