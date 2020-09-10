@@ -113,9 +113,7 @@ a:hover
 
 
 .publish {
-  position: absolute;
-  left: 5em;
-  height: 100%;
+  position: relative;
 }
 
 .progress-track
@@ -168,6 +166,8 @@ a:hover
       `
     ]
   }
+
+
   render(){
     const translated = this._tree._translated || this._tree._translated_count,
           root = this._tree._root || this._tree._root_count,
@@ -175,19 +175,19 @@ a:hover
           filename = this._name,
           lang = 'en',
           progressPercent = this._calculateProgressPercent(translated, root),
-          canPublish = this._tree._permission == 'EDIT';
+          publishState = this._publishState();
 
     
     
     return html`
-      <div class="${isFile ? "document" : "division"}  ${(this._tree._permission || '').toLowerCase()}">
+      <div class="${isFile ? 'document' : 'division'}  ${(this._tree._permission || '').toLowerCase()}">
       ${ isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
+        <span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">${publishState == 'modified' ? 'Update': 'Publish'}</button>`: html``}</span>
 
         
         ${ translated ? html`<span title="${translated} / ${root}" class="progress-track">
                                 <span class="progress-bar" style="width: ${progressPercent}%" data-progress="${progressPercent}"></span>
-                                <span class="publish">${ canPublish ? html`<button>Publish</button>`: html``}</span>
                             </span>` : null}
         
         <div class="children" style="${this.open ? 'display: block' : 'display: none'}">
@@ -195,10 +195,21 @@ a:hover
             if (name.match(/^_/)) {
               return null
             }
-            return html`<nav-item ._name="${name}" ._tree="${this._tree[name]}" ?open=${false} @click="${this._onClick}"></nav-item>`
+            return html`<nav-item ._name="${name}" ._tree="${this._tree[name]}" ._path="${(this._parents || []).concat(name)}" ?open=${false} @click="${this._onClick}"></nav-item>`
           }) : html``}
         </div>
       </div>`
+  }
+
+  _publishState() {
+    const publishState = this._tree._publish_state;
+    if (!publishState) return false
+    if (typeof(publishState) == "string") return publishState.toLowerCase();
+    if (publishState['UNPUBLISHED'] > 0) {
+      return 'UNPUBLISHED'.toLowerCase();
+    } else if (publishState['MODIFIED'] > 0) {
+      return 'MODIFIED'.toLowerCase();
+    }
   }
 
   firstUpdated() {
@@ -209,6 +220,12 @@ a:hover
     if (!e.currentTarget._hasChildren) return    
     e.currentTarget.open = !e.currentTarget.open;
     
+  }
+
+  _publish(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(this);
   }
 
   _navigate(e) {
@@ -224,6 +241,7 @@ a:hover
       _name: {type: String},
       _tree: {type: Object},
       _hasChildren: {type: Boolean},
+      _path: {type: Array},
       open: {type: Boolean, reflect: true}
     }
   }
