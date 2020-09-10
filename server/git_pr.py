@@ -1,17 +1,19 @@
+import shutil
 from git import Repo, GitCommandError
 from github import Github
-from git_fs import Branch, CHECKOUTS_DIR, GIT_REMOTE_REPO, REPO_DIR, published
-from config import config
+from git_branch import GitBranch
+import git_fs
+from config import GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GIT_REMOTE_REPO, REPO_DIR
 
 BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
 
 if not BASE_PR_DIR.exists():
     BASE_PR_DIR.mkdir()
 
-gh = Github(config['GITHUB_ACCESS_TOKEN'])
+gh = Github(GITHUB_ACCESS_TOKEN)
 gh_repo = gh.get_repo('/'.join(GIT_REMOTE_REPO.split('/')[-2:]))
 
-class PRBranch(Branch):
+class PRBranch(GitBranch):
 
     def get_checkout_dir(self):
         return BASE_PR_DIR / self.name
@@ -31,16 +33,34 @@ class PRBranch(Branch):
         repo = Repo.clone_from(
             GIT_REMOTE_REPO,
             self.path,
-            multi_options=[f'--reference={REPO_DIR}', '--single-branch', f'--branch={published.name}']
+            multi_options=[f'--reference={REPO_DIR}', '--single-branch', f'--branch={git_fs.published.name}']
         )
         repo.git.checkout('HEAD', b=self.name)
         return repo
     
-    def __init__(self, name):
-        base_name = name
-        name = self.make_path_name(name)
+    def __init__(self, relative_path):
+        self.relative_path = relative_path
+        name = self.make_path_name(relative_path)
         super().__init__(branch_name=name)
 
-    def create_pr(self):
-        self.repo.git.push('--set-upstream', 'origin', self.name)
-        gh_repo.create_pull(title="New Translations for {self.base_name}", body="", head=self.name, base=published.name)
+    def copy_files(self):
+        for file in sorted((git_fs.unpublished.path / self.relative_path).glob('**/*.json')):
+            if file.name.startswith('_'):
+                continue
+            new_file = self.path / file.relative_to(git_fs.unpublished.path)
+            new_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(file, new_file)
+            self.repo.git.add(str(new_file))
+
+    def create_pr(self):       
+        gh_repo.create_pull(title=f"New translations for {str(self.relative_path)}", body="", head=self.name, base=git_fs.published.name)
+
+    def commit(self):
+        return super().commit(f"Publishing translations for {str(self.relative_path)}")
+
+    def update(self):
+        self.copy_files()
+        self.commit()
+        self.push()
+        self.create_pr()
+    

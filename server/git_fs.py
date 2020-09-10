@@ -1,7 +1,8 @@
 import pathlib
 from collections import defaultdict
 from git import Repo, GitCommandError
-from config import config
+from config import (GIT_REMOTE_REPO, REPO_DIR, CHECKOUTS_DIR, 
+                    PUBLISHED_BRANCH_NAME, UNPUBLISHED_BRANCH_NAME)
 
 
 import threading
@@ -11,51 +12,14 @@ import notify
 
 import atexit
 
+from git_branch import GitBranch, base_repo
+import git_pr
+
 _lock = threading.RLock()
 PUSH_DELAY = 15
 
-from config import config
-GIT_REMOTE_REPO = config.GIT_REMOTE_REPO
-REPO_DIR = config.REPO_DIR
-CHECKOUTS_DIR = config.CHECKOUTS_DIR
-
-if REPO_DIR.exists():
-    base_repo = Repo(REPO_DIR)
-else:
-    print('Pulling Repo (one time only)')
-    base_repo = Repo.clone_from(GIT_REMOTE_REPO, REPO_DIR, multi_options=['--no-checkout'])
-
-class Branch:
-    repo = None
-    branch = None
-    path = None
-    name = None
-
-    def get_checkout_dir(self):
-        return CHECKOUTS_DIR / self.name
-
-    @property
-    def branch(self):
-        return self.repo.active_branch
-
-    def get_or_create_repo(self):
-        return Repo.clone_from(
-            GIT_REMOTE_REPO,
-            self.path,
-            multi_options=[f'--reference={REPO_DIR}', '--single-branch', f'--branch={branch_name}']
-        )
-    def __init__(self, branch_name):        
-        self.name = branch_name
-        self.path = self.get_checkout_dir()
-        if self.path.exists():
-            self.repo = Repo(self.path)
-        else:
-            self.repo = self.get_or_create_repo()
-        
-
-published = Branch(config.PUBLISHED_BRANCH_NAME)
-unpublished = Branch(config.UNPUBLISHED_BRANCH_NAME)
-#review = Branch(config.REVIEW_BRANCH_NAME)
+published = GitBranch(PUBLISHED_BRANCH_NAME)
+unpublished = GitBranch(UNPUBLISHED_BRANCH_NAME)
 
 git = unpublished.repo.git
 
@@ -179,10 +143,13 @@ def get_publication_state():
             result['/'.join(parts[0:i])][state] += 1
     
     return dict(result)
-            
-        
 
-
+def create_publish(path, user):
+    branch = git_pr.PRBranch(path)
+    branch.copy_files()
+    branch.commit()
+    branch.push()
+    branch.create_pr()
 
 def finalize_commit():
     global _pending_commit
