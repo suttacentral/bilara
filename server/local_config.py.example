@@ -5,6 +5,7 @@ config = {
     
     'GIT_USER': '',
     'GIT_PASSWORD': '',
+    'GITHUB_ACCESS_TOKEN': '',
 
     'SECRET': 'CHANGE ME TO SOMETHING LONG AND FULL OF ENTROPY',
     
