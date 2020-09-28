@@ -559,8 +559,7 @@ def get_condensed_tree(path, user):
                 
                 path = '/'.join(parents + [key])
                 dir_permission = get_permissions(path, user["login"])
-                may_publish = dir_permission == Permission.EDIT          
-                print(path, dir_permission)
+                may_publish = dir_permission == Permission.EDIT
                 permission, result[key] = recurse(value, parents=parents + [key], may_publish=may_publish)
                 result[key]["_type"] = "node"
                 result[key]["_permission"] = permission.name

@@ -1,9 +1,11 @@
+import logging
 import shutil
 from git import Repo, GitCommandError
 from github import Github
 from git_branch import GitBranch
 import git_fs
-from config import GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GIT_REMOTE_REPO, REPO_DIR
+from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GIT_REMOTE_REPO, REPO_DIR,
+                    GIT_SYNC_ENABLED)
 
 BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
 
@@ -45,19 +47,33 @@ class PRBranch(GitBranch):
         super().__init__(branch_name=name)
 
     def copy_files(self):
-        for file in sorted((git_fs.unpublished.path / self.relative_path).glob('**/*.json')):
+        file_path = (git_fs.unpublished.path / self.relative_path).with_suffix('.json')
+        if file_path.exists():
+            print(f'Using {file_path}')
+            files = [file_path]
+        else:
+            files = sorted((git_fs.unpublished.path / self.relative_path).glob('**/*.json'))
+            print(f'Using {files}')
+        if not files:
+            logging.error(f'No files copied for {self.relative_path}')
+        for file in files:
             if file.name.startswith('_'):
                 continue
             new_file = self.path / file.relative_to(git_fs.unpublished.path)
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file, new_file)
             self.repo.git.add(str(new_file))
+            
 
     def create_pr(self):
+        if not GIT_SYNC_ENABLED:
+            msg = 'Not creating PR because GIT_SYNC_ENABLED is False'
+            print(msg)
+            return {'error': msg}
         user = self.user
         r = gh_repo.create_pull(
             title=f"New translations for {str(self.relative_path)}",
-            body="Request made by {user['login'] if user else '???'}",
+            body=f"Request made by {user['login'] if user else '???'}",
             head=self.name,
             base=git_fs.published.name)
         return {'url': r.html_url}

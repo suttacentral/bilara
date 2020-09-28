@@ -11,6 +11,10 @@ import { sharedStyles } from './shared-styles.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
 
+import '@lion/dialog/lion-dialog.js';
+
+import './bilara-dialog-publish.js';
+
 // This element is connected to the Redux store.
 
 import { browse } from '../reducers/browse.js';
@@ -183,7 +187,7 @@ a:hover
       <div class="${isFile ? 'document' : 'division'}  ${(this._tree._permission || '').toLowerCase()}">
       ${ isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
-        <span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">${publishState == 'modified' ? 'Update': 'Publish'}</button>`: html``}</span>
+        <span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">${publishState == 'MODIFIED' ? 'Update': 'Publish'}</button>`: html``}</span>
 
         
         ${ translated ? html`<span title="${translated} / ${root}" class="progress-track">
@@ -195,7 +199,7 @@ a:hover
             if (name.match(/^_/)) {
               return null
             }
-            return html`<nav-item ._name="${name}" ._tree="${this._tree[name]}" ._path="${(this._parents || []).concat(name)}" ?open=${false} @click="${this._onClick}"></nav-item>`
+            return html`<nav-item ._name="${name}" ._tree="${this._tree[name]}" ._path="${(this._path || []).concat(name)}" ?open=${false} @click="${this._onClick}"></nav-item>`
           }) : html``}
         </div>
       </div>`
@@ -204,11 +208,11 @@ a:hover
   _publishState() {
     const publishState = this._tree._publish_state;
     if (!publishState) return false
-    if (typeof(publishState) == "string") return publishState.toLowerCase();
+    if (typeof(publishState) == "string" && publishState != 'PUBLISHED') return publishState;
     if (publishState['UNPUBLISHED'] > 0) {
-      return 'UNPUBLISHED'.toLowerCase();
+      return 'UNPUBLISHED';
     } else if (publishState['MODIFIED'] > 0) {
-      return 'MODIFIED'.toLowerCase();
+      return 'MODIFIED';
     }
   }
 
@@ -225,7 +229,19 @@ a:hover
   _publish(e) {
     e.preventDefault();
     e.stopPropagation();
-    console.log(this);
+    
+    const path = ['translation'].concat(this._path).join('/');
+    console.log(this, path);
+
+    let event = new CustomEvent('publish', {
+      detail: {
+        path
+      },
+      bubbles: true,
+      composed: true
+    })
+
+    this.dispatchEvent(event);
   }
 
   _navigate(e) {
@@ -365,6 +381,13 @@ h2
         <nav-item _name="Total" ._tree="${this._dataTree}" ?open="${true}" class="total"></nav-item>
       ` : html`Loading...`}
     </section>
+
+    <lion-dialog .config=${{ hidesOnEsc: true}}>
+    <span slot="invoker" id="invoker">+</span>
+    <!--<div class="foo" slot="content"><h1>This is a title</h1><p>And this is not</p></div>-->
+    <bilara-dialog-publish slot="content" _path=${this._publishPath}></bilara-dialog-publish>
+
+  </lion-dialog>
     
     ${this._renderProblems()}
     </div>
@@ -398,13 +421,24 @@ h2
     return {
       _dataTree: {type: Object},
       _problems: {type: Array},
-      _username: {type: String}
+      _username: {type: String},
+      _publishPath: String
     }
   }
 
   firstUpdated() {
     store.dispatch(getBrowseData());
     store.dispatch(getProblems());
+    this._invoker = this.shadowRoot.querySelector('#invoker');
+
+    this.addEventListener('publish', this._handlePublish);
+  }
+
+  _handlePublish(e) {
+    console.log(e, e.detail.path);
+    e.stopPropagation();
+    this._publishPath = e.detail.path;
+    this._invoker.click();
   }
 
   stateChanged(state) {
