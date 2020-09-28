@@ -3,7 +3,7 @@ import pathlib
 from collections import defaultdict
 from git import Repo, GitCommandError
 from config import (GIT_REMOTE_REPO, REPO_DIR, CHECKOUTS_DIR, 
-                    PUBLISHED_BRANCH_NAME, UNPUBLISHED_BRANCH_NAME)
+                    PUBLISHED_BRANCH_NAME, UNPUBLISHED_BRANCH_NAME, )
 
 
 import threading
@@ -125,6 +125,8 @@ def get_file_map(branch_name):
     return files
 
 def get_publication_state():
+    published.pull()
+    unpublished.pull()
     published_files = get_file_map(published.name)
     unpublished_files = get_file_map(unpublished.name)
 
@@ -152,10 +154,10 @@ def create_publish_request(path, user):
         branch.copy_files()
         branch.commit()
         branch.push()
-        branch.create_pr()
-        return {'url': ''}
+        result = branch.create_pr()
+        return result
     except Exception as e:
-        logging.exception()
+        logging.exception("Pull Request Creation Failed")
         return {'error': str(e) }
 
 

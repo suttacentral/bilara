@@ -11,7 +11,7 @@ import { updateTertiary } from '../actions/app.js';
 import { formToJSON } from '../form.js';
 
 
-const dialogStyles = css`
+export const dialogStyles = css`
 :host
 {
     position: relative;;
@@ -135,13 +135,17 @@ button:hover
 
 `
 
-class BilaraDialog extends LitElement {
+export class BilaraDialog extends LitElement {
     static get styles() {
         return dialogStyles
     }
 
     _closeOverlay() {
         this.dispatchEvent(new Event('close-overlay', { bubbles: true }));
+    }
+
+    _cancel() {
+        this._closeOverlay();
     }
 }
 
@@ -199,9 +203,6 @@ class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
         store.dispatch(updateTertiary(this._keyValue, selectedFields));
         this.dispatchEvent(new Event('close-overlay', {bubbles: true}));
         window.location.reload(false);
-    }
-    _cancel() {
-        this.dispatchEvent(new Event('close-overlay', {bubbles: true}));
     }
 }
 

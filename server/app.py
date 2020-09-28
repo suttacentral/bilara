@@ -116,7 +116,7 @@ def publish_request():
     path = data['path']
     user = get_user_details()
     result = git_fs.create_publish_request(path, user)
-    return result
+    return jsonify(result)
 
 @app.route("/api/webhook", methods=["POST"])
 def webhook():

@@ -3,7 +3,8 @@ from git import Repo, GitCommandError
 from config import (
     GIT_REMOTE_REPO,
     REPO_DIR,
-    CHECKOUTS_DIR
+    CHECKOUTS_DIR,
+    GIT_SYNC_ENABLED
 )
 
 if REPO_DIR.exists():
@@ -48,7 +49,13 @@ class GitBranch:
         else:
             self.repo = self.get_or_create_repo()
 
+    def pull(self):
+        self.repo.git.pull()
+
     def push(self):
+        if not GIT_SYNC_ENABLED:
+            print('Not Pushing because disabled in config')
+            return
         self.repo.git.push("--set-upstream", "origin", self.name)
 
     def commit(self, message):
