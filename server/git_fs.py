@@ -130,8 +130,12 @@ def get_publication_state():
     published_files = get_file_map(published.name)
     unpublished_files = get_file_map(unpublished.name)
 
+    
+
     result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
     for filepath, sha in unpublished_files.items():
+        if not filepath.startswith('translation/'):
+            continue
         if filepath not in published_files:
             state = 'UNPUBLISHED'
         else:
@@ -144,7 +148,6 @@ def get_publication_state():
         parts = pathlib.Path(filepath).parts
         for i in range(0, len(parts)):
             result['/'.join(parts[0:i])][state] += 1
-
     
     return dict(result)
 

@@ -225,6 +225,8 @@ lion-dialog
     cursor: help;
 }
 
+
+
 .view .permission
 {
     background-color: var(--bilara-red);
@@ -279,7 +281,7 @@ lion-dialog
               </span>`
             })}
             <lion-dialog .config=${{ hidesOnEsc: true}}>
-              <span slot="invoker" class="adder ripple">+</span>
+              <span slot="invoker" class="adder ripple"></span>
               <bilara-columns-dialog slot="content"
                 ._existingFields="${this._orderedFields}"
                 ._fieldNames="${[...new Set([this._sourceField, this._targetField, ...this._potentialFields])]}"
@@ -362,6 +364,8 @@ lion-dialog
     window.addEventListener('beforeunload', (e) => {
       return this._beforeUnload(e);
     });
+
+    this._invoker = html`<span slot="invoker"></slot>`
   }
 
   _beforeUnload(e) {

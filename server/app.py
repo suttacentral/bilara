@@ -68,11 +68,11 @@ def problems():
 def tm_get():
 
     string = request.args.get("string")
-    root_lang = request.args.get("root_lang")
-    translation_lang = request.args.get("translation_lang")
+    root_muids = request.args.get("root_muids")
+    translation_muids = request.args.get("translation_muids")
     exclude_id = request.args.get("exclude_uid")
     return jsonify(
-        search.tm_query(string, root_lang, translation_lang, exclude_id=exclude_id)
+        search.tm_query(string, root_muids, translation_muids, exclude_id=exclude_id)
     )
 
 

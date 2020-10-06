@@ -28,6 +28,7 @@ config = Config({
     'GIT_PASSWORD': '',
 
     # Git Repo
+    'GH_REPO': '',
     'GIT_REMOTE_REPO': '',
     'REPO_DIR':  BASE_DIR / 'repo',
     'CHECKOUTS_DIR': BASE_DIR / 'checkouts',
@@ -60,6 +61,7 @@ except ImportError:
 
 config.update(WORKING_DIR = config.CHECKOUTS_DIR / config.UNPUBLISHED_BRANCH_NAME)
 
+GH_REPO = config.GH_REPO
 GIT_REMOTE_REPO = config.GIT_REMOTE_REPO
 REPO_DIR = config.REPO_DIR
 CHECKOUTS_DIR = config.CHECKOUTS_DIR
