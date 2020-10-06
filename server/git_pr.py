@@ -4,7 +4,7 @@ from git import Repo, GitCommandError
 from github import Github
 from git_branch import GitBranch
 import git_fs
-from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GIT_REMOTE_REPO, REPO_DIR,
+from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GH_REPO, GIT_REMOTE_REPO, REPO_DIR,
                     GIT_SYNC_ENABLED)
 
 BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
@@ -12,8 +12,12 @@ BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
 if not BASE_PR_DIR.exists():
     BASE_PR_DIR.mkdir()
 
+
 gh = Github(GITHUB_ACCESS_TOKEN)
-gh_repo = gh.get_repo('/'.join(GIT_REMOTE_REPO.split('/')[-2:]))
+gh_repo = gh.get_repo(GH_REPO)
+
+def get_checkout_paths():
+    return {str(folder): PRBranch.get_original_path(folder) for folder in BASE_PR_DIR.glob('*')}
 
 class PRBranch(GitBranch):
 

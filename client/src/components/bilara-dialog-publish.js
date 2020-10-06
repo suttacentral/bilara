@@ -51,6 +51,7 @@ class BilaraDialogPublish extends BilaraDialog {
         } else if (this._status == 'WORKING') {
             return html`
                 <p>Working...</p>
+                <p>This will take a few moments, you may close the dialog if you wish.</p>
             `
         } else if (this._status == 'DONE') {
             return html`
