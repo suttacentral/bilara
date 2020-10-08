@@ -12,7 +12,7 @@ if REPO_DIR.exists():
 else:
     print("Pulling Repo (one time only)")
     base_repo = Repo.clone_from(
-        GIT_REMOTE_REPO, REPO_DIR, multi_options=["--no-checkout"]
+        GIT_REMOTE_REPO, REPO_DIR, bare=True
     )
 
 class GitBranch:
@@ -48,6 +48,17 @@ class GitBranch:
             self.repo = Repo(self.path)
         else:
             self.repo = self.get_or_create_repo()
+
+    def get_file_map(self):
+        files = {}
+
+        r = self.repo.git.ls_tree('-r', self.name)
+        
+        for line in r.split('\n'):
+            if line:
+                p, t, sha, filepath  = line.split()
+                files[filepath] = sha
+        return files
 
     def pull(self):
         self.repo.git.pull()

@@ -113,24 +113,11 @@ def get_publication_line_counts():
 
     return dict(result)
 
-def get_file_map(branch_name):
-    files = {}
-
-    r = base_repo.git.ls_tree('-r', branch_name)
-    
-    for line in r.split('\n'):
-        if line:
-            p, t, sha, filepath  = line.split()
-            files[filepath] = sha
-    return files
-
 def get_publication_state():
     published.pull()
     unpublished.pull()
-    published_files = get_file_map(published.name)
-    unpublished_files = get_file_map(unpublished.name)
-
-    
+    published_files = published.get_file_map()
+    unpublished_files = unpublished.get_file_map()
 
     result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
     for filepath, sha in unpublished_files.items():
