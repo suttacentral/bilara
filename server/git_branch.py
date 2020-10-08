@@ -36,7 +36,7 @@ class GitBranch:
             multi_options=[
                 f"--reference={REPO_DIR}",
                 "--single-branch",
-                f"--branch={branch_name}",
+                f"--branch={self.name}",
             ],
         )
 
