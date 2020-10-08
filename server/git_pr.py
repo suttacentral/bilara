@@ -10,7 +10,7 @@ from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GH_REPO, GIT_REMOTE_REPO
 BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
 
 if not BASE_PR_DIR.exists():
-    BASE_PR_DIR.mkdir()
+    BASE_PR_DIR.mkdir(parents=True)
 
 
 gh = Github(GITHUB_ACCESS_TOKEN)
