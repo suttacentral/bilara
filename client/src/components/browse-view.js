@@ -115,9 +115,33 @@ a:hover
     text-decoration: underline;
 }
 
-
 .publish {
-  position: relative;
+   position: absolute;
+    right: 7em;
+}
+
+.publish button{
+    font-size: .8rem;
+    font-weight: 600;
+
+    display: inline-block;
+
+    margin: 0 4px;
+    padding: 2px 8px;
+
+    letter-spacing: .05em;
+
+    color: var(--bilara-secondary-color);
+    border: 1px solid var(--bilara-secondary-text-color);
+    border-radius: 8px;
+    background-color: inherit;
+
+    font-variant-caps: all-small-caps;
+}
+.publish button:hover{
+color: var(--bilara-secondary-background-color);
+    background-color: var(--bilara-secondary-color);
+    cursor:pointer;
 }
 
 .progress-track
