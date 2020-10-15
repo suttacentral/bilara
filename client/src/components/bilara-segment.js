@@ -165,11 +165,13 @@ bilara-cell.string {
     if (this._matches)  return
 
     const sourceString = this._segment[this._sourceField],
-          rootLang = this._fields[this._sourceField].language.uid,
-          targetLang = this._fields[this._targetField].language.uid,
+          sourceField = this._sourceField,
+          targetField = this._targetField,
           segmentId = this.segmentId;
       
-      let request = fetch(`/api/tm/?string=${sourceString}&root_lang=${rootLang}&translation_lang=${targetLang}&exclude_uid=${segmentId}`, {mode: 'cors'})
+      let request = fetch(`/api/tm/?string=${sourceString}&root_muids=${sourceField}&translation_muids=${targetField}&exclude_uid=${segmentId}`, 
+          {mode: 'cors'}
+          )
           .then(res => res.json())
           .then(data => {
               this._matches = data;
