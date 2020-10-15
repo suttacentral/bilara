@@ -44,12 +44,14 @@ def grouper(iterable, n):
 
 
 class Search:
+    
     def __init__(self):
         client = ArangoClient()
+        self.version = 1.2
         self.db = client.db(username="bilara", password="bilara", name="bilara")
         self._cursor_cache = TTLCache(1000, 3600)
         self._build_complete = Event()
-        self._verbose = False
+        self._verbose = True
         if self.needs_init():
             self.init()
             self.index()
@@ -70,9 +72,9 @@ class Search:
             version = meta.get("version")["version"]
         else:
             version = 0
-        if version < 1:
-            self.create_analyzers()
-            version = 1
+        if version < self.version:
+            self.create_analyzers(force=True)
+            version = self.version
 
         self.insert_or_update("meta", {"_key": "version", "version": version})
     
@@ -124,7 +126,9 @@ class Search:
                 "case": "lower",
                 "accent": False,
                 "stemming": False,
-                "stopwords": [],
+                "stopwords": ["ti", "ca", "kho", "na", "bhikkhave", "vā", "hoti", "pe", "so", "te", "evaṁ",
+                              "taṁ", "me", "bhante", "bhikkhu", "bhagavā", "ayaṁ", "atha", "yaṁ", "pana", 
+                              "tassa", "no", "yo", "tattha", "ye", "dhammā"],
                 "streamType": "utf8",
             },
             ["frequency", "norm", "position"],
@@ -416,16 +420,16 @@ class Search:
         composed_query = f"""
         FOR a_doc IN strings_view
             SEARCH 
-                ANALYZER(TOKENS(@a_muids, 'splitter') ALL IN a_doc.muids, 'splitter') AND
                 ANALYZER(MIN_MATCH({minmatch_inner_query}, {max(1, len(tokens) / 3)}), "text_edge_ngrams") OR
                 BOOST(PHRASE(a_doc.string, @query, 'normalizer'), 3)
+                OPTIONS {{collections: [@a_muids]}}
             FILTER a_doc.segment_id != @exclude_id
             LET length_factor = ABS(LENGTH(@query) - LENGTH(a_doc.string)) / LENGTH(@query)
             LET a_score = BM25(a_doc) * 10 / (10 + length_factor)
             FOR b_doc IN strings_view
                 SEARCH 
-                    b_doc.segment_id == a_doc.segment_id AND
-                    ANALYZER(TOKENS(@b_muids, 'splitter') ALL IN b_doc.muids, "splitter")
+                    b_doc.segment_id == a_doc.segment_id
+                    OPTIONS {{collections: [@b_muids]}}
                 FILTER LENGTH(b_doc.string) > 1
                 COLLECT a = a_doc.string, score=a_score, b = b_doc.string INTO group = {{
                         segment_id: b_doc.segment_id
@@ -450,17 +454,17 @@ class Search:
         }
         if self._verbose:
             print(composed_query)
-            print(bind_vars)
+            print(json.dumps(bind_vars, ensure_ascii=False, indent=2))
 
         return self.execute(composed_query, bind_vars=bind_vars)
     
     
-    def tm_query(self, query, root_lang, translation_lang, exclude_id, limit=5):
+    def tm_query(self, query, root_muids, translation_muids, exclude_id, limit=5):
 
         results = self.tm_generic_query(
                 query=query,
-                a_muids='-'.join(['root', root_lang]),
-                b_muids='-'.join(['translation', translation_lang]),
+                a_muids=root_muids,
+                b_muids=translation_muids,
                 exclude_id=exclude_id,
                 limit=limit)
         
