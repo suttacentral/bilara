@@ -39,3 +39,22 @@ def json_load(file):
 def json_save(data, file):
     with file.open('w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def profile(sort_args=['cumulative'], print_args=[30]):
+    import cProfile
+    import pstats
+
+    profiler = cProfile.Profile()
+
+    def decorator(fn):
+        def inner(*args, **kwargs):
+            result = None
+            try:
+                result = profiler.runcall(fn, *args, **kwargs)
+            finally:
+                stats = pstats.Stats(profiler)
+                stats.strip_dirs().sort_stats(*sort_args).print_stats(*print_args)
+            return result
+        return inner
+    return decorator

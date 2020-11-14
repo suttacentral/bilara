@@ -11,7 +11,7 @@ from multiprocessing import Event
 
 from cachetools import TTLCache
 
-from config import config
+from config import WORKING_DIR
 
 from log import problemsLog
 
@@ -21,7 +21,7 @@ from permissions import get_permissions, Permission
 
 import fs
 
-WORKING_DIR = config.WORKING_DIR
+
 
 
 class ConstructedQuery:

@@ -18,6 +18,7 @@ import import_export
 import auth
 from log import segments_logger, problemsLog
 import git_fs
+import git_pr
 import fs
 from segment_updates import update_segment
 from search import search
@@ -121,7 +122,10 @@ def publish_request():
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
-    git_fs.githook(data)
+    if 'pusher' in data:
+        git_fs.githook(data)
+    if 'action' in data:
+        git_pr.perform_housekeeping()
     return "Okay", 200
 
 

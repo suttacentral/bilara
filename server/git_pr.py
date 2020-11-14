@@ -1,5 +1,7 @@
 import logging
 import shutil
+import json
+from multiprocessing import RLock
 from git import Repo, GitCommandError
 from github import Github
 from git_branch import GitBranch
@@ -18,6 +20,35 @@ gh_repo = gh.get_repo(GH_REPO)
 
 def get_checkout_paths():
     return {str(folder): PRBranch.get_original_path(folder) for folder in BASE_PR_DIR.glob('*')}
+
+class PRLog:
+    def __init__(self):
+        self.path = BASE_PR_DIR / '_pr_log.json'
+        self.lock = RLock()
+    
+    def set(self, k, v):
+        with self.lock:
+            data = self.load()           
+            if v is None and k in data:
+                del data[k]
+            else:
+                data[k] = v
+
+            with self.path.open('w') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+    
+    def unset(self, k):
+        self.set(k, None)
+
+    def load(self):
+        with self.lock:
+            try:
+                with self.path.open('r') as f:
+                    return json.load(f)
+            except FileNotFoundError:
+                return {}
+
+pr_log = PRLog()
 
 class PRBranch(GitBranch):
 
@@ -75,19 +106,51 @@ class PRBranch(GitBranch):
             print(msg)
             return {'error': msg}
         user = self.user
-        r = gh_repo.create_pull(
-            title=f"New translations for {str(self.relative_path)}",
-            body=f"Request made by {user['login'] if user else '???'}",
-            head=self.name,
-            base=git_fs.published.name)
+
+        existing = pr_log.load()
+        if self.name in existing:
+            pr = gh_repo.get_pull(existing[self.name])
+            pr.update_branch()
+        else:
+            r = gh_repo.create_pull(
+                title=f"New translations for {str(self.relative_path)}",
+                body=f"Request made by {user['login'] if user else '???'}",
+                head=self.name,
+                base=git_fs.published.name)
+            pr_log.set(self.name, {'number': r.number, 'url': r.html_url, 'path': str(self.relative_path)})
         return {'url': r.html_url}
 
     def commit(self):
         return super().commit(f"Publishing translations for {str(self.relative_path)}")
 
     def update(self):
+        self.pull()
         self.copy_files()
-        self.commit()
+        try:
+            self.commit()
+        except Exception as e:
+            print('Git Commit Failed')
+            print(e)
+            return {'error': 'Nothing to update'}
         self.push()
         return self.create_pr()
-    
+
+def perform_housekeeping():
+    remote_branches = {b.name for b in gh_repo.get_branches()}
+    for folder in BASE_PR_DIR.glob('*'):
+        if not folder.is_dir():
+            continue
+        if folder.name not in remote_branches:
+            shutil.rmtree(pr_dir)
+
+    for pr_name, pr_value in  pr_log.load().items():
+        pr_num = pr_value['number']
+        pr = gh_repo.get_pull(pr_num)
+        if pr.state == 'closed':
+            pr_dir = BASE_PR_DIR / pr_name
+            if pr_dir.exists():
+                shutil.rmtree(pr_dir)
+            pr_log.unset(pr_name)
+        
+if pr_log.load():
+    perform_housekeeping()

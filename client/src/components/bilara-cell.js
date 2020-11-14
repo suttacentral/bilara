@@ -160,8 +160,6 @@ span.string
     }
   }
 
-
-
   _setValue(value, undoable) {
     
     const cell = this.shadowRoot.querySelector('.string');

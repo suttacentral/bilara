@@ -5,7 +5,7 @@ import logging
 import threading
 from log import problemsLog
 from enum import IntEnum
-from config import config
+from config import WORKING_DIR
 from util import json_load, json_save
 
 class Permission(IntEnum):
@@ -14,8 +14,6 @@ class Permission(IntEnum):
     SUGGEST = 2
     EDIT = 3
 
-
-WORKING_DIR = config.WORKING_DIR
 
 publications_file_name = '_publication.json'
 publications_file = WORKING_DIR / publications_file_name
