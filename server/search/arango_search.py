@@ -11,7 +11,7 @@ from multiprocessing import Event
 
 from cachetools import TTLCache
 
-from config import WORKING_DIR
+from config import WORKING_DIR, TM_ALIAS
 
 from log import problemsLog
 
@@ -43,8 +43,7 @@ def grouper(iterable, n):
         yield chunk
 
 
-class Search:
-    
+class Search:    
     def __init__(self):
         client = ArangoClient()
         self.version = 1.2
@@ -406,7 +405,12 @@ class Search:
 
         return constructed_query.execute()
 
-    
+    def tm_alias(self, key, muids):
+        result = {key: muids}
+        if muids in TM_ALIAS:
+            result[key+'_alias'] = TM_ALIAS[muids]
+        return result
+
     def tm_generic_query(self, query, a_muids, b_muids, exclude_id, limit):
         self._build_complete.wait()
         tokens = set(
@@ -417,19 +421,22 @@ class Search:
 
         minmatch_inner_query = ", ".join(f'a_doc.string == "{token}"' for token in tokens)
 
+        a_aliased = self.tm_alias('a_muids', a_muids)
+        b_aliased = self.tm_alias('b_muids', b_muids)
+
         composed_query = f"""
         FOR a_doc IN strings_view
             SEARCH 
                 ANALYZER(MIN_MATCH({minmatch_inner_query}, {max(1, len(tokens) / 3)}), "text_edge_ngrams") OR
                 BOOST(PHRASE(a_doc.string, @query, 'normalizer'), 3)
-                OPTIONS {{collections: [@a_muids]}}
+                OPTIONS {{collections: [{','.join(f'@{k}' for k in a_aliased)}]}}
             FILTER a_doc.segment_id != @exclude_id
             LET length_factor = ABS(LENGTH(@query) - LENGTH(a_doc.string)) / LENGTH(@query)
             LET a_score = BM25(a_doc) * 10 / (10 + length_factor)
             FOR b_doc IN strings_view
                 SEARCH 
                     b_doc.segment_id == a_doc.segment_id
-                    OPTIONS {{collections: [@b_muids]}}
+                    OPTIONS {{collections: [{','.join(f'@{k}' for k in b_aliased)}]}}
                 FILTER LENGTH(b_doc.string) > 1
                 COLLECT a = a_doc.string, score=a_score, b = b_doc.string INTO group = {{
                         segment_id: b_doc.segment_id
@@ -447,7 +454,8 @@ class Search:
         
         bind_vars = {
             "query": query,
-            "a_muids": a_muids,
+            **a_aliased,
+            **b_aliased,
             "b_muids": b_muids,
             "exclude_id": exclude_id,
             "limit": limit or 5
