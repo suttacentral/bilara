@@ -11,6 +11,8 @@ import { sharedStyles } from './shared-styles.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';
 
+import { featureFlags } from '../util.js';
+
 import '@lion/dialog/lion-dialog.js';
 
 import './bilara-dialog-publish.js';
@@ -211,8 +213,8 @@ color: var(--bilara-secondary-background-color);
       <div class="${isFile ? 'document' : 'division'}  ${(this._tree._permission || '').toLowerCase()}">
       ${ isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
-        <span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">
-          ${{MODIFIED: 'Update', UNPUBLISHED: 'Publish', PULL_REQUEST: 'Pull Request'}[publishState]}</button>`: html``}</span>
+        ${ featureFlags.publish ? html`<span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">
+          ${{MODIFIED: 'Update', UNPUBLISHED: 'Publish', PULL_REQUEST: 'Pull Request'}[publishState]}</button>`: html``}</span>` : html``}
 
         
         ${ translated ? html`<span title="${translated} / ${root}" class="progress-track">
