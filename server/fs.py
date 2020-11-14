@@ -3,7 +3,7 @@ import json
 import pickle
 import pathlib
 import logging
-from config import config
+from config import config, WORKING_DIR
 from util import humansortkey, bilarasortkey
 from copy import copy, deepcopy
 from threading import Event
@@ -16,7 +16,7 @@ from permissions import get_permissions, Permission
 
 from util import json_load
 
-WORKING_DIR = config.WORKING_DIR
+
 
 saved_state_file = pathlib.Path("./.saved_state.pickle")
 
@@ -259,12 +259,6 @@ class StatsCalculator:
             missing.append("root lang")
         if not root_edition:
             missing.append("root edition")
-        #if missing:
-            # msg = f'{", ".join(missing)} not found, please check author and project'
-            # print(str(translation["path"]), msg, file=sys.stderr)
-            # problemsLog.add(file=str(translation["path"]), msg=msg)
-            #total_count = translated_count
-        #else:
         try:
             root_entry = get_matching_entry(uid, ["root", root_lang, root_edition])
             root_count = self.count_strings(root_entry)
@@ -524,8 +518,9 @@ def sum_counts(subtree):
 
 
 
+from util import profile
 
-
+@profile(sort_args=['cumulative'])
 def get_condensed_tree(path, user):
     print(f"Using user {user}")
     if not _build_started.is_set():

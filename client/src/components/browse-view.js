@@ -211,7 +211,8 @@ color: var(--bilara-secondary-background-color);
       <div class="${isFile ? 'document' : 'division'}  ${(this._tree._permission || '').toLowerCase()}">
       ${ isFile ? html`<a href="/translation/${filename}" @click="${this._navigate}" class="navigable">${this._name}</a>` 
                  : html`<span class="navigable">${ this._name }</span>` }
-        <span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">${publishState == 'MODIFIED' ? 'Update': 'Publish'}</button>`: html``}</span>
+        <span class="publish">${ publishState ? html`<button @click=${this._publish} title="${publishState}" class="${publishState}">
+          ${{MODIFIED: 'Update', UNPUBLISHED: 'Publish', PULL_REQUEST: 'Pull Request'}[publishState]}</button>`: html``}</span>
 
         
         ${ translated ? html`<span title="${translated} / ${root}" class="progress-track">
@@ -233,6 +234,9 @@ color: var(--bilara-secondary-background-color);
     const publishState = this._tree._publish_state;
     if (!publishState) return false
     if (typeof(publishState) == "string" && publishState != 'PUBLISHED') return publishState;
+    if (publishState.state) {
+      return publishState.state;
+    }
     if (publishState['UNPUBLISHED'] > 0) {
       return 'UNPUBLISHED';
     } else if (publishState['MODIFIED'] > 0) {
@@ -254,12 +258,14 @@ color: var(--bilara-secondary-background-color);
     e.preventDefault();
     e.stopPropagation();
     
-    const path = ['translation'].concat(this._path).join('/');
+    const path = ['translation'].concat(this._path).join('/'),
+          PRUrl = this._tree._publish_state.url;
     console.log(this, path);
 
     let event = new CustomEvent('publish', {
       detail: {
-        path
+        path,
+        PRUrl
       },
       bubbles: true,
       composed: true
@@ -409,7 +415,7 @@ h2
     <lion-dialog .config=${{ hidesOnEsc: true}}>
     <span slot="invoker" id="invoker">+</span>
     <!--<div class="foo" slot="content"><h1>This is a title</h1><p>And this is not</p></div>-->
-    <bilara-dialog-publish slot="content" _path=${this._publishPath}></bilara-dialog-publish>
+    <bilara-dialog-publish slot="content" _path=${this._publishPath} _PRUrl=${this._PRUrl}></bilara-dialog-publish>
 
   </lion-dialog>
     
@@ -446,7 +452,8 @@ h2
       _dataTree: {type: Object},
       _problems: {type: Array},
       _username: {type: String},
-      _publishPath: String
+      _publishPath: String,
+      _PRUrl: String
     }
   }
 
@@ -462,6 +469,7 @@ h2
     console.log(e, e.detail.path);
     e.stopPropagation();
     this._publishPath = e.detail.path;
+    this._PRUrl = e.detail.PRUrl;
     this._invoker.click();
   }
 

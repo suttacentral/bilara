@@ -9,6 +9,7 @@ class BilaraDialogPublish extends BilaraDialog {
             _path: String,
             _status: String,
             _url: String,
+            _PRUrl: String,
             _error: String,
         }
     }
@@ -43,11 +44,18 @@ class BilaraDialogPublish extends BilaraDialog {
 
     _renderContents() {
         if (!this._status) {
-            return html`
-                <p>This will request publication of ${this._path}</p>
-                <p>A GitHub pull request will be automatically created to move the
-                translations into the published branch.</p>
-            `
+            if (this._PRUrl){ 
+                return html`
+                    <p>A Pull Request already exists. Accept to update the Pull Request.</p>
+                    <p><a href="${this._PRUrl}">${this._PRUrl}</a>
+                `
+            } else {
+                return html`
+                    <p>This will request publication of ${this._path}</p>
+                    <p>A GitHub pull request will be automatically created to move the
+                    translations into the published branch.</p>
+                `
+            }
         } else if (this._status == 'WORKING') {
             return html`
                 <p>Working...</p>
@@ -71,7 +79,7 @@ class BilaraDialogPublish extends BilaraDialog {
         if (changedProperties.has('_path')) {
             this._status = null;
             this._url = null;
-        }
+        }        
     }
 
     _accept(e) {

@@ -119,11 +119,17 @@ def get_publication_state():
     published_files = published.get_file_map()
     unpublished_files = unpublished.get_file_map()
 
+    pr_in_progress = {entry.get('path'): entry['url'] for entry in git_pr.pr_log.load().values()}
+
+    print(pr_in_progress)
     result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
     for filepath, sha in unpublished_files.items():
+        pathkey = filepath[:-5] if filepath.endswith('.json') else filepath
         if not filepath.startswith('translation/'):
             continue
-        if filepath not in published_files:
+        elif pathkey in pr_in_progress:
+                state = {'state': 'PULL_REQUEST', 'url': pr_in_progress[pathkey]}
+        elif filepath not in published_files:
             state = 'UNPUBLISHED'
         else:
             if published_files[filepath] == sha:
@@ -131,10 +137,16 @@ def get_publication_state():
             else:
                 state = 'MODIFIED'
         result[filepath] = state
+        if 'state' in state:
+            state = 'MODIFIED'
 
         parts = pathlib.Path(filepath).parts
         for i in range(0, len(parts)):
-            result['/'.join(parts[0:i])][state] += 1
+            parent_path = '/'.join(parts[0:i])
+            if parent_path in pr_in_progress:
+                result[parent_path] = {'state': 'PULL_REQUEST', 'url': pr_in_progress[filepath]}
+            else:
+                result[parent_path][state] += 1
     
     return dict(result)
 

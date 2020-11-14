@@ -61,6 +61,7 @@ class GitBranch:
         return files
 
     def pull(self):
+        print(f'Pulling {self.name}')
         self.repo.git.pull()
 
     def push(self):
