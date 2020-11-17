@@ -456,7 +456,6 @@ class Search:
             "query": query,
             **a_aliased,
             **b_aliased,
-            "b_muids": b_muids,
             "exclude_id": exclude_id,
             "limit": limit or 5
         }
@@ -468,6 +467,9 @@ class Search:
     
     
     def tm_query(self, query, root_muids, translation_muids, exclude_id, limit=5):
+
+        if not query or query.isspace():
+            return []
 
         results = self.tm_generic_query(
                 query=query,
