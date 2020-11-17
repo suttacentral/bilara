@@ -3,7 +3,7 @@ import pathlib
 from collections import defaultdict
 from git import Repo, GitCommandError
 from config import (GIT_REMOTE_REPO, REPO_DIR, CHECKOUTS_DIR, 
-                    PUBLISHED_BRANCH_NAME, UNPUBLISHED_BRANCH_NAME, )
+                    PUBLISHED_BRANCH_NAME, UNPUBLISHED_BRANCH_NAME, GIT_SYNC_ENABLED)
 
 
 import threading
@@ -170,7 +170,7 @@ def finalize_commit():
     if not _pending_commit:
         return
     
-    if not config.GIT_SYNC_ENABLED:
+    if not GIT_SYNC_ENABLED:
         print('Not Pushing because disabled in config')
         _pending_commit = None
         return
