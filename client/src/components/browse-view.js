@@ -13,6 +13,8 @@ import { store } from '../store.js';
 
 import { featureFlags } from '../util.js';
 
+import { setPublishData } from '../actions/dialog.js';
+
 import '@lion/dialog/lion-dialog.js';
 
 import './bilara-dialog-publish.js';
@@ -262,19 +264,14 @@ color: var(--bilara-secondary-background-color);
     
     const path = ['translation'].concat(this._path).join('/'),
           PRUrl = this._tree._publish_state.url;
-    console.log(this, path);
 
-    let event = new CustomEvent('publish', {
-      detail: {
-        path,
-        PRUrl
-      },
-      bubbles: true,
-      composed: true
-    })
-
-    this.dispatchEvent(event);
+    store.dispatch(setPublishData({
+      path, 
+      PRUrl
+    }))
   }
+
+  
 
   _navigate(e) {
     const url = e.currentTarget.href;
@@ -413,13 +410,6 @@ h2
         <nav-item _name="Total" ._tree="${this._dataTree}" ?open="${true}" class="total"></nav-item>
       ` : html`Loading...`}
     </section>
-
-    <lion-dialog .config=${{ hidesOnEsc: true}}>
-    <span slot="invoker" id="invoker">+</span>
-    <!--<div class="foo" slot="content"><h1>This is a title</h1><p>And this is not</p></div>-->
-    <bilara-dialog-publish slot="content" _path=${this._publishPath} _PRUrl=${this._PRUrl}></bilara-dialog-publish>
-
-  </lion-dialog>
     
     ${this._renderProblems()}
     </div>
@@ -453,9 +443,7 @@ h2
     return {
       _dataTree: {type: Object},
       _problems: {type: Array},
-      _username: {type: String},
-      _publishPath: String,
-      _PRUrl: String
+      _username: {type: String}
     }
   }
 
@@ -465,14 +453,6 @@ h2
     this._invoker = this.shadowRoot.querySelector('#invoker');
 
     this.addEventListener('publish', this._handlePublish);
-  }
-
-  _handlePublish(e) {
-    console.log(e, e.detail.path);
-    e.stopPropagation();
-    this._publishPath = e.detail.path;
-    this._PRUrl = e.detail.PRUrl;
-    this._invoker.click();
   }
 
   stateChanged(state) {

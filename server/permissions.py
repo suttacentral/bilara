@@ -37,6 +37,7 @@ def source_url_to_path(url):
 
 def build_rules(publications):
     result = {}
+    result['_paths'] = {}
     for pub_id, entry in publications.items():
         try:
             source_path = source_url_to_path(entry['source_url'])
@@ -46,6 +47,9 @@ def build_rules(publications):
                 msg=f"In {entry['publication_number']}: {e.args[0]} "
             )
         github_ids = [entry.get('author_github_handle')]
+
+        result['_paths'][source_path] = True
+        
         for collaborator in entry.get("collaborator", []):
             github_ids.append(collaborator.get('author_github_handle'))
         
@@ -129,8 +133,11 @@ def validate_permissions(rules=None):
              if not any(part for part in file.parts if part.startswith('.'))]
 
     for user, user_permissions in rules.items():
+        if user.startswith('_'):
+            continue # Not a valid Github ID, used for bilara 
         for paths in user_permissions.values():
             for path in paths:
+
                 if path == '*':
                     continue
                 for file in files:
@@ -139,6 +146,12 @@ def validate_permissions(rules=None):
                 else:
                     problemsLog.add(file=publications_file_name,
                                     msg=f"No files match path: {path}")
+
+def make_may_publish_regex():
+    rules = get_rules()
+    paths = rules['_paths']
+    return regex.compile(r'^\L<paths>', paths=paths)
+
 
 #    authors = json_load(WORKING_DIR / '_author.json')
 #    for uid, entry in authors.items():

@@ -17,6 +17,8 @@ import { updateMetadata } from 'pwa-helpers/metadata.js';
 
 import { repeat } from 'lit-html/directives/repeat';
 
+
+
 // This element is connected to the Redux store.
 import { store } from '../store.js';
 
@@ -31,6 +33,7 @@ import {
 // These are the elements needed by this element.
 
 import './login-view.js';
+import './bilara-modal.js';
 
 import { themes, defaultTheme } from '../styles/themes.js';
 
@@ -315,7 +318,9 @@ details a
     color: var(--bilara-primary-color);
 }
 
-      `
+
+
+`
     ]
   }
 
@@ -373,8 +378,7 @@ details a
         </div>
     </header>
 
-
-      
+      <bilara-modal></bilara-modal>
         
       <!-- Main content -->
       <main role="main" class="main-content">

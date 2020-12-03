@@ -16,6 +16,8 @@ import atexit
 from git_branch import GitBranch, base_repo
 import git_pr
 
+from permissions import make_may_publish_regex
+
 _lock = threading.RLock()
 PUSH_DELAY = 15
 
@@ -122,10 +124,13 @@ def get_publication_state():
     pr_in_progress = {entry.get('path'): entry['url'] for entry in git_pr.pr_log.load().values()}
 
     print(pr_in_progress)
+    may_publish_regex = make_may_publish_regex()
     result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
     for filepath, sha in unpublished_files.items():
         pathkey = filepath[:-5] if filepath.endswith('.json') else filepath
         if not filepath.startswith('translation/'):
+            continue
+        elif not may_publish_regex.match(filepath):
             continue
         elif pathkey in pr_in_progress:
                 state = {'state': 'PULL_REQUEST', 'url': pr_in_progress[pathkey]}
@@ -144,7 +149,7 @@ def get_publication_state():
         for i in range(0, len(parts)):
             parent_path = '/'.join(parts[0:i])
             if parent_path in pr_in_progress:
-                result[parent_path] = {'state': 'PULL_REQUEST', 'url': pr_in_progress[filepath]}
+                result[parent_path] = {'state': 'PULL_REQUEST', 'url': pr_in_progress[parent_path]}
             else:
                 result[parent_path][state] += 1
     

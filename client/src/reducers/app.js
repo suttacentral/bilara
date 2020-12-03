@@ -81,7 +81,7 @@ const INITIAL_STATE = {
   drawerOpened: false,
 };
 
-const app = (state = INITIAL_STATE, action) => {
+const appReducer = (state = INITIAL_STATE, action) => {
   let newState;
   switch (action.type) {
     case UPDATE_PAGE:
@@ -155,4 +155,4 @@ const app = (state = INITIAL_STATE, action) => {
   }
 };
 
-export default app;
+export default appReducer;
