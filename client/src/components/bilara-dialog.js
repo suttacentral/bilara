@@ -10,6 +10,7 @@ import { updateTertiary } from '../actions/app.js';
 
 import { formToJSON } from '../form.js';
 
+import { closeDialog, CLOSE_DIALOG } from '../actions/dialog.js'
 
 export const dialogStyles = css`
 :host
@@ -18,13 +19,11 @@ export const dialogStyles = css`
 
     display: flex;
 
-    width: 400px;
-    height: auto;
-    padding-top: 5%;
-
     border: 4px solid var(--bilara-magenta);
     border-radius: 50%;
     background-color: var(--bilara-black);
+
+    min-height: 400px;
 
     justify-content: center;
     align-items: center;
@@ -135,13 +134,13 @@ button:hover
 
 `
 
-export class BilaraDialog extends LitElement {
+export class BilaraDialog extends connect(store)(LitElement) {
     static get styles() {
         return dialogStyles
     }
 
     _closeOverlay() {
-        this.dispatchEvent(new Event('close-overlay', { bubbles: true }));
+        store.dispatch(closeDialog());
     }
 
     _cancel() {
@@ -151,7 +150,7 @@ export class BilaraDialog extends LitElement {
 
 customElements.define('bilara-dialog', BilaraDialog);
 
-class BilaraColumnsDialog extends connect(store)(BilaraDialog) {
+class BilaraColumnsDialog extends BilaraDialog {
     static get properties(){
         return {
             _fieldNames: Array,
