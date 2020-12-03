@@ -181,7 +181,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
             
         </form>`
     }
-
+    
     get translation() {
       return this.shadowRoot.querySelector('.result-translation-text');
     }
