@@ -264,7 +264,6 @@ color: var(--bilara-secondary-background-color);
     
     const path = ['translation'].concat(this._path).join('/'),
           PRUrl = this._tree._publish_state.url;
-
     store.dispatch(setPublishData({
       path, 
       PRUrl

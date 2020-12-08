@@ -65,8 +65,9 @@ export function selectText(node) {
       console.warn("Could not select text in node: Unsupported browser.");
   }
 }
+
 export function deepClone(obj) {
   return Object.keys(obj).reduce((v, d) => Object.assign(v, {
-    [d]: (obj[d].constructor === Object) ? deepClone(obj[d]) : obj[d]
+    [d]: (obj[d] !== null && obj[d].constructor === Object) ? deepClone(obj[d]) : obj[d]
   }), {});
 }
