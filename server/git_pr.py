@@ -98,8 +98,7 @@ class PRBranch(GitBranch):
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file, new_file)
             self.repo.git.add(str(new_file))
-            
-
+    
     def create_pr(self):
         if not GIT_SYNC_ENABLED:
             msg = 'Not creating PR because GIT_SYNC_ENABLED is False'
@@ -113,7 +112,13 @@ class PRBranch(GitBranch):
         else:
             pr = gh_repo.create_pull(
                 title=f"New translations for {str(self.relative_path)}",
-                body=f"Request made by {user['login'] if user else '???'}",
+                body=f'''
+Request made by {user['login'] if user else '???'}
+
+Please do not modify this branch directly. Changes should be
+made via the Bilara Translation App and the Pull Request
+updated from Bilara.
+''',
                 head=self.name,
                 base=git_fs.published.name)
             pr_log.set(self.name, {'number': pr.number, 'url': pr.html_url, 'path': str(self.relative_path)})
