@@ -159,8 +159,14 @@ def create_publish_request(path, user):
     try:
         branch = git_pr.PRBranch(path, user)
         branch.copy_files()
-        branch.commit()
-        branch.push()
+        try:
+            branch.commit()
+        except GitCommandError:
+            logging.exception("Git Commit failed (possibly harmless)")
+            # We continue since something funny might have happened
+            # like a previous commit working but the push not
+            # so we want a repeated attempt to actually do the push
+        branch.push(force=True)
         result = branch.create_pr()
         return result
     except Exception as e:

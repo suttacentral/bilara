@@ -64,11 +64,11 @@ class GitBranch:
         print(f'Pulling {self.name}')
         self.repo.git.pull()
 
-    def push(self):
+    def push(self, **kwargs):
         if not GIT_SYNC_ENABLED:
             print('Not Pushing because disabled in config')
             return
-        self.repo.git.push("--set-upstream", "origin", self.name)
+        self.repo.git.push("--set-upstream", "origin", self.name, **kwargs)
 
     def commit(self, message):
         self.repo.git.commit(m=message)

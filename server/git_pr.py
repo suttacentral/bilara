@@ -106,19 +106,18 @@ class PRBranch(GitBranch):
             print(msg)
             return {'error': msg}
         user = self.user
-
         existing = pr_log.load()
         if self.name in existing:
-            pr = gh_repo.get_pull(existing[self.name])
+            pr = gh_repo.get_pull(existing[self.name]['number'])
             pr.update_branch()
         else:
-            r = gh_repo.create_pull(
+            pr = gh_repo.create_pull(
                 title=f"New translations for {str(self.relative_path)}",
                 body=f"Request made by {user['login'] if user else '???'}",
                 head=self.name,
                 base=git_fs.published.name)
-            pr_log.set(self.name, {'number': r.number, 'url': r.html_url, 'path': str(self.relative_path)})
-        return {'url': r.html_url}
+            pr_log.set(self.name, {'number': pr.number, 'url': pr.html_url, 'path': str(self.relative_path)})
+        return {'url': pr.html_url}
 
     def commit(self):
         return super().commit(f"Publishing translations for {str(self.relative_path)}")
