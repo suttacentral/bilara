@@ -145,7 +145,7 @@ def perform_housekeeping():
         if not folder.is_dir():
             continue
         if folder.name not in remote_branches:
-            shutil.rmtree(pr_dir)
+            shutil.rmtree(folder)
 
     for pr_name, pr_value in  pr_log.load().items():
         pr_num = pr_value['number']
