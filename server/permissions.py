@@ -3,6 +3,7 @@ import json
 import regex
 import logging
 import threading
+from itertools import chain
 from log import problemsLog
 from enum import IntEnum
 from config import WORKING_DIR
@@ -17,6 +18,9 @@ class Permission(IntEnum):
 
 publications_file_name = '_publication.json'
 publications_file = WORKING_DIR / publications_file_name
+
+projects_file_name = '_project.json'
+projects_file = WORKING_DIR / projects_file_name
 
 with publications_file.open() as f:
     pass
@@ -35,17 +39,24 @@ def source_url_to_path(url):
             reason = '[source_url is not a valid github URL]'
         raise ValueError(f'Invalid Source URL {url}: {reason}')
 
-def build_rules(publications):
+def build_rules(publications, projects):
     result = {}
     result['_paths'] = {}
-    for pub_id, entry in publications.items():
-        try:
-            source_path = source_url_to_path(entry['source_url'])
-        except ValueError as e:
-            problemsLog.add(
-                file=publications_file_name,
-                msg=f"In {entry['publication_number']}: {e.args[0]} "
-            )
+    entries = []
+
+    for pub_id, entry in chain(publications.items(), projects.items()):
+        if 'translation_path' in entry:
+            source_path = entry['translation_path']
+            is_project = True
+        else:
+            is_project = False
+            try:
+                source_path = source_url_to_path(entry['source_url'])
+            except ValueError as e:
+                problemsLog.add(
+                    file=publications_file_name,
+                    msg=f"In {entry['publication_number']}: {e.args[0]} "
+                )
         github_ids = [entry.get('author_github_handle')]
 
         result['_paths'][source_path] = True
@@ -70,19 +81,18 @@ def build_rules(publications):
                 }
             if source_path not in result[github_id][Permission.EDIT]:
                 result[github_id][Permission.EDIT].append(source_path)
-            
     
     return result
             
-        
+
 _cached_rules = {}
 
 def get_rules():
-    mtime = publications_file.stat().st_mtime_ns
+    mtime = (publications_file.stat().st_mtime_ns, projects_file.stat().st_mtime_ns)
     rules = _cached_rules.get(mtime)
     if not rules:
         _cached_rules.clear()
-        _cached_rules[mtime] = rules = build_rules(json_load(publications_file))
+        _cached_rules[mtime] = rules = build_rules(json_load(publications_file), json_load(projects_file))
         threading.Thread(target=validate_permissions, args=(rules,)).start()
     return rules
 
