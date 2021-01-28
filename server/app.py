@@ -147,7 +147,7 @@ if config.GITHUB_AUTH_ENABLED:
     @app.route("/api/login", methods=['POST'])
     def login():
         return github_auth.authorize(
-            callback="https://bilara.suttacentral.net/api/authorized"
+            callback='http://localhost:3003/api/authorized'
         )
 
     @app.route("/api/authorized")
@@ -160,7 +160,7 @@ if config.GITHUB_AUTH_ENABLED:
                 resp,
             )
         github_token = resp["access_token"]
-        print(github_token)
+        print(f'GitHub access token: {github_token}')
         auth_token = auth.encrypt(github_token).decode()
         user = get_user_details(
             github_token=github_token, auth_token=auth_token, bypass_cache=True
@@ -171,7 +171,7 @@ if config.GITHUB_AUTH_ENABLED:
             "avatar_url": user["avatar_url"],
         }
 
-        response = redirect(f"https://bilara.suttacentral.net/auth?{urlencode(params)}")
+        response = redirect(f"http://localhost:3003/auth?{urlencode(params)}")
         return response
 
     @github_auth.tokengetter
