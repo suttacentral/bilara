@@ -4,7 +4,7 @@ import pickle
 import pathlib
 import logging
 from config import config, WORKING_DIR
-from util import humansortkey, bilarasortkey
+from util import humansortkey, bilarasortkey, deep_dict_merge
 from copy import copy, deepcopy
 from threading import Event
 
@@ -59,7 +59,11 @@ def get_uid_and_muids(file):
     if file.suffix in {".json", ".html"}:
         uid, muid_string = file.stem.split("_")
     else:
-        uid, muid_string = file.name.split("_")
+        try:
+            uid, muid_string = file.name.split("_")
+        except:
+            print(file)
+            raise
     return uid, muid_string.split("-")
 
 
@@ -99,6 +103,48 @@ def load_state():
 _build_started = Event()
 _build_complete = Event()
 
+def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_definitions):
+    from permissions import projects_file
+
+    for project_id, entry in json_load(projects_file).items():
+        root_path = entry['root_path']
+        translation_path = entry['translation_path']
+        translation_muids = entry['translation_muids']
+        root_parent_dir = (WORKING_DIR / root_path)
+        files = list(root_parent_dir.glob('**/*.json'))
+        print(f'Creating project for {project_id}/{translation_muids} with {len(files)} files')
+        for file in files:
+            parent_dir = pathlib.Path(translation_path) / file.parent.relative_to(root_parent_dir)
+            uid, _ = file.stem.split('_') 
+            translation_stem = f'{uid}_{translation_muids}'
+            virtual_file = parent_dir / (translation_stem + '.json')
+            meta = {part: meta_definitions[part]
+                       for part in translation_muids.split('-')
+                       if part in meta_definitions
+                    }
+            obj = {
+                "uid": uid,
+                "path": str(virtual_file),
+                "mtime": None,
+                "_meta": meta
+            }
+            if uid not in uid_index:
+                uid_index[uid] = set()
+            uid_index[uid].add(translation_stem)
+            file_index[translation_stem] = obj
+            for muid in translation_muids.split('-'):
+                if muid not in muid_index:
+                    muid_index[muid] = set()
+                muid_index[muid].add(translation_stem)
+            
+            parent_obj = subtree
+            for part in parent_dir.parts:
+                if part not in parent_obj:
+                    parent_obj[part] = {}
+                parent_obj = parent_obj[part]
+            if translation_stem not in parent_obj:
+                # Don't clobber real entries
+                parent_obj[translation_stem] = obj
 
 def make_file_index(force=False):
     _build_started.set()
@@ -125,7 +171,7 @@ def make_file_index(force=False):
             data = json.load(f)
             _legal_ids.update(data.keys())
 
-    def recurse(folder, meta_definitions=None):
+    def recurse(folder, meta_definitions=None, depth=0):
         subtree = {}
         meta_definitions = meta_definitions.copy()
 
@@ -153,7 +199,7 @@ def make_file_index(force=False):
                 if part in meta_definitions:
                     meta[part] = meta_definitions[part]
             if file.is_dir():
-                subtree[file.name] = recurse(file, meta_definitions=meta_definitions)
+                subtree[file.name] = recurse(file, meta_definitions=meta_definitions, depth=depth+1)
                 subtree[file.name]["_meta"] = meta
             elif file.suffix == ".json":
                 mtime = file.stat().st_mtime_ns
@@ -193,9 +239,12 @@ def make_file_index(force=False):
                         for muid in muids.split('-'):
                             muid_index[muid].add(comment_stem)
 
-
+        if depth == 0:
+            _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
         return subtree
 
+    
+    
     _meta_definitions = {}
     _tree_index = recurse(WORKING_DIR, {})
     _uid_index = uid_index
@@ -250,7 +299,11 @@ class StatsCalculator:
         return copy(self._completion[path])
 
     def calculate_completion(self, translation):
-        translated_count = self.count_strings(translation)
+        if translation['mtime']:
+            translated_count = self.count_strings(translation)
+        else:
+            # This is a virtual file
+            translated_count = 0
         uid, _ = get_uid_and_muids(translation["path"])
         root_lang = get_child_property_value(translation, "root_lang")
         root_edition = get_child_property_value(translation, "root_edition")
@@ -561,8 +614,8 @@ def get_condensed_tree(path, user):
                 highest_permission = max(permission, highest_permission)
 
             if may_publish:
-                result[key]['_publish_state'] = publication_state[path]                
-            
+                if path in publication_state:
+                    result[key]['_publish_state'] = publication_state[path]
 
         return highest_permission, result
 

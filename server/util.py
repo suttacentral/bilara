@@ -26,8 +26,21 @@ def bilarasortkey(string):
         result[-1] = result[-1].zfill(4)
     return result
     
-            
-        
+
+def deep_dict_merge(a, b, replace=False):
+    """ merges b into a, if replace is true then values in b replace those in a """
+    if not isinstance(a, dict) or not isinstance(b, dict):
+        if replace:
+            return b
+        else:
+            return a
+    for k in b:
+        if k in a:
+            a[k] = deep_dict_merge(a[k], b[k], replace)
+        else:
+            a[k] = b[k]
+    return b
+
 def json_load(file):
     with file.open('r') as f:
         try:
