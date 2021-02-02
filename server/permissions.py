@@ -40,7 +40,13 @@ def source_url_to_path(url):
         raise ValueError(f'Invalid Source URL {url}: {reason}')
 
 def build_rules(publications, projects):
-    result = {}
+    result = {
+        '*': {
+            Permission.EDIT: [],
+            Permission.SUGGEST: [],
+            Permission.VIEW: ["*"]
+        }
+    }
     result['_paths'] = {}
     entries = []
 
@@ -110,11 +116,12 @@ def get_base_permissions(path, github_id):
     result = Permission.VIEW
     if github_id not in rules:
         return result
+        
     
     for key in reversed(Permission):
         if key is Permission.NONE:
             continue
-        parts = rules[github_id][key]
+        parts = rules[github_id][key] + rules['*'][key]
         if '*' in parts:
             return key
         else:
