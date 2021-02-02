@@ -416,12 +416,15 @@ h2
   }
 
   _renderProblems(){
-    if (!this._problems || this._problems.length == 0) return html``
+    if (!this._problems || this._problems.length == 0) return html``;
 
     return html`
     
-    <section class="problems">
+    <details class="problems">
     <hr>
+    <summary>Click to show warnings and errors</summary>
+
+    
     <p><span class="dontpanic"></span> Some errors occured while attempting to load the data and require human intervention. You can likely use
     Bilara without issue, except in relation to the files where errors occurred. These errors will almost always be caused by manual edits of JSON files.</p>
     <p>Every user of Bilara will see these errors and it is very likely that you did not introduce the 
@@ -434,7 +437,7 @@ h2
       })
     }
     </div>
-    </section>
+    </details>
     ` 
   }
 
