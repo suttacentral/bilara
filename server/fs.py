@@ -113,7 +113,7 @@ def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_
         root_parent_dir = (WORKING_DIR / root_path)
         files = list(root_parent_dir.glob('**/*.json'))
         print(f'Creating project for {project_id}/{translation_muids} with {len(files)} files')
-        for file in files:
+        for file in sorted(files, key=lambda f: bilarasortkey(str(f))):
             parent_dir = pathlib.Path(translation_path) / file.parent.relative_to(root_parent_dir)
             uid, _ = file.stem.split('_') 
             translation_stem = f'{uid}_{translation_muids}'
