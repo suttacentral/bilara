@@ -94,6 +94,8 @@ class PRBranch(GitBranch):
         for file in files:
             if file.name.startswith('_'):
                 continue
+            if file.stat().st_size < 5:
+                continue
             new_file = self.path / file.relative_to(git_fs.unpublished.path)
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file, new_file)
