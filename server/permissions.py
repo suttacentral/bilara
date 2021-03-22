@@ -93,10 +93,10 @@ def build_rules(publications, projects):
 
 _cached_rules = {}
 
-def get_rules():
+def get_rules(rebuild=False):
     mtime = (publications_file.stat().st_mtime_ns, projects_file.stat().st_mtime_ns)
     rules = _cached_rules.get(mtime)
-    if not rules:
+    if rebuild or not rules:
         _cached_rules.clear()
         _cached_rules[mtime] = rules = build_rules(json_load(publications_file), json_load(projects_file))
         threading.Thread(target=validate_permissions, args=(rules,)).start()
