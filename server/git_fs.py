@@ -67,9 +67,11 @@ def update_files(user, files):
         git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
         finalize_commit()
 
-def githook(webhook_payload, branch_name=unpublished.name):
+def githook(webhook_payload):
     ref = webhook_payload['ref'].split('/')[-1]
-    if ref != branch_name:
+    if ref != unpublished.name:
+        if ref == published.name:
+            published.pull()
         return
     
     added = []
@@ -114,8 +116,9 @@ def get_publication_line_counts():
     return dict(result)
 
 def get_publication_state():
-    published.pull()
-    unpublished.pull()
+    if not GIT_SYNC_ENABLED:
+        published.pull()
+        unpublished.pull()
     published_files = published.get_file_map()
     unpublished_files = unpublished.get_file_map()
 
