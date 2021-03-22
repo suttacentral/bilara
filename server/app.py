@@ -20,6 +20,7 @@ from log import segments_logger, problemsLog
 import git_fs
 import git_pr
 import fs
+import permissions
 from segment_updates import update_segment
 from search import search
 
@@ -250,6 +251,7 @@ def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _ca
 
 def init():
     problemsLog.clear()
+    permissions.get_rules(rebuild=True)
     fs.make_file_index()
 
 

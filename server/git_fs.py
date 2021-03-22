@@ -89,13 +89,11 @@ def githook(webhook_payload, branch_name=unpublished.name):
             finalize_commit()
         git.pull('-Xtheirs')
 
-    if added or removed:
+    if added or removed  or '_project.json' in modified or '_publication.json' in modified:
         import app
         app.init()
-
     
     from search import search
-    #search.files_removed([( filepath, get_deleted_file_data(filepath) ) for filepath in removed])
     search.update_partial(added, modified)
 
 
