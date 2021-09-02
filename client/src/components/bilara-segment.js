@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit-element';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import { classMap } from 'lit-html/directives/class-map';
 import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
@@ -52,6 +53,7 @@ bilara-cell.string {
           const fieldData = this._fields[field],
                 language = fieldData['language'],
                 editable = fieldData.permission == 'EDIT';
+          
           return html`
             <bilara-cell class="string"
               lang="${language ? language['uid'] : undefined}"
@@ -60,7 +62,7 @@ bilara-cell.string {
               ._editable="${ editable }"
               ._value="${this._segment[field] || ''}"
               @focus="${this._focusEvent}"
-            ></bilara-cell>`
+            >${ unsafeHTML(field.match(/root-/) ? '<span>'+this._segment[field]+'</span>' : null) }</bilara-cell>`
         })
       }
 
