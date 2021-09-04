@@ -1,5 +1,4 @@
-import { LitElement, html, css } from 'lit-element';
-
+import { html, css } from 'lit-element';
 
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -114,7 +113,7 @@ span.string
                   @focus="${this._focusEvent}"
                   @input="${this._inputEvent}"
                   @blur="${this._blur}"
-                ></span>
+                ><slot></slot></span>
     ${this.renderStatus()}
                 </div>`
   }
@@ -126,11 +125,15 @@ span.string
       field: String,
       _editable: Boolean,
       _value: String,
+      _root: Boolean,
     }
   }
 
   firstUpdated() {
-    this._setValue(this._value);
+    this._root = !!this.field.match(/root-/);
+    if (!this._root) {
+      this._setValue(this._value);
+    }
     this._committedValue = this._value;
     this._pendingValue = null;
     if (!this._editable) {
