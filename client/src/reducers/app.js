@@ -14,6 +14,7 @@ import {
   UPDATE_DRAWER_STATE,
   UPDATE_PROBLEMS,
   SET_USER_AUTH_TOKEN,
+  UPDATE_PREF,
   UPDATE_ORDERING_PREF,
   UPDATE_TERTIARY_PREF,
   UPDATE_THEME,
@@ -30,7 +31,8 @@ const INITIAL_USER_STATE = {
 const PREF_STATE = {
   ordering: {},
   tertiary: {},
-  theme: false
+  theme: false,
+  showHtml: false,
 }
 
 function getInitialUserState(){
@@ -116,6 +118,15 @@ const appReducer = (state = INITIAL_STATE, action) => {
             avatarUrl: action.avatarUrl
         }
     };
+
+    case UPDATE_PREF:
+      return {
+        ...state,
+        pref: {
+          ...state.pref,
+          [action.key]: action.value
+        }
+      }
 
     case UPDATE_ORDERING_PREF:
       newState = {

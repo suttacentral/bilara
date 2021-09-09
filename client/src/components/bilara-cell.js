@@ -1,4 +1,5 @@
 import { html, css } from 'lit-element';
+import { classMap } from 'lit-html/directives/class-map';
 
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -11,16 +12,30 @@ export class BilaraCell extends connect(store)(BilaraUpdatable){
   static get styles() {
     return css`
     div,
-span.string
+span.string, span.string-html
 {
     position: relative;
-
-    display: inline-flex;
 
     width: 100%;
 }
 
-[contenteditable]
+.root .string {
+  display: inline-flex;
+}
+
+.root .string-html {
+  display: None
+}
+
+.root.show-html .string {
+  display: None;
+}
+
+.root.show-html .string-html {
+  display: inline-flex;
+}
+
+div
 {
     height: 100%;;
     padding: 4px 8px;
@@ -102,20 +117,29 @@ span.string
     box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
 }
 
+
+
+supplied
+  {color: var(--bilara-orange);
+}
+
     `
   }
   render() {
     return html`
-    <div>
-    <span   class="string${ this._editable ? ' editable' : ''}" tabindex="${this._editable == 'true' ? 0 : -1}"
+    <div class="${classMap({'root': this._root, 'show-html': this._showHtml})}">
+    <span class="${classMap({'string': true, 'editable': this._editable})}" tabindex="${this._editable == 'true' ? 0 : -1}"
                   contenteditable="${this._editable == true ? contentEditableValue : 'false'}"
                   @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"
                   @input="${this._inputEvent}"
                   @blur="${this._blur}"
-                ><slot></slot></span>
+                  @mousedown="${this._click}"
+                ></span>
+    <span class="string-html" @mousedown="${this._click}"></span>
     ${this.renderStatus()}
-                </div>`
+    
+    </div>`
   }
 
   static get properties(){
@@ -126,13 +150,20 @@ span.string
       _editable: Boolean,
       _value: String,
       _root: Boolean,
+      _showHtml: Boolean,
     }
+  }
+
+  stateChanged(state) {
+    this._showHtml = state.app.pref.showHtml;
   }
 
   firstUpdated() {
     this._root = !!this.field.match(/root-/);
-    if (!this._root) {
-      this._setValue(this._value);
+    
+    this._setValue(this._value);
+    if (this._root) {
+      this.shadowRoot.querySelector('span.string-html').innerHTML = this._value;
     }
     this._committedValue = this._value;
     this._pendingValue = null;
@@ -160,6 +191,39 @@ span.string
           this._status = 'modified';
         }
       }
+    }
+  }
+
+  _click(e){
+    if (!e.ctrlKey) return
+    if (!this._editable) {
+      const target = e.path[0];
+      let result;
+      if (target.tagName == 'SPAN') {
+        result = target.innerHTML;
+      } else {
+        result = target.outerHTML;
+      }
+      let active = document.activeElement;
+      let shadowRoot;
+      while (true) {
+        if (active.classList.contains('editable')) {
+          break
+        } 
+        shadowRoot = active.shadowRoot
+        if (!shadowRoot) return
+        active = shadowRoot.activeElement;
+        if (!active) return
+      }
+      e.preventDefault();
+      e.stopPropagation();
+
+      let sel = shadowRoot.getSelection();
+      
+      let range = sel.getRangeAt(0);
+      let fragment = document.createTextNode(result);
+      range.insertNode(fragment)
+          
     }
   }
 
