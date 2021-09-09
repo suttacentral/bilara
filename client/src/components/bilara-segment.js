@@ -26,7 +26,7 @@ div:focus-within {
 bilara-cell {
   outline: 0px solid transparent;
 }
-bilara-cell.string {
+bilara-cell.string, bilara-cell.string-html {
   padding: 0 8px;
   max-width: 40rem;
   margin: 0 16px;
@@ -62,7 +62,7 @@ bilara-cell.string {
               ._editable="${ editable }"
               ._value="${this._segment[field] || ''}"
               @focus="${this._focusEvent}"
-            >${ unsafeHTML(field.match(/root-/) ? '<span>'+this._segment[field]+'</span>' : null) }</bilara-cell>`
+            ></bilara-cell>`
         })
       }
 
