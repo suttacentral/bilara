@@ -354,8 +354,8 @@ details a
             <li>Your translations are securely saved at Github using git version control, which keeps a full record of every change made. In emergency, contact admins, and they will restore your text if possible.</li>
             <li>Github has a <a href="https://github.com/suttacentral/bilara-data/pulse" target="_blank">range of fancy stats</a>.</li>
             <li>You can use a limited range of markdown: <ul>
-            <li><code>*asterisks*</code> for quoting foreign words (esp. Pali) (= <code>&lt;i&gt;</code>).</li>
-            <li><code>_underscore_</code> to emphasize words (= <code>&lt;em&gt;</code>).</li>
+            <li><code>_underscore_</code> for quoting foreign words (esp. Pali) (= <code>&lt;i&gt;</code>).</li>
+            <li><code>*asterisks*</code> to emphasize words (= <code>&lt;em&gt;</code>).</li>
             <li><code>**double asterisks**</code> for things that stand out, like numbers or headwords. You probably don't want to use this (= <code>&lt;b&gt;</code>).</li>
             </ul>
             </li>
