@@ -4,7 +4,7 @@ import { PageViewElement } from './page-view-element.js';
 
 import '@lion/dialog/lion-dialog.js';
 
-import './bilara-dialog.js';
+import './bilara-columns-dialog.js';
 
 import './bilara-segment.js';
 import './bilara-search.js';
@@ -24,10 +24,9 @@ import { store } from '../store.js';
 import { segmentData } from '../reducers/segment-data.js';
 import { searchReducer } from '../reducers/search.js';
 
-import { updateOrdering, updateTertiary } from '../actions/app.js';
+import { updateOrdering, updatePref } from '../actions/app.js';
 
-import { getChildMatchingKey } from '../util.js';
-import { sortByKeyFn, storageLoad, storageSave, setEquality } from '../util.js';
+import { sortByKeyFn } from '../util.js';
 
 import { featureFlags } from '../util.js';
 
@@ -278,6 +277,9 @@ lion-dialog
               >
               <span class="name" data-field="${fieldName}">${fieldName}</span>
               <span class="permission" title="You may ${permission}.">${permission}</span>
+              ${ fieldName.match(/^root/) ?
+              html`<label><input type="checkbox" class="show-html" @input="${this._showHtmlHandler}"> show html</label>` : html``
+              }
               </span>`
             })}
             <lion-dialog .config=${{ hidesOnEsc: true}}>
@@ -431,6 +433,11 @@ lion-dialog
   _dragstartHandler(event) {
     const field = this._getField(event);
     event.dataTransfer.setData("fromField", field);
+  }
+
+  _showHtmlHandler(event) {
+    const checked = event.target.checked;
+    store.dispatch(updatePref('showHtml', checked))
   }
 
   _swapFields(event) {

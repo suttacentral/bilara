@@ -19,6 +19,7 @@ export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 export const UPDATE_PROBLEMS = 'UPDATE_PROBLEMS';
 export const SET_USER_AUTH_TOKEN = 'SET_USER_AUTH_TOKEN';
 
+export const UPDATE_PREF = 'UPDATE_PREF';
 export const UPDATE_ORDERING_PREF = 'UPDATE_ORDERING_PREF';
 export const UPDATE_TERTIARY_PREF = 'UPDATE_TERTIARY_PREF';
 export const UPDATE_THEME = 'UPDATE_THEME';
@@ -124,6 +125,14 @@ export const getProblems = () => (dispatch) => {
         problems: data
       } );
   }).catch( (e) => {console.log(e);})
+}
+
+export const updatePref = (key, value) => (dispatch) => {
+  return dispatch({
+    type: UPDATE_PREF,
+    key,
+    value
+  })
 }
 
 export const updateOrdering = (key, value) => (dispatch) => {
