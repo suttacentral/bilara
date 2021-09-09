@@ -20,19 +20,19 @@ span.string, span.string-html
 }
 
 .root .string {
-  display: inline-flex;
-}
-
-.root .string-html {
-  display: None
-}
-
-.root.show-html .string {
   display: None;
 }
 
+.root .string-html {
+  display: inline-block
+}
+
+.root.show-html .string {
+  display: inline-block;
+}
+
 .root.show-html .string-html {
-  display: inline-flex;
+  display: None;
 }
 
 div
