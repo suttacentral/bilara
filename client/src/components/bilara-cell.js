@@ -45,7 +45,9 @@ div
 
 .string.editable
 {
-  font-family: var(--bilara-serif)
+  font-family: var(--bilara-serif);
+  
+  display: block;
 }
 
 .string.editable:focus
