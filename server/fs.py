@@ -6,7 +6,11 @@ import logging
 from config import config, WORKING_DIR
 from util import humansortkey, bilarasortkey, deep_dict_merge
 from copy import copy, deepcopy
-from threading import Event
+from threading import Event, Lock
+
+from concurrent.futures import ThreadPoolExecutor, Future
+
+import cachetools
 
 from log import problemsLog
 
@@ -16,7 +20,7 @@ from permissions import get_permissions, Permission
 
 from util import json_load
 
-
+executor = ThreadPoolExecutor(max_workers=2)
 
 saved_state_file = pathlib.Path("./.saved_state.pickle")
 
@@ -569,12 +573,22 @@ def sum_counts(subtree):
 
 
 
-
+cache = cachetools.TTLCache(5*1000*1000, ttl=60)
+cache_lock = Lock()
 
 from util import profile
 
-@profile(sort_args=['cumulative'])
+
 def get_condensed_tree(path, user):
+    key = str(path) + str(sorted(user.items()))
+    with cache_lock:
+        future = cache.get(key)
+        if not future:
+            future = cache[key] = executor.submit(get_condensed_tree_bg, path, user)
+    return future.result()
+
+@profile(sort_args=['cumulative'])
+def get_condensed_tree_bg(path, user):
     print(f"Using user {user}")
     if not _build_started.is_set():
         make_file_index()

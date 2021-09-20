@@ -6,8 +6,12 @@ from fs import get_file_path, get_file, get_parent_uid, is_id_legal
 from util import json_load, json_save
 from permissions import Permission, get_permissions
 
+from concurrent.futures import ThreadPoolExecutor, wait
+
 from search import search
 
+
+executor = ThreadPoolExecutor(max_workers=1)
 
 def update_segment(segment, user):
     """
@@ -67,15 +71,19 @@ def update_segment(segment, user):
         except Exception:
             logging.exception(f"could not write segment: {segment}")
             return {"error": "could not write file"}
-        try:
-            if config.GIT_COMMIT_ENABLED:
-                git_fs.update_file(filepath, user)
-        except Exception:
-            logging.exception("Git Commit Failed")
 
-        try:
-            search.update_segment(segment)
-        except Exception:
-            logging.exception("Could not update TM for segment: {segment}")
-
+        executor.submit(background_update, filepath, user, segment)
         return result
+
+def background_update(filepath, user, segment):
+    try:
+        if config.GIT_COMMIT_ENABLED:
+            git_fs.update_file(filepath, user)
+    except Exception:
+        logging.exception("Git Commit Failed")
+
+    try:
+        search.update_segment(segment)
+    except Exception:
+        logging.exception("Could not update TM for segment: {segment}")
+
