@@ -1,5 +1,5 @@
 import arango
-from arango import ArangoClient, ViewDeleteError
+from arango import ViewDeleteError
 
 import pathlib
 import json
@@ -20,6 +20,8 @@ from .highlight import highlight_matching
 from permissions import get_permissions, Permission
 
 import fs
+
+from arango_common import get_db
 
 
 
@@ -45,9 +47,8 @@ def grouper(iterable, n):
 
 class Search:    
     def __init__(self):
-        client = ArangoClient()
         self.version = 1.2
-        self.db = client.db(username="bilara", password="bilara", name="bilara")
+        self.db = get_db()
         self._cursor_cache = TTLCache(1000, 3600)
         self._build_complete = Event()
         self._verbose = True
@@ -371,24 +372,44 @@ class Search:
             constructed_query.bind_vars[f'muids{n}'] = muids
             if query or mandatory:
                 parts.extend([
-                    tab * n + f'FOR doc{n} IN strings_view',
+                    tab * n + f'FOR doc{n} IN strings_ngram_view',
                     tab * (n + 1) + f'SEARCH ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc{n}.muids, "splitter")',
                 ])
                 if query:
-                     parts.append(tab * (n + 1)  + f'AND ANALYZER(PHRASE(doc{n}.string, @query{n}), "normalizer")')
+                    
+                    literal = query.startswith('"') and query.endswith('"')
+                    if literal:
+                        query_parts = [query[1:-1]]
+                    else:
+                        query_parts = query.split()
+                    
+                    inner_parts = []
+                    for j, part in enumerate(query_parts):
+                        if len(part) > 5:
+                            inner_parts.append(f'PHRASE(doc{n}.string, TOKENS(@query{n}_{j}, "ngrams5"))')
+                        else:
+                            inner_parts.append(f'STARTS_WITH(doc{n}.string, @query{n}_{j})')
+                        constructed_query.bind_vars[f'query{n}_{j}'] = part
+                    
+                    inner_query = ' AND '.join(inner_parts)
+                    
+                    parts.append(tab * (n + 1) + f'AND ANALYZER({inner_query}, "ngrams5")')
+
+                    constructed_query.bind_vars[f'regex{n}'] = r'.{0,2}'.join(query_parts)
+                    parts.append(tab * (n + 1) + f'LET boost{n} = REGEX_TEST(doc{n}.string, @regex{n}, TRUE) ? 2 : 1')
+                    parts.append(tab * (n + 1) + f'SORT boost{n} * TFIDF(doc{n}) DESC')
+                    
                 if n == 0:
                     if segment_id_filter:
                         parts.append(tab * (n + 1) + f'FILTER doc{n}.segment_id LIKE @segment_id_filter')
                         constructed_query.bind_vars['segment_id_filter'] = segment_id_filter.lower()
                 if n > 0:
                     parts.append(tab * (n + 1) + f'AND doc{n}.segment_id == doc0.segment_id')
-                if query:
-                    constructed_query.bind_vars[f'query{n}'] = query
                 return_parts.append(tab + f'@muids{n}: doc{n}.string')
             else:
                 return_parts.append(f'''
   @muids{n}: FIRST(
-    FOR doc IN strings_view
+    FOR doc IN strings_ngram_view
       SEARCH doc.segment_id == doc0.segment_id
         AND ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc.muids, "splitter")
       LIMIT 1
