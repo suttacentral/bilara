@@ -1,4 +1,5 @@
 import sys
+import time
 import json
 import pickle
 import pathlib
@@ -23,8 +24,7 @@ from util import json_load
 executor = ThreadPoolExecutor(max_workers=2)
 
 saved_state_file = pathlib.Path("./.saved_state.pickle")
-
-
+state_build_lock_file = pathlib.Path('./saved_state.lock')
 
 class NoMatchingEntry(Exception):
     pass
@@ -84,27 +84,29 @@ def save_state():
         "_file_index",
         "_meta_definitions",
         "_special_uid_mapping",
+        "_legal_ids",
     )
+    
     with saved_state_file.open("wb") as f:
         pickle.dump({k: globals()[k] for k in stored}, f)
 
 
 def load_state():
     if not saved_state_file.exists():
-        return
+        return False
     try:
         with saved_state_file.open("rb") as f:
             globals().update(pickle.load(f))
         print("Loaded saved file index")
-        _build_complete.set()
+        return True
     except Exception:
         try:
             saved_state_file.unlink()
         except FileNotFoundError:
             pass
+    
+    return False
 
-
-_build_started = Event()
 _build_complete = Event()
 
 def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_definitions):
@@ -151,7 +153,6 @@ def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_
                 parent_obj[translation_stem] = obj
 
 def make_file_index(force=False):
-    _build_started.set()
     global _tree_index
     global _uid_index
     global _muid_index
@@ -160,107 +161,118 @@ def make_file_index(force=False):
     global _special_uid_mapping
     global _legal_ids
 
-    if not force:
-        load_state()
 
-    print("Building file index")
+    if state_build_lock_file.exists():
+        # We arrived here because another process started the build
+        # let that process do the work
+        for i in range(0, 100):
+            time.sleep(1)
+            if not state_build_lock_file.exists():
+                if load_state():
+                    _build_complete.set()
+                    return
+        # Should not normally reach here, but if so fall through and do the build
+        # regardless after 100 seconds of waiting.
+    try:
+        state_build_lock_file.touch()
+        _muid_index = muid_index = {}
+        _uid_index = uid_index = {}
+        _file_index = file_index = {}
+        _legal_ids = set()
 
-    _muid_index = muid_index = {}
-    _uid_index = uid_index = {}
-    _file_index = file_index = {}
-    _legal_ids = set()
+        for file in sorted(WORKING_DIR.glob('root/**/*.json')):
+            with file.open() as f:
+                data = json.load(f)
+                _legal_ids.update(data.keys())
 
-    for file in sorted(WORKING_DIR.glob('root/**/*.json')):
-        with file.open() as f:
-            data = json.load(f)
-            _legal_ids.update(data.keys())
+        def recurse(folder, meta_definitions=None, depth=0):
+            subtree = {}
+            meta_definitions = meta_definitions.copy()
 
-    def recurse(folder, meta_definitions=None, depth=0):
-        subtree = {}
-        meta_definitions = meta_definitions.copy()
+            metafiles = set(folder.glob("_*.json"))
+            if metafiles:
+                for metafile in sorted(metafiles, key=humansortkey):
+                    file_data = json_load(metafile)
+                    meta_definitions.update(file_data)
 
-        metafiles = set(folder.glob("_*.json"))
-        if metafiles:
-            for metafile in sorted(metafiles, key=humansortkey):
-                file_data = json_load(metafile)
-                meta_definitions.update(file_data)
+                    for k, v in file_data.items():
+                        if k not in _meta_definitions:
+                            _meta_definitions[k] = v
 
-                for k, v in file_data.items():
-                    if k not in _meta_definitions:
-                        _meta_definitions[k] = v
+            for file in sorted(folder.glob("*"), key=humansortkey):
 
-        for file in sorted(folder.glob("*"), key=humansortkey):
+                if file.name.startswith("."):
+                    continue
+                if file in metafiles:
+                    continue
+                long_id = file.stem
+                meta = {}
+                for part in file.parts:
+                    if part.endswith(".json"):
+                        part = part[:-5]
+                    if part in meta_definitions:
+                        meta[part] = meta_definitions[part]
+                if file.is_dir():
+                    subtree[file.name] = recurse(file, meta_definitions=meta_definitions, depth=depth+1)
+                    subtree[file.name]["_meta"] = meta
+                elif file.suffix == ".json":
+                    mtime = file.stat().st_mtime_ns
+                    path = str(file.relative_to(WORKING_DIR))
+                    obj = subtree[long_id] = {"path": path, "mtime": mtime, "_meta": meta}
+                    if "_" in long_id:
+                        uid, muids = get_uid_and_muids(file)
+                    else:
+                        uid = file.name if file.is_dir() else file.stem
+                        muids = None
+                    obj["uid"] = uid
+                    if uid not in uid_index:
+                        uid_index[uid] = set()
+                    uid_index[uid].add(long_id)
+                    if long_id in file_index:
+                        logging.error(f"{str(file)} not unique")
+                    file_index[long_id] = obj
+                    if muids:
+                        for muid in muids:
+                            if muid not in muid_index:
+                                muid_index[muid] = set()
+                            muid_index[muid].add(long_id)
+                    
+                        # Create Virtual Files
+                        if 'translation' in muids:
+                            uid, muids = long_id.split('_')
+                            muids = muids.replace('translation', 'comment')
+                            comment_stem = f"{uid}_{muids}"
+                            if comment_stem in uid_index:
+                                continue
+                            parent = pathlib.Path('comment') / file.relative_to(WORKING_DIR / 'translation').parent
+                            virtual_file = parent / (comment_stem + '.json')
+                            meta = {part: meta_definitions[part] for part in muids.split('-') if part in meta_definitions}
+                            obj = {"uid": uid, "path": str(virtual_file), "mtime": None, "_meta": meta}
+                            uid_index[uid].add(comment_stem)
+                            file_index[comment_stem] = obj
+                            for muid in muids.split('-'):
+                                muid_index[muid].add(comment_stem)
 
-            if file.name.startswith("."):
-                continue
-            if file in metafiles:
-                continue
-            long_id = file.stem
-            meta = {}
-            for part in file.parts:
-                if part.endswith(".json"):
-                    part = part[:-5]
-                if part in meta_definitions:
-                    meta[part] = meta_definitions[part]
-            if file.is_dir():
-                subtree[file.name] = recurse(file, meta_definitions=meta_definitions, depth=depth+1)
-                subtree[file.name]["_meta"] = meta
-            elif file.suffix == ".json":
-                mtime = file.stat().st_mtime_ns
-                path = str(file.relative_to(WORKING_DIR))
-                obj = subtree[long_id] = {"path": path, "mtime": mtime, "_meta": meta}
-                if "_" in long_id:
-                    uid, muids = get_uid_and_muids(file)
-                else:
-                    uid = file.name if file.is_dir() else file.stem
-                    muids = None
-                obj["uid"] = uid
-                if uid not in uid_index:
-                    uid_index[uid] = set()
-                uid_index[uid].add(long_id)
-                if long_id in file_index:
-                    logging.error(f"{str(file)} not unique")
-                file_index[long_id] = obj
-                if muids:
-                    for muid in muids:
-                        if muid not in muid_index:
-                            muid_index[muid] = set()
-                        muid_index[muid].add(long_id)
-                
-                    # Create Virtual Files
-                    if 'translation' in muids:
-                        uid, muids = long_id.split('_')
-                        muids = muids.replace('translation', 'comment')
-                        comment_stem = f"{uid}_{muids}"
-                        if comment_stem in uid_index:
-                            continue
-                        parent = pathlib.Path('comment') / file.relative_to(WORKING_DIR / 'translation').parent
-                        virtual_file = parent / (comment_stem + '.json')
-                        meta = {part: meta_definitions[part] for part in muids.split('-') if part in meta_definitions}
-                        obj = {"uid": uid, "path": str(virtual_file), "mtime": None, "_meta": meta}
-                        uid_index[uid].add(comment_stem)
-                        file_index[comment_stem] = obj
-                        for muid in muids.split('-'):
-                            muid_index[muid].add(comment_stem)
+            if depth == 0:
+                _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
+            return subtree
 
-        if depth == 0:
-            _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
-        return subtree
+        
+        
+        _meta_definitions = {}
+        _tree_index = recurse(WORKING_DIR, {})
+        _uid_index = uid_index
+        _muid_index = muid_index
+        _file_index = file_index
+        _special_uid_mapping = make_special_uid_mapping()
 
-    
-    
-    _meta_definitions = {}
-    _tree_index = recurse(WORKING_DIR, {})
-    _uid_index = uid_index
-    _muid_index = muid_index
-    _file_index = file_index
-    _special_uid_mapping = make_special_uid_mapping()
-
-    for v in file_index.values():
-        v["_meta"] = invert_meta(v["_meta"])
-    print("File Index Built")
-    save_state()
-    _build_complete.set()
+        for v in file_index.values():
+            v["_meta"] = invert_meta(v["_meta"])
+        print("File Index Built")
+        save_state()
+        _build_complete.set()
+    finally:
+        state_build_lock_file.unlink()
     stats_calculator.reset()
 
 
@@ -590,8 +602,6 @@ def get_condensed_tree(path, user):
 @profile(sort_args=['cumulative'])
 def get_condensed_tree_bg(path, user):
     print(f"Using user {user}")
-    if not _build_started.is_set():
-        make_file_index()
     _build_complete.wait()
     tree = _tree_index
     for part in path:
