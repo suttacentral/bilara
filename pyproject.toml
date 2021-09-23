@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "bilara-server"
+name = "server"
 version = "0.1.0"
 description = ""
 authors = ["Blake Walsh <blakeofthepath@gmail.com>"]
+
+[tool.poetry.scripts]
+migrate = "server.arango_common:run_migrations"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -35,9 +38,6 @@ ipython = "^7.14.0"
 flask-shell-ipython = "^0.4.1"
 flake8 = "^3.8.1"
 black = {version = "^19.10b0", allow-prereleases = true}
-
-[tool.poetry.scripts]
-dev = "flask run"
 
 [build-system]
 requires = ["poetry>=0.12"]
