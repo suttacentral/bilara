@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "server"
+name = "bilara_server"
 version = "0.1.0"
 description = ""
 authors = ["Blake Walsh <blakeofthepath@gmail.com>"]

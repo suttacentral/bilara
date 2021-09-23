@@ -381,6 +381,7 @@ class Search:
                     tab * n + f'FOR doc{n} IN strings_ngram_view',
                     tab * (n + 1) + f'SEARCH ANALYZER(TOKENS(@muids{n}, "splitter") ALL IN doc{n}.muids, "splitter")',
                 ])
+                postpend = []
                 if query:
                     
                     literal = query.startswith('"') and query.endswith('"')
@@ -394,7 +395,7 @@ class Search:
                         if len(part) > 5:
                             inner_parts.append(f'PHRASE(doc{n}.string, TOKENS(@query{n}_{j}, "ngrams5"))')
                         else:
-                            inner_parts.append(f'STARTS_WITH(doc{n}.string, TOKENS(@query{n}_{j}, "simple-normalizer")')
+                            inner_parts.append(f'STARTS_WITH(doc{n}.string, TOKENS(@query{n}_{j}, "simple-normalizer"))')
                         constructed_query.bind_vars[f'query{n}_{j}'] = part
                     
                     inner_query = ' AND '.join(inner_parts)
@@ -402,8 +403,8 @@ class Search:
                     parts.append(tab * (n + 1) + f'AND ANALYZER({inner_query}, "ngrams5")')
 
                     constructed_query.bind_vars[f'regex{n}'] = r'.{0,2}'.join(query_parts)
-                    parts.append(tab * (n + 1) + f'LET boost{n} = REGEX_TEST(doc{n}.string, @regex{n}, TRUE) ? 2 : 1')
-                    parts.append(tab * (n + 1) + f'SORT boost{n} * TFIDF(doc{n}) DESC')
+                    postpend.append(tab * (n + 1) + f'LET boost{n} = REGEX_TEST(doc{n}.string, @regex{n}, TRUE) ? 2 : 1')
+                    postpend.append(tab * (n + 1) + f'SORT boost{n} * TFIDF(doc{n}) DESC')
                     
                 if n == 0:
                     if segment_id_filter:
@@ -411,6 +412,7 @@ class Search:
                         constructed_query.bind_vars['segment_id_filter'] = segment_id_filter.lower()
                 if n > 0:
                     parts.append(tab * (n + 1) + f'AND doc{n}.segment_id == doc0.segment_id')
+                parts.extend(postpend)
                 return_parts.append(tab + f'@muids{n}: doc{n}.string')
             else:
                 return_parts.append(f'''
