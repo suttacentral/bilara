@@ -546,4 +546,3 @@ class Search:
             })
         return result
 
-def index_tm
