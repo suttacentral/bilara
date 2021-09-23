@@ -21,7 +21,9 @@ from permissions import get_permissions, Permission
 
 import fs
 
-from arango_common import get_db
+
+
+from arango_common import get_db, import_background
 
 
 
@@ -43,6 +45,7 @@ def grouper(iterable, n):
         if not chunk:
             return
         yield chunk
+
 
 
 class Search:    
@@ -178,6 +181,7 @@ class Search:
         }
 
         self.insert_or_update(segment['field'], doc)
+        self.insert_or_update('strings', doc)
 
     def execute(self, query, **kwargs):
         #print("=== Running Query ===")
@@ -219,12 +223,14 @@ class Search:
             for chunk in grouper((t[1] for t in group), 1000):
                 if not db.has_collection(collection_name):
                     db.create_collection(collection_name)
-                result = db[collection_name].import_bulk(
-                    chunk, on_duplicate="replace", halt_on_error=False
-                )
-                if result["errors"] > 0:
-                    print(result)
-
+                
+                import_background(db[collection_name], chunk)
+                strings_chunk = []
+                for doc in chunk:
+                    _key = doc.pop('_key')
+                    doc['_key'] = f"{doc['muids']}_{doc['segment_id']}"
+                    strings_chunk.append(doc)
+                import_background(db['strings'], strings_chunk)
         
         self.collection_names = collection_names
         print('Updating Search Views')
@@ -388,7 +394,7 @@ class Search:
                         if len(part) > 5:
                             inner_parts.append(f'PHRASE(doc{n}.string, TOKENS(@query{n}_{j}, "ngrams5"))')
                         else:
-                            inner_parts.append(f'STARTS_WITH(doc{n}.string, @query{n}_{j})')
+                            inner_parts.append(f'STARTS_WITH(doc{n}.string, TOKENS(@query{n}_{j}, "simple-normalizer")')
                         constructed_query.bind_vars[f'query{n}_{j}'] = part
                     
                     inner_query = ' AND '.join(inner_parts)
@@ -539,4 +545,5 @@ class Search:
                 'segments': segments
             })
         return result
-                
+
+def index_tm

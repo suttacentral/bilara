@@ -52,9 +52,6 @@ def load_data():
             futures.add(executor.submit(strings_coll.insert_many, docs.copy()))
     
     completed, futures = wait(futures)
-
-        
-    
     print(f'\nComplete in {monotonic()-start} seconds')
 
 
