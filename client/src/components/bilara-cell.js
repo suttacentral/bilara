@@ -17,6 +17,8 @@ span.string, span.string-html
     position: relative;
 
     width: 100%;
+    
+    display: inline-block;
 }
 
 .root .string {
