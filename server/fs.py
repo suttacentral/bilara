@@ -430,7 +430,7 @@ def update_result(result, long_id, entry, role=None, user=None):
     field = "-".join(muids)
 
     entry = deepcopy(entry)
-    entry["permission"] = get_permissions(entry["path"], github_id=user).name
+    entry["permission"] = get_permissions(entry["path"], github_id=user['login']).name
     entry["editable"] = True if role == "target" else False
     result["fields"][field] = entry
     result["fields"][field]["role"] = role or muids[0]
@@ -616,7 +616,7 @@ def get_condensed_tree_bg(path, user):
         for key, value in subtree.items():
             path = value.get("path", "")
             if path.endswith(".json"):
-                result[key] = stats_calculator.get_completion(value)
+                result[key] = {}
                 result[key]["_type"] = "document"
                 permission = get_permissions(path, user["login"])
                 if not highest_permission:
@@ -624,11 +624,12 @@ def get_condensed_tree_bg(path, user):
                 else:
                     highest_permission = max(highest_permission, permission)
                 result[key]["_permission"] = permission.name
+                if permission == permission.EDIT:
+                    result[key].update(stats_calculator.get_completion(value))
 
             elif key.startswith("_meta"):
                 continue
             else:
-                
                 path = '/'.join(parents + [key])
                 dir_permission = get_permissions(path, user["login"])
                 may_publish = dir_permission == Permission.EDIT

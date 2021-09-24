@@ -1,5 +1,5 @@
 import logging
-
+import time
 from urllib.parse import urlencode
 from flask import (
     Flask,
@@ -16,7 +16,7 @@ from config import config
 import import_export
 
 import auth
-from log import segments_logger, problemsLog
+from log import segments_logger, search_query_logger, problemsLog
 import git_fs
 import git_pr
 import fs
@@ -82,6 +82,8 @@ def tm_get():
 def general_search():
     data = request.get_json()
 
+
+
     query = []
     source_field = data['source-field']
     if source_field:
@@ -107,7 +109,11 @@ def general_search():
     user = get_user_details()
     filter = data.get('uid-filter')
 
+    
+
+    start = time.monotonic()
     result = search.search_query(query, 0, 50, segment_id_filter=filter, user=user)
+    search_query_logger.info(f'{time.monotonic()-start}: {query}')
 
     return jsonify(result)
 

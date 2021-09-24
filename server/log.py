@@ -25,7 +25,7 @@ def create_logger(file, format):
     return logger
 
 segments_logger = create_logger('log/segments.log', '{message}')
-
+search_query_logger = create_logger('log/queries.log', '{message}')
 
 class ProblemLogger:
     def __init__(self, filename, reset_on_restart=True):

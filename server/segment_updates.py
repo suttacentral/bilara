@@ -42,7 +42,7 @@ def update_segment(segment, user):
 
     file = get_file(filepath)
 
-    permission = get_permissions(filepath, user)
+    permission = get_permissions(filepath, user['login'])
     if permission != Permission.EDIT:
         logging.error("User not allowed to edit")
         return {"error": "Inadequate Permission"}
