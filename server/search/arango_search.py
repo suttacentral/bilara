@@ -181,6 +181,7 @@ class Search:
         }
 
         self.insert_or_update(segment['field'], doc)
+        doc['_key'] = f"{doc['muids']}_{doc['segment_id']}"
         self.insert_or_update('strings', doc)
 
     def execute(self, query, **kwargs):
