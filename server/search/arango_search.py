@@ -386,10 +386,13 @@ class Search:
                 if query:
                     
                     literal = query.startswith('"') and query.endswith('"')
+                    
                     if literal:
                         query_parts = [query[1:-1]]
                     else:
+                        query = regex.sub(r'[^\w\s]', '', query)
                         query_parts = query.split()
+                        
                     
                     inner_parts = []
                     for j, part in enumerate(query_parts):
