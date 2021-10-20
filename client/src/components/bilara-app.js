@@ -342,7 +342,7 @@ details a
       <p>Before you begin, read the <a href='https://github.com/suttacentral/bilara-data/wiki/SuttaCentral-translation-style-guide'>Translation Style Guide</a>.</p>
       <p><b>Basic usage</b>. For more details see the <a href='https://github.com/suttacentral/bilara-data/wiki/Guide-for-translators'>Guide For Translators</a>.</p>
       <ol>
-      <li>Navigate to a text. (Bold items in navigation are the ones you can edit.)</li>
+      <li>Navigate to a text. (<b>Bold</b> items are the ones you can edit.)</li>
       <li>Click on the translation column.</li>
       <li> Write the translation for that segment.</li>
       <li>If the Translation Memory (TM) shows a match, you can click it and modify as needed.</li>
