@@ -339,7 +339,8 @@ details a
       <summary>How to</summary>
       <div>
       <p>Bilara is a Computer Assisted Translation (CAT) webapp built by SuttaCentral to help translate Buddhist scripture.</p>
-      <b>Basic usage</b>
+      <p>Before you begin, read the <a href='https://github.com/suttacentral/bilara-data/wiki/SuttaCentral-translation-style-guide'>Translation Style Guide</a>.</p>
+      <p><b>Basic usage</b>. For more details see the <a href='https://github.com/suttacentral/bilara-data/wiki/Guide-for-translators'>Guide For Translators</a>.</p>
       <ol>
       <li>Navigate to a text. (Bold items in navigation are the ones you can edit.)</li>
       <li>Click on the translation column.</li>
@@ -349,7 +350,7 @@ details a
       <li>Repeat until finished!</li>
       </ol>
       <b>Some tips</b>
-      <ul>
+      <ul>   
             <li>Write plain text. Don’t input anything other than plain text.</li>
             <li>Your translations are securely saved at Github using git version control, which keeps a full record of every change made. In emergency, contact admins, and they will restore your text if possible.</li>
             <li>Github has a <a href="https://github.com/suttacentral/bilara-data/pulse" target="_blank">range of fancy stats</a>.</li>
