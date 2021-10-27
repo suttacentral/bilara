@@ -91,6 +91,10 @@ class PRBranch(GitBranch):
             print(f'Using {files}')
         if not files:
             logging.error(f'No files copied for {self.relative_path}')
+        else:
+            self.copy_these_files(files)
+
+    def copy_these_files(self, files):
         for file in files:
             if file.name.startswith('_'):
                 continue
@@ -100,8 +104,14 @@ class PRBranch(GitBranch):
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file, new_file)
             self.repo.git.add(str(new_file))
+
+    def delete_these_files(self, files):
+        for file in files:
+            pub_file = self.path / file.relative_to(git_fs.unpublished.path)
+            if pub_file.exists():
+                self.repo.git.rm(pub_file)
     
-    def create_pr(self):
+    def create_pr(self, msg=None, title=None):
         if not GIT_SYNC_ENABLED:
             msg = 'Not creating PR because GIT_SYNC_ENABLED is False'
             print(msg)
@@ -112,15 +122,19 @@ class PRBranch(GitBranch):
             pr = gh_repo.get_pull(existing[self.name]['number'])
             pr.update_branch()
         else:
-            pr = gh_repo.create_pull(
-                title=f"New translations for {str(self.relative_path)}",
-                body=f'''
+            if msg is None:
+                msg = f'''
 Request made by {user['login'] if user else '???'}
 
 Please do not modify this branch directly. Changes should be
 made via the Bilara Translation App and the Pull Request
 updated from Bilara.
-''',
+'''
+            if title is None:
+                title = f"New translations for {str(self.relative_path)}"
+            pr = gh_repo.create_pull(
+                title=title,
+                body=msg,
                 head=self.name,
                 base=git_fs.published.name)
             pr_log.set(self.name, {'number': pr.number, 'url': pr.html_url, 'path': str(self.relative_path)})
