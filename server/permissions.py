@@ -22,8 +22,6 @@ publications_file = WORKING_DIR / publications_file_name
 projects_file_name = '_project.json'
 projects_file = WORKING_DIR / projects_file_name
 
-with publications_file.open() as f:
-    pass
     
 def source_url_to_path(url):
     prefix_rex = regex.compile(r"https://github.com/[\w-]+/[\w-]+/[\w-]+/[\w-]+/(.*)")

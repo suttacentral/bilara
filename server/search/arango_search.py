@@ -309,6 +309,7 @@ class Search:
                         "segment_id": segment_id,
                         "string": string,
                         "muids": muids,
+                        "filepath": str(file.relative_to(WORKING_DIR)),
                     },
                 )
 

@@ -20,6 +20,7 @@ import git_fs
 from permissions import get_permissions, Permission
 
 from util import json_load
+from projects import get_projects
 
 executor = ThreadPoolExecutor(max_workers=2)
 
@@ -110,9 +111,7 @@ def load_state():
 _build_complete = Event()
 
 def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_definitions):
-    from permissions import projects_file
-
-    for project_id, entry in json_load(projects_file).items():
+    for project_id, entry in get_projects().items():
         root_path = entry['root_path']
         translation_path = entry['translation_path']
         translation_muids = entry['translation_muids']
