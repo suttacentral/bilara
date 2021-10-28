@@ -145,8 +145,7 @@ FOR doc IN historic_ngram_view
     RETURN doc
 """
 
-def restore_site_from_history(root_files):
-  try:
+def generate_translation_mapping(root_files):
     langs_seen = set()
     db = get_db()
     translation_mapping = {}
@@ -168,7 +167,9 @@ def restore_site_from_history(root_files):
             if file not in translation_mapping:
                 translation_mapping[file] = {}
             translation_mapping[file][lang] = translation_file
-    
+
+def restore_site_from_history(root_files):
+    translation_mapping = generate_translation_mapping(root_files)
     rv = {}
     for root_file, translation_files in translation_mapping.items():
         root_data = root_files[root_file]
@@ -191,13 +192,7 @@ def restore_site_from_history(root_files):
         for lang, translation_file in translation_files.items():
             if lang in translation_data:
                 rv[translation_file] = translation_data[lang]
-    return rv
-
-  except Exception as e:
-    logging.exception(e)
-    globals().update(locals())
-    raise
-    
+    return rv    
 
 def rewrite_site_projects(files_and_data):
     parents_seen = set()
@@ -216,9 +211,22 @@ def rewrite_site_projects(files_and_data):
     files_to_delete = files_seen.difference(files_and_data)
     print(f'{len(files_to_delete)} files to be deleted')
     print('Committing updated projects')
-    git_fs.update_localization(list(files_and_data), list(files_to_delete))
+    try:
+        git_fs.update_localization(list(files_and_data), list(files_to_delete))
+    except Exception as e:
+        logging.exception(e)
+        logging.error('An error occured but this may not be a problem')
     print('Creating PR')
     git_fs.publish_localization(list(files_and_data), list(files_to_delete))
+
+def create_publish_pr():
+    up_files = {f.relative_to(git_fs.unpublished.path) for f in git_fs.unpublished.path.glob('**/site/*.json')}
+    p_files =  {f.relative_to(git_fs.published.path) for f in git_fs.published.path.glob('**/site/*.json')}
+
+    files_deleted = set(p_files) - set(up_files)
+    git_fs.publish_localization(up_files, files_deleted)
+    
+
 
 def update_site(reference=None):
     db = get_db()
