@@ -10,6 +10,11 @@ import './bilara-matches.js';
 
 export class BilaraSegment extends connect(store)(LitElement){
   render() {
+    const basePrefix = this._fields[this._sourceField].path.split('/').at(-1).split('_')[0];
+    let [segmentPrefix, displaySegmentId] = this.segmentId.split(':');
+    if (segmentPrefix != basePrefix) {
+      displaySegmentId = this.segmentId;
+    }
     return html`
     ${ColumnStyles}
     <style>
@@ -36,8 +41,13 @@ bilara-cell.string, bilara-cell.string-html {
 .segmentId {
   float: left;
   margin-top: 0.5em;
+  margin-left: 0.5em;
   font-size: 0.8em;
   width: 1em;
+}
+
+.segmentId.long {
+  margin-top: -0.8em;
 }
 
 .bookmarked {
@@ -48,7 +58,7 @@ bilara-cell.string, bilara-cell.string-html {
     
     ${ this.segmentId ? 
       html`<div class=${classMap({row: true, bookmarked: this._bookmarked})} id="${this.segmentId}">
-      <span class="segmentId">${this.segmentId.split(':')[1]}</span>
+      <span class=${classMap({segmentId: true, long: displaySegmentId.length > 5})}>${displaySegmentId}</span>
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'],
