@@ -110,6 +110,20 @@ def load_state():
 
 _build_complete = Event()
 
+def _add_virtual_comment_file(uid, translation_muids, translation_file, uid_index, muid_index, file_index, meta_definitions):
+    muids = translation_muids.replace('translation', 'comment')
+    comment_stem = f"{uid}_{muids}"
+    if comment_stem in uid_index:
+        return
+    parent = pathlib.Path('comment') / translation_file.relative_to(WORKING_DIR / 'translation').parent
+    virtual_file = parent / (comment_stem + '.json')
+    meta = {part: meta_definitions[part] for part in muids.split('-') if part in meta_definitions}
+    obj = {"uid": uid, "path": str(virtual_file), "mtime": None, "_meta": meta}
+    uid_index[uid].add(comment_stem)
+    file_index[comment_stem] = obj
+    for muid in muids.split('-'):
+        muid_index[muid].add(comment_stem)
+
 def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_definitions):
     for project_id, entry in get_projects().items():
         root_path = entry['root_path']
@@ -150,6 +164,8 @@ def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_
             if translation_stem not in parent_obj:
                 # Don't clobber real entries
                 parent_obj[translation_stem] = obj
+            # Create virtual comment file entry
+            _add_virtual_comment_file(uid, translation_muids, WORKING_DIR / virtual_file, uid_index, muid_index, file_index, meta_definitions)
 
 def make_file_index(force=False):
     global _tree_index
@@ -239,18 +255,7 @@ def make_file_index(force=False):
                         # Create Virtual Files
                         if 'translation' in muids:
                             uid, muids = long_id.split('_')
-                            muids = muids.replace('translation', 'comment')
-                            comment_stem = f"{uid}_{muids}"
-                            if comment_stem in uid_index:
-                                continue
-                            parent = pathlib.Path('comment') / file.relative_to(WORKING_DIR / 'translation').parent
-                            virtual_file = parent / (comment_stem + '.json')
-                            meta = {part: meta_definitions[part] for part in muids.split('-') if part in meta_definitions}
-                            obj = {"uid": uid, "path": str(virtual_file), "mtime": None, "_meta": meta}
-                            uid_index[uid].add(comment_stem)
-                            file_index[comment_stem] = obj
-                            for muid in muids.split('-'):
-                                muid_index[muid].add(comment_stem)
+                            _add_virtual_comment_file(uid, muids, file, uid_index, muid_index, file_index, meta_definitions)
 
             if depth == 0:
                 _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
