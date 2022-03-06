@@ -208,11 +208,12 @@ def make_file_index(force=False):
             if metafiles:
                 for metafile in sorted(metafiles, key=humansortkey):
                     file_data = json_load(metafile)
-                    meta_definitions.update(file_data)
+                    if isinstance(file_data, dict):
+                        meta_definitions.update(file_data)
 
-                    for k, v in file_data.items():
-                        if k not in _meta_definitions:
-                            _meta_definitions[k] = v
+                        for k, v in file_data.items():
+                            if k not in _meta_definitions:
+                                _meta_definitions[k] = v
 
             for file in sorted(folder.glob("*"), key=humansortkey):
 
