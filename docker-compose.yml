@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  bilara-server:
+    build:
+      context: ./
+      dockerfile: ./server/Dockerfile
+    container_name: 'bilara-server'
+    env_file:
+      - .env
+    labels:
+      application: 'bilara-server'
+    volumes:
+      - repocache:/opt/bilara/repo
+      - checkouts:/opt/bilara/checkouts
+      - sessions:/opt/bilara/server/flask_session
+    expose:
+      - '5000'
+
+volumes:
+  repocache:
+  checkouts:
+  sessions:
