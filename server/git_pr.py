@@ -15,8 +15,12 @@ if not BASE_PR_DIR.exists():
     BASE_PR_DIR.mkdir(parents=True)
 
 
-gh = Github(GITHUB_ACCESS_TOKEN)
-gh_repo = gh.get_repo(GH_REPO)
+if GIT_SYNC_ENABLED:
+    gh = Github(GITHUB_ACCESS_TOKEN)
+    gh_repo = gh.get_repo(GH_REPO)
+else:
+    gh = None
+    gh_repo = None
 
 def get_checkout_paths():
     return {str(folder): PRBranch.get_original_path(folder) for folder in BASE_PR_DIR.glob('*')}
@@ -25,10 +29,10 @@ class PRLog:
     def __init__(self):
         self.path = BASE_PR_DIR / '_pr_log.json'
         self.lock = RLock()
-    
+
     def set(self, k, v):
         with self.lock:
-            data = self.load()           
+            data = self.load()
             if v is None and k in data:
                 del data[k]
             else:
@@ -36,7 +40,7 @@ class PRLog:
 
             with self.path.open('w') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-    
+
     def unset(self, k):
         self.set(k, None)
 
@@ -61,7 +65,7 @@ class PRBranch(GitBranch):
             raise ValueError(f'__ not allowed in name: {name}')
 
         return name.replace('_', '__').replace('/', '_')
-    
+
     @staticmethod
     def get_original_path(path):
         return path.relative_to(BASE_PR_DIR).replace('_', '/').replace('//', '_')
@@ -74,7 +78,7 @@ class PRBranch(GitBranch):
         )
         repo.git.checkout('HEAD', b=self.name)
         return repo
-    
+
     def __init__(self, relative_path, user):
         self.relative_path = relative_path
         self.user = user
@@ -110,7 +114,7 @@ class PRBranch(GitBranch):
             pub_file = self.path / file.relative_to(git_fs.unpublished.path)
             if pub_file.exists():
                 self.repo.git.rm(pub_file)
-    
+
     def create_pr(self, msg=None, title=None):
         if not GIT_SYNC_ENABLED:
             msg = 'Not creating PR because GIT_SYNC_ENABLED is False'
@@ -171,6 +175,7 @@ def perform_housekeeping():
             if pr_dir.exists():
                 shutil.rmtree(pr_dir)
             pr_log.unset(pr_name)
-        
-if pr_log.load():
-    perform_housekeeping()
+
+if GIT_SYNC_ENABLED:
+    if pr_log.load():
+        perform_housekeeping()

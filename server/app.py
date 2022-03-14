@@ -13,7 +13,6 @@ from flask_oauthlib.client import OAuth
 from flask_cors import CORS
 from github import Github, BadCredentialsException
 from config import config
-import import_export
 
 import auth
 from log import segments_logger, search_query_logger, problemsLog
@@ -25,8 +24,6 @@ from segment_updates import update_segment
 from search import search
 
 app = Flask(__name__)
-
-app.register_blueprint(import_export.import_export)
 
 cors = CORS(app)
 app.config["JSON_AS_ASCII"] = False
@@ -109,7 +106,7 @@ def general_search():
     user = get_user_details()
     filter = data.get('uid-filter')
 
-    
+
 
     start = time.monotonic()
     result = search.search_query(query, 0, 50, segment_id_filter=filter, user=user)

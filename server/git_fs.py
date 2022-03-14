@@ -2,7 +2,7 @@ import logging
 import pathlib
 from collections import defaultdict
 from git import Repo, GitCommandError
-from config import (GIT_REMOTE_REPO, REPO_DIR, CHECKOUTS_DIR, 
+from config import (GIT_REMOTE_REPO, REPO_DIR, CHECKOUTS_DIR,
                     PUBLISHED_BRANCH_NAME, UNPUBLISHED_BRANCH_NAME, GIT_SYNC_ENABLED)
 
 
@@ -72,7 +72,7 @@ def update_localization(files, files_deleted):
     with _lock:
         if _pending_commit:
             finalize_commit()
-        
+
         git.add(files)
         if files_deleted:
             git.rm(files_deleted)
@@ -106,18 +106,18 @@ def githook(webhook_payload):
         if ref == published.name:
             published.pull()
         return
-    
+
     added = []
     modified = []
     removed = []
-    
+
     for commit in webhook_payload['commits']:
         if commit['id'] == unpublished.branch.commit.hexsha:
-            return 
+            return
         added.extend(commit['added'])
         modified.extend(commit['modified'])
         removed.extend(commit['removed'])
-    
+
     print(f'{len(added)} added, {len(modified)} modified, {len(removed)} removed')
     with _lock:
         if _pending_commit:
@@ -127,7 +127,7 @@ def githook(webhook_payload):
     if added or removed  or '_project.json' in modified or '_publication.json' in modified:
         import app
         app.init()
-    
+
     from search import search
     search.update_partial(added, modified)
 
@@ -186,7 +186,7 @@ def get_publication_state():
                 result[parent_path] = {'state': 'PULL_REQUEST', 'url': pr_in_progress[parent_path]}
             else:
                 result[parent_path][state] += 1
-    
+
     return dict(result)
 
 def create_publish_request(path, user):
@@ -214,7 +214,7 @@ def finalize_commit():
     global _pending_commit
     if not _pending_commit:
         return
-    
+
     if not GIT_SYNC_ENABLED:
         print('Not Pushing because disabled in config')
         _pending_commit = None
@@ -229,7 +229,7 @@ def finalize_commit():
             print('Git push failed, attempting to pull and trying again')
             if i <= 1:
                 git.pull('-Xtheirs')
-            
+
     else:
         print('Failure')
         print('Git push failed multiple times')
@@ -243,7 +243,7 @@ def finalizer_task_runner(interval):
         time.sleep(interval)
         if not _pending_commit:
             continue
-        
+
         with _lock:
             now = time.time()
             if not _pending_commit:
