@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html } from 'lit';
 import { PageViewElement } from './page-view-element.js';
 
 // These are the shared styles needed by this element.

@@ -19,7 +19,7 @@
     "@webcomponents/webcomponentsjs": "^2.4.3",
     "commander": "^2.20.3",
     "express-http-proxy": "^1.6.0",
-    "lit-element": "^2.2.1",
+    "lit": "^2.1.2",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",

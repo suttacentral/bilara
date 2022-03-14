@@ -1,5 +1,5 @@
-import { html, css } from 'lit-element';
-import { classMap } from 'lit-html/directives/class-map';
+import { html, css } from 'lit';
+import { classMap } from 'lit/directives/class-map';
 
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';

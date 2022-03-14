@@ -1,5 +1,5 @@
-import { html, css } from 'lit-element';
-import { repeat } from 'lit-html/directives/repeat';
+import { html, css } from 'lit';
+import { repeat } from 'lit/directives/repeat.js';
 import { PageViewElement } from './page-view-element.js';
 
 import '@lion/dialog/lion-dialog.js';

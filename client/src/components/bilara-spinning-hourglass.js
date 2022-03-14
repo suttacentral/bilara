@@ -1,5 +1,5 @@
 
-import { LitElement, css, html } from 'lit-element';
+import { LitElement, css, html } from 'lit';
 
 class BilaraSpinningHourglass extends LitElement {
 

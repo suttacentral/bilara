@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bilara_server"
+name = "server"
 version = "0.1.0"
 description = ""
 authors = ["Blake Walsh <blakeofthepath@gmail.com>"]
@@ -32,6 +32,8 @@ pushover = "^0.5"
 cryptography = "^2.9.2"
 cachetools = "^4.1.0"
 gevent = "^20.5.1"
+python-dotenv = "^0.19.2"
+wrapt = "^1.13.3"
 
 [tool.poetry.dev-dependencies]
 ipython = "^7.14.0"

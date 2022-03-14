@@ -1,4 +1,4 @@
-import { LitElement, css, html } from 'lit-element';
+import { LitElement, css, html } from 'lit';
 
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from '../store.js';

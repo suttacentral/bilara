@@ -1,6 +1,7 @@
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html, css } from 'lit';
+import { when } from 'lit/directives/when.js';
 
 import { sharedStyles } from './shared-styles.js';
 

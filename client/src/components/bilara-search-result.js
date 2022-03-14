@@ -7,10 +7,10 @@ import {
 import {
     html,
     css
-} from 'lit-element';
+} from 'lit';
 import {
     repeat
-} from 'lit-html/directives/repeat';
+} from 'lit/directives/repeat.js';
 
 import { formStyles } from './shared-styles';
 
