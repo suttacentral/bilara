@@ -8,65 +8,48 @@ import { closeDialog } from '../actions/dialog.js'
 export const dialogStyles = css`
 :host
 {
-    position: relative;;
-
+    position: relative;
     display: flex;
+    overflow: auto;
 
     border: 4px solid var(--bilara-magenta);
-    border-radius: 50%;
+    border-radius: 10px;
     background-color: var(--bilara-black);
 
-    min-height: 400px;
-
     justify-content: center;
-    align-items: center;
-}
-
-:host::before
-{
-    font-size: 5rem;
-
-    position: absolute;
-    left: -2rem;
-
-    content: '≽';
-
-    color: var(--bilara-primary-color);
-}
-
-:host::after
-{
-    font-size: 5rem;
-
-    position: absolute;
-    right: -2rem;
-
-    content: '≼';
-
-    color: var(--bilara-primary-color);
+    max-height: 80%;
 }
 
 div
 {
-    position: relative;
+    display: flex;
+}
+
+form 
+{
+    display: flex;
+    flex-direction: column;
+    min-height: min-content;
+
+}
+
+#buttons {
+    height: 80px;
 }
 
 #columns
 {
-    padding-bottom: 30%;
+    flex-direction: column;
 }
 
 .checkbox
 {
     font-weight: 500;
-
-    display: flex;
+    display: block;
 
     padding: 8px 0;
 
     color: white;
-
-    align-items: center;
 }
 
 label
@@ -86,9 +69,6 @@ button
 {
     font-size: 18px;
     font-weight: 600;
-
-    position: absolute;
-    top: -20%;
 
     width: 80px;
     height: 80px;
@@ -137,6 +117,7 @@ export class BilaraDialog extends connect(store)(LitElement) {
     }
 
     _cancel() {
+        console.log('Clicked cancel');
         this._closeOverlay();
     }
 }

@@ -37,6 +37,10 @@ class BilaraColumnsDialog extends BilaraDialog {
     render() {
         return html`
             <form  @submit=${this._accept}>
+              <div id="buttons">
+                <button type="submit" class="accept-button">Accept</button>
+                <button type="button" class="cancel-button" @click=${this._cancel}>Cancel</button>
+              </div>
               <div id="columns">
               ${repeat(this._fieldNames, (field) => html`
               <label class="checkbox">
@@ -47,8 +51,7 @@ class BilaraColumnsDialog extends BilaraDialog {
                 `
                 )}
               </div>
-              <button type="submit" class="accept-button">Accept</button>
-              <button type="button" class="cancel-button" @click=${this._cancel}>Cancel</button>
+              
 
             </form>
     `

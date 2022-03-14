@@ -14,8 +14,8 @@ class BilaraModal extends connect(store)(LitElement) {
     return [
       sharedStyles,
       css`
-      :host {
-        position: fixed;
+      .background {
+        position: absolute;
         display: flex;
         z-index: 2147483647;
         left: 0;
@@ -28,11 +28,10 @@ class BilaraModal extends connect(store)(LitElement) {
       }
 
       .dialog {
-        width: 400px;
-        height: auto;
+        width: 500px;
         padding-top: 5%;
       }
-      :host([hidden]) {
+      :host([hidden]) .background {
           display: none;
       }
       
@@ -41,9 +40,10 @@ class BilaraModal extends connect(store)(LitElement) {
   }
 
   render(){
-    return html`<div class="dialog" role="dialog">
-        ${this._renderDialog()}
-      </div>
+    return html`
+      ${when(!this.hidden, 
+        ()=>html`<div class="background"><div class="dialog" role="dialog">${this._renderDialog()}</div></div>`,
+        ()=>html``)}
     `
   }
 

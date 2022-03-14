@@ -24,6 +24,8 @@ export const UPDATE_ORDERING_PREF = 'UPDATE_ORDERING_PREF';
 export const UPDATE_TERTIARY_PREF = 'UPDATE_TERTIARY_PREF';
 export const UPDATE_THEME = 'UPDATE_THEME';
 
+export const SET_TRANSLATE_MODE = 'SET_TRANSLATE_MODE';
+
 export const navigate = (path) => (dispatch) => {
   // Extract the page name from path.
   const pageArray = path.split('/');
@@ -155,5 +157,12 @@ export const updateTheme = (theme) => (dispatch) => {
   dispatch({
     type: UPDATE_THEME,
     theme
+  })
+}
+
+export const setTranslateMode = (mode) => (dispatch) => {
+  dispatch({
+    type: SET_TRANSLATE_MODE,
+    mode
   })
 }

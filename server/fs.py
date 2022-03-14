@@ -87,7 +87,7 @@ def save_state():
         "_special_uid_mapping",
         "_legal_ids",
     )
-    
+
     with saved_state_file.open("wb") as f:
         pickle.dump({k: globals()[k] for k in stored}, f)
 
@@ -105,7 +105,7 @@ def load_state():
             saved_state_file.unlink()
         except FileNotFoundError:
             pass
-    
+
     return False
 
 _build_complete = Event()
@@ -134,7 +134,7 @@ def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_
         print(f'Creating project for {project_id}/{translation_muids} with {len(files)} files')
         for file in sorted(files, key=lambda f: bilarasortkey(str(f))):
             parent_dir = pathlib.Path(translation_path) / file.parent.relative_to(root_parent_dir)
-            uid, _ = file.stem.split('_') 
+            uid, _ = file.stem.split('_')
             translation_stem = f'{uid}_{translation_muids}'
             virtual_file = parent_dir / (translation_stem + '.json')
             meta = {part: meta_definitions[part]
@@ -155,7 +155,7 @@ def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_
                 if muid not in muid_index:
                     muid_index[muid] = set()
                 muid_index[muid].add(translation_stem)
-            
+
             parent_obj = subtree
             for part in parent_dir.parts:
                 if part not in parent_obj:
@@ -252,7 +252,7 @@ def make_file_index(force=False):
                             if muid not in muid_index:
                                 muid_index[muid] = set()
                             muid_index[muid].add(long_id)
-                    
+
                         # Create Virtual Files
                         if 'translation' in muids:
                             uid, muids = long_id.split('_')
@@ -262,8 +262,8 @@ def make_file_index(force=False):
                 _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
             return subtree
 
-        
-        
+
+
         _meta_definitions = {}
         _tree_index = recurse(WORKING_DIR, {})
         _uid_index = uid_index
@@ -343,7 +343,7 @@ class StatsCalculator:
                     file=translation['path'],
                     msg="Root entry could not be determined"
             )
-        
+
         return {"_translated": translated_count, "_root": total_count}
 
     def count_strings(self, entry):
@@ -611,7 +611,7 @@ def get_condensed_tree_bg(path, user):
     tree = _tree_index
     for part in path:
         tree = tree[part]
-    
+
     publication_state = git_fs.get_publication_state()
 
     def recurse(subtree, parents=None, may_publish=False):

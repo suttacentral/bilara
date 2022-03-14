@@ -1,6 +1,6 @@
 import logging
 from os import environ
-
+from dotenv import dotenv_values
 import pathlib
 
 class Config(dict):
@@ -9,9 +9,8 @@ class Config(dict):
 
 BASE_DIR = pathlib.Path(__file__).absolute().parent.parent
 
+
 config = Config({
-    
-    
     # If GITHUB_AUTH is enabled then git details should be provided
     'GITHUB_AUTH_ENABLED': False,
 
@@ -23,9 +22,9 @@ config = Config({
 
     'GIT_APP_KEY': '',
     'GIT_APP_SECRET': '',
-    
-    'GIT_USER': '',
-    'GIT_PASSWORD': '',
+
+    'GITHUB_USERNAME': '',
+    'GITHUB_PERSONAL_ACCESS_TOKEN': '',
 
     # Git Repo
     'GH_REPO': '',
@@ -38,7 +37,7 @@ config = Config({
     'REVIEW_BRANCH_NAME': 'review',
 
     'SECRET': 'CHANGE ME',
-    
+
     'ARANGO_USER': 'root',
     'ARANGO_PASSWORD': 'test',
     'ARANGO_DB_NAME': 'bilara',
@@ -48,18 +47,16 @@ config = Config({
 
     'LOCAL_USERNAME': 'Bob',
     'LOCAL_LOGIN': 'Bob',
-    'LOCAL_EMAIL': 'bob@example.com'
+    'LOCAL_EMAIL': 'bob@example.com',
+    **dotenv_values(".env"),
 })
 
+for k in config.keys():
+    v = environ.get(k)
+    if v:
+        config[k] = v
 
-
-try:
-    import local_config
-    config.update(local_config.config)
-except ImportError:
-    logging.warning('local_config.py does not exist')
-
-
+print(config)
 
 GH_REPO = config.GH_REPO
 GIT_REMOTE_REPO = config.GIT_REMOTE_REPO
@@ -72,9 +69,15 @@ GIT_SYNC_ENABLED = config.GIT_SYNC_ENABLED
 
 WORKING_DIR = CHECKOUTS_DIR / UNPUBLISHED_BRANCH_NAME
 
-TM_ALIAS = config.get('TM_ALIAS', {})
+# TM_ALIAS format is like: 'foo=bar,spam=baz'
+if config.get('TM_ALIAS'):
+    TM_ALIAS = dict(t.split('=') for t in config.get('TM_ALIAS', '').split(','))
+else:
+    TM_ALIAS = {}
 
 if GIT_SYNC_ENABLED:
-    GITHUB_ACCESS_TOKEN = config.GITHUB_ACCESS_TOKEN
+    GITHUB_ACCESS_TOKEN = config.GITHUB_PERSONAL_ACCESS_TOKEN
 else:
     GITHUB_ACCESS_TOKEN = None
+
+import json

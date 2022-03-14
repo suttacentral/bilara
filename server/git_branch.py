@@ -7,7 +7,8 @@ from config import (
     GIT_SYNC_ENABLED
 )
 
-if REPO_DIR.exists():
+if REPO_DIR.exists() and (REPO_DIR / 'HEAD').exists():
+    print('Repo already exists')
     base_repo = Repo(REPO_DIR)
 else:
     print("Pulling Repo (one time only)")

@@ -13,7 +13,6 @@ from flask_oauthlib.client import OAuth
 from flask_cors import CORS
 from github import Github, BadCredentialsException
 from config import config
-import import_export
 
 import auth
 from log import segments_logger, search_query_logger, problemsLog

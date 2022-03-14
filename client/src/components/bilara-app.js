@@ -27,7 +27,8 @@ import {
   navigate,
   updateOffline,
   updateDrawerState,
-  updateTheme
+  updateTheme,
+  setTranslateMode,
 } from '../actions/app.js';
 
 // These are the elements needed by this element.
@@ -317,6 +318,27 @@ details a
 {
     color: var(--bilara-primary-color);
 }
+.translate-mode input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+.translate-mode input + label {
+  border-radius: 5px;
+  border: 2px solid var(--bilara-green);
+  cursor: pointer;
+}
+input:checked + label {
+  color: var(--bilara-emphasized-text-color);
+  background-color: var(--bilara-green);
+}
+input:not(:checked) + label {
+  color: var(--bilara-emphasized-text-color);
+  background-color: var(--bilara-black);
+
+}
 
 
 
@@ -335,7 +357,7 @@ details a
     <header class="app-header">
     <div class="app-header-left">
        <a href="/browse"><h1 main-title>${this.appTitle}</h1></a>
-                   <details>
+      <details>
       <summary>How to</summary>
       <div>
       <p>Bilara is a Computer Assisted Translation (CAT) webapp built by SuttaCentral to help translate Buddhist scripture.</p>
@@ -363,8 +385,18 @@ details a
             <li>The little icons on the right indicate whether a string is properly committed or not.</li>
             <li>You can drag and drop the columns in any order you like.</li>
             <li>You can add more columns by clicking the ⊕ icon.</li>
-            </ul></div>
+            </ul>
+        </div>
       </details>
+      <span class=translate-mode>
+      
+        <input type=radio @change=${this._setMode} name=mode id=translation value=translation checked>
+        <label for=translation>Translation</label>
+        <input type=radio @change=${this._setMode} name=mode id=suggest value=suggest>
+        <label for=suggest>Suggest</label>
+        
+      </span>
+
        </div>
        <div class="app-header-right">
 
@@ -445,6 +477,11 @@ details a
         // This object also takes an image property, that points to an img src.
       });
     }
+  }
+
+  _setMode(e){
+    console.log(e, e.target);
+    setTranslateMode(e.target.value);
   }
 
   _menuButtonClicked() {

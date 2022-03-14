@@ -167,10 +167,12 @@ def generate_translation_mapping(root_files):
             if file not in translation_mapping:
                 translation_mapping[file] = {}
             translation_mapping[file][lang] = translation_file
+    return translation_mapping
 
 def restore_site_from_history(root_files):
     translation_mapping = generate_translation_mapping(root_files)
     rv = {}
+    db = get_db()
     for root_file, translation_files in translation_mapping.items():
         root_data = root_files[root_file]
         translation_data = {}

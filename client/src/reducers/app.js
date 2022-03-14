@@ -18,6 +18,7 @@ import {
   UPDATE_ORDERING_PREF,
   UPDATE_TERTIARY_PREF,
   UPDATE_THEME,
+  SET_TRANSLATE_MODE,
 
 } from '../actions/app.js';
 
@@ -81,6 +82,7 @@ const INITIAL_STATE = {
   offline: false,
   problems: null,
   drawerOpened: false,
+  translateMode: 'translate'
 };
 
 const appReducer = (state = INITIAL_STATE, action) => {
@@ -160,6 +162,12 @@ const appReducer = (state = INITIAL_STATE, action) => {
       }
       savePrefState(newState.pref);
       return newState
+    
+    case SET_TRANSLATE_MODE:
+      newState = {
+        ...state,
+        translateMode: action.mode
+      }
 
     default:
       return state;

@@ -24,8 +24,8 @@ def create_logger(file, format):
 
     return logger
 
-segments_logger = create_logger('log/segments.log', '{message}')
-search_query_logger = create_logger('log/queries.log', '{message}')
+segments_logger = logging.getLogger()
+search_query_logger = logging.getLogger()
 
 class ProblemLogger:
     def __init__(self, filename, reset_on_restart=True):
@@ -72,4 +72,4 @@ class ProblemLogger:
                 pass
         return []
         
-problemsLog = ProblemLogger('problems.json')
+problemsLog = logging.getLogger()
