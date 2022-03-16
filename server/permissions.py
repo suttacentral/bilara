@@ -22,7 +22,7 @@ publications_file = WORKING_DIR / publications_file_name
 projects_file_name = '_project.json'
 projects_file = WORKING_DIR / projects_file_name
 
-    
+
 def source_url_to_path(url):
     prefix_rex = regex.compile(r"https://github.com/[\w-]+/[\w-]+/[\w-]+/[\w-]+/(.*)")
     m = prefix_rex.match(url)
@@ -64,16 +64,16 @@ def build_rules(publications, projects):
         github_ids = [entry.get('author_github_handle')]
 
         result['_paths'][source_path] = True
-        
+
         for collaborator in entry.get("collaborator", []):
             github_ids.append(collaborator.get('author_github_handle'))
-        
+
         if not any(github_ids) and 'parent_publication' not in entry:
             problemsLog.add(
                 file=publications_file_name,
                 msg=f"Publication {pub_id} has no author or collaborator"
             )
-        
+
         for github_id in github_ids:
             if not github_id:
                 continue
@@ -85,9 +85,9 @@ def build_rules(publications, projects):
                 }
             if source_path not in result[github_id][Permission.EDIT]:
                 result[github_id][Permission.EDIT].append(source_path)
-    
+
     return result
-            
+
 
 _cached_rules = {}
 
@@ -108,14 +108,14 @@ def get_base_permissions(path, github_id):
     if github_id and 'login' in github_id:
         github_id = github_id['login']
     path = str(path)
-    
+
     rules = get_rules()
-    
+
     result = Permission.VIEW
     if github_id not in rules:
         return result
-        
-    
+
+
     for key in reversed(Permission):
         if key is Permission.NONE:
             continue
@@ -143,13 +143,13 @@ def validate_permissions(rules=None):
     if not rules:
         rules = get_rules()
     files = WORKING_DIR.glob('**/*.json')
-    files = [str(file.relative_to(WORKING_DIR)) 
-             for file in files 
+    files = [str(file.relative_to(WORKING_DIR))
+             for file in files
              if not any(part for part in file.parts if part.startswith('.'))]
 
     for user, user_permissions in rules.items():
         if user.startswith('_'):
-            continue # Not a valid Github ID, used for bilara 
+            continue # Not a valid Github ID, used for bilara
         for paths in user_permissions.values():
             for path in paths:
 
@@ -175,4 +175,4 @@ def make_may_publish_regex():
 #                problemsLog.add(file=publications_file_name, msg=f'Translator "{uid}" does not have permissions defined')
 
 #warmup
-get_permissions('/', '')
+# get_permissions('/', '')

@@ -10,6 +10,6 @@ export FLASK_ENV=development
 (trap 'kill 0' SIGINT; ( 
 	cd server;
 	poetry run python -c "import arango_common; arango_common.run_migrations()" &&
-	poetry run flask run --port 5000 ) &
+	poetry run python app.py --port 5000 ) &
 	(cd client; npx es-dev-server ) 
 )

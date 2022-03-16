@@ -11,7 +11,7 @@ def create_logger(file, format):
         file = pathlib.Path(file)
     if not file.parent.exists():
         file.parent.mkdir()
-    
+
     logger = logging.getLogger(file.name)
     logger.setLevel(logging.DEBUG)
 
@@ -24,8 +24,8 @@ def create_logger(file, format):
 
     return logger
 
-segments_logger = logging.getLogger()
-search_query_logger = logging.getLogger()
+segments_logger = create_logger('log/segments.log', '{message}')
+search_query_logger = create_logger('log/queries.log', '{message}')
 
 class ProblemLogger:
     def __init__(self, filename, reset_on_restart=True):
@@ -33,21 +33,21 @@ class ProblemLogger:
         self.file = pathlib.Path('log/') / filename
         if reset_on_restart:
             self.clear()
-            
+
         self.href_root = 'https://github.com/suttacentral/bilara-data/blob/master/'
-    
+
     def clear(self):
         if self.file.exists():
             if time.time() - self.file.stat().st_mtime > 10:
                 self.file.unlink()
-    
+
     @staticmethod
     def to_key(entry):
         return json.dumps(entry, sort_keys=True)
     def add(self, entry=None, **kwargs):
         entries = self.load()
         seen = {self.to_key(entry) for entry in entries}
-        
+
         if entry:
             new_entry = entry
         elif kwargs:
@@ -59,10 +59,10 @@ class ProblemLogger:
         if self.to_key(new_entry) not in seen:
             entries.append(new_entry)
             print(new_entry)
-        
+
         with self.file.open('w') as f:
             json.dump(entries, f, ensure_ascii=False, indent=2)
-    
+
     def load(self):
         if self.file.exists():
             try:
@@ -71,5 +71,5 @@ class ProblemLogger:
             except json.decoder.JSONDecodeError:
                 pass
         return []
-        
-problemsLog = logging.getLogger()
+
+problemsLog = ProblemLogger('problems.json')

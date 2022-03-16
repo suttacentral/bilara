@@ -27,7 +27,7 @@ config = Config({
     'GITHUB_PERSONAL_ACCESS_TOKEN': '',
 
     # Git Repo
-    'GH_REPO': '',
+    'GITHUB_REPO': '',
     'GIT_REMOTE_REPO': '',
     'REPO_DIR':  BASE_DIR / 'repo',
     'CHECKOUTS_DIR': BASE_DIR / 'checkouts',
@@ -58,7 +58,7 @@ for k in config.keys():
 
 print(config)
 
-GH_REPO = config.GH_REPO
+GITHUB_REPO = config.GITHUB_REPO
 GIT_REMOTE_REPO = config.GIT_REMOTE_REPO
 REPO_DIR = config.REPO_DIR
 CHECKOUTS_DIR = config.CHECKOUTS_DIR

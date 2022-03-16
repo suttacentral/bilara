@@ -1,3 +1,4 @@
+import os
 import logging
 import time
 from urllib.parse import urlencode
@@ -24,8 +25,6 @@ from segment_updates import update_segment
 from search import search
 
 app = Flask(__name__)
-
-app.register_blueprint(import_export.import_export)
 
 cors = CORS(app)
 app.config["JSON_AS_ASCII"] = False
@@ -108,7 +107,7 @@ def general_search():
     user = get_user_details()
     filter = data.get('uid-filter')
 
-    
+
 
     start = time.monotonic()
     result = search.search_query(query, 0, 50, segment_id_filter=filter, user=user)
@@ -260,4 +259,7 @@ def init():
     fs.make_file_index()
 
 
-init()
+if not (app.debug or os.environ.get("FLASK_ENV") == "development") or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    init()
+if __name__== '__main__':
+   app.run(debug=True, use_reloader=True, port='5000')

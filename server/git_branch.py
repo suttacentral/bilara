@@ -1,5 +1,6 @@
 import threading
-from git import Repo, GitCommandError
+from tqdm import tqdm
+from git import Repo, RemoteProgress
 from config import (
     GIT_REMOTE_REPO,
     REPO_DIR,
@@ -7,13 +8,23 @@ from config import (
     GIT_SYNC_ENABLED
 )
 
+class CloneProgress(RemoteProgress):
+    def __init__(self):
+        super().__init__()
+        self.pbar = tqdm()
+
+    def update(self, op_code, cur_count, max_count=None, message=''):
+        self.pbar.total = max_count
+        self.pbar.n = cur_count
+        self.pbar.refresh()
+
 if REPO_DIR.exists() and (REPO_DIR / 'HEAD').exists():
     print('Repo already exists')
     base_repo = Repo(REPO_DIR)
 else:
     print("Pulling Repo (one time only)")
     base_repo = Repo.clone_from(
-        GIT_REMOTE_REPO, REPO_DIR, bare=True
+        GIT_REMOTE_REPO, REPO_DIR, bare=True, progress=CloneProgress()
     )
 
 class GitBranch:
@@ -46,15 +57,18 @@ class GitBranch:
         self.name = branch_name
         self.path = self.get_checkout_dir()
         if self.path.exists():
+            print(f'Checkout for {self.name} does not exist')
             self.repo = Repo(self.path)
         else:
+            print(f'Checkout for {self.name} does not exist')
+
             self.repo = self.get_or_create_repo()
 
     def get_file_map(self):
         files = {}
 
         r = self.repo.git.ls_tree('-r', self.name)
-        
+
         for line in r.split('\n'):
             if line:
                 p, t, sha, filepath  = line.split()
