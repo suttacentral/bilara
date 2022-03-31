@@ -86,7 +86,7 @@ class PRBranch(GitBranch):
         super().__init__(branch_name=name)
 
     def copy_files(self):
-        file_path = (git_fs.unpublished.path / self.relative_path).with_suffix('.json')
+        file_path = git_fs.unpublished.path / (str(self.relative_path) +'.json')
         if file_path.exists():
             print(f'Using {file_path}')
             files = [file_path]
