@@ -8,7 +8,7 @@
   "repository": "suttacentral/bilara",
   "scripts": {
     "dev": "npm run start | npm run watch",
-    "start": "npx es-dev-server",
+    "start": "web-dev-server --node-resolve --open --watch",
     "build": "rimraf dist && rollup -c rollup.config.js",
     "watch": "browser-sync start --proxy localhost:8081 --port 3003 --files \"**/*.js\"",
     "test:regenerate_screenshots": "mocha test/integration/screenshots-baseline/regenerate.js --timeout=15000",
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@open-wc/building-rollup": "^1.0.0",
+    "@web/dev-server": "^0.1.31",
     "axe-core": "^3.5.2",
     "browser-sync": "^2.26.7",
     "chai": "^4.2.0",
