@@ -435,7 +435,12 @@ def update_result(result, long_id, entry, role=None, user=None):
     field = "-".join(muids)
 
     entry = deepcopy(entry)
-    entry["permission"] = get_permissions(entry["path"], github_id=user['login']).name
+    permission = get_permissions(entry["path"], github_id=user['login']).name
+    if permission == Permission.SUGGEST and not role == 'target':
+        # Downgrade permission to VIEW if not the primary translation target
+        permission = Permission.VIEW
+
+    entry['permission'] = permission
     entry["editable"] = True if role == "target" else False
     result["fields"][field] = entry
     result["fields"][field]["role"] = role or muids[0]
