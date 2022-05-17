@@ -151,7 +151,7 @@ const appReducer = (state = INITIAL_STATE, action) => {
       }
       savePrefState(newState.pref);
       return newState
-    
+
     case UPDATE_THEME:
       newState = {
         ...state,
@@ -162,12 +162,14 @@ const appReducer = (state = INITIAL_STATE, action) => {
       }
       savePrefState(newState.pref);
       return newState
-    
+
     case SET_TRANSLATE_MODE:
+      console.log(state, action);
       newState = {
         ...state,
-        translateMode: action.mode
+        'translateMode': action.mode
       }
+      return newState
 
     default:
       return state;

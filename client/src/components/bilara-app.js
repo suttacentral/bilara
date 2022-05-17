@@ -347,7 +347,7 @@ input:not(:checked) + label {
   }
 
   render() {
-    
+
     const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null;
 
     // Anything that's related to rendering should be done in here.
@@ -372,7 +372,7 @@ input:not(:checked) + label {
       <li>Repeat until finished!</li>
       </ol>
       <b>Some tips</b>
-      <ul>   
+      <ul>
             <li>Write plain text. Don’t input anything other than plain text.</li>
             <li>Your translations are securely saved at Github using git version control, which keeps a full record of every change made. In emergency, contact admins, and they will restore your text if possible.</li>
             <li>Github has a <a href="https://github.com/suttacentral/bilara-data/pulse" target="_blank">range of fancy stats</a>.</li>
@@ -389,12 +389,12 @@ input:not(:checked) + label {
         </div>
       </details>
       <span class=translate-mode>
-      
+
         <input type=radio @change=${this._setMode} name=mode id=translation value=translation checked>
         <label for=translation>Translation</label>
         <input type=radio @change=${this._setMode} name=mode id=suggest value=suggest>
         <label for=suggest>Suggest</label>
-        
+
       </span>
 
        </div>
@@ -405,14 +405,14 @@ input:not(:checked) + label {
   <img src="${this._avatarUrl || '../images/bob.jpg'}" alt="${this._username}">
   <figcaption class="user-name">${this._username}</figcaption>
 </figure></a>
-<a href="/logout" target="_top" class="app-log">Logout</a>` 
-: html`<form action="/api/login" method="post"><button class="app-log">Login</button></form>` 
+<a href="/logout" target="_top" class="app-log">Logout</a>`
+: html`<form action="/api/login" method="post"><button class="app-log">Login</button></form>`
         }
         </div>
     </header>
 
       <bilara-modal></bilara-modal>
-        
+
       <!-- Main content -->
       <main role="main" class="main-content">
         ${ this._userMustRevalidate ? '' : html`
@@ -469,7 +469,7 @@ input:not(:checked) + label {
 
   updated(changedProps) {
     if (changedProps.has('_page') || changedProps.has('_activeSegmentId')) {
-      
+
       const pageTitle = this._activeSegmentId ? this._activeSegmentId : this.appTitle;
       updateMetadata({
         title: pageTitle,
@@ -480,8 +480,8 @@ input:not(:checked) + label {
   }
 
   _setMode(e){
-    console.log(e, e.target);
-    setTranslateMode(e.target.value);
+    console.log(e, e.target, e.target.value);
+    store.dispatch(setTranslateMode(e.target.value));
   }
 
   _menuButtonClicked() {

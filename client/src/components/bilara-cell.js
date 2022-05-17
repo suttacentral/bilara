@@ -1,5 +1,5 @@
 import { html, css } from 'lit';
-import { classMap } from 'lit/directives/class-map';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -17,7 +17,7 @@ span.string, span.string-html
     position: relative;
 
     width: 100%;
-    
+
     display: inline-block;
 }
 
@@ -48,7 +48,7 @@ div
 .string.editable
 {
   font-family: var(--bilara-serif);
-  
+
   display: block;
 }
 
@@ -130,10 +130,11 @@ supplied
     `
   }
   render() {
+    const editable = this._editable == true || this._suggestMode == true;
     return html`
     <div class="${classMap({'root': this._root, 'show-html': this._showHtml})}">
-    <span class="${classMap({'string': true, 'editable': this._editable})}" tabindex="${this._editable == 'true' ? 0 : -1}"
-                  contenteditable="${this._editable == true ? contentEditableValue : 'false'}"
+    <span class="${classMap({'string': true, 'editable': editable})}" tabindex="${editable ? 0 : -1}"
+                  contenteditable="${ editable ? contentEditableValue : 'false'}"
                   @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"
                   @input="${this._inputEvent}"
@@ -142,7 +143,7 @@ supplied
                 ></span>
     <span class="string-html" @mousedown="${this._click}"></span>
     ${this.renderStatus()}
-    
+
     </div>`
   }
 
@@ -155,16 +156,18 @@ supplied
       _value: String,
       _root: Boolean,
       _showHtml: Boolean,
+      _suggestMode: Boolean,
     }
   }
 
   stateChanged(state) {
     this._showHtml = state.app.pref.showHtml;
+    this._suggestMode = state.app.translateMode == 'suggest';
   }
 
   firstUpdated() {
     this._root = !!this.field.match(/root-/);
-    
+
     this._setValue(this._value);
     if (this._root) {
       this.shadowRoot.querySelector('span.string-html').innerHTML = this._value;
@@ -180,7 +183,7 @@ supplied
   focus() {
     let el = this.shadowRoot.querySelector('.string');
     el.focus();
-    setTimeout(function(){ 
+    setTimeout(function(){
       let sel = window.getSelection();
       if (el.lastChild) {
         sel.collapse(el.lastChild, el.lastChild.length);
@@ -213,7 +216,7 @@ supplied
       while (true) {
         if (active.classList.contains('editable')) {
           break
-        } 
+        }
         shadowRoot = active.shadowRoot
         if (!shadowRoot) return
         active = shadowRoot.activeElement;
@@ -223,16 +226,16 @@ supplied
       e.stopPropagation();
 
       let sel = shadowRoot.getSelection();
-      
+
       let range = sel.getRangeAt(0);
       let fragment = document.createTextNode(result);
       range.insertNode(fragment)
-          
+
     }
   }
 
   _setValue(value, undoable) {
-    
+
     const cell = this.shadowRoot.querySelector('.string');
     if (undoable && document.execCommand) {
       cell.focus();
@@ -245,7 +248,7 @@ supplied
   }
 
   _keydown(e){
-   
+
   }
 
   _matchValue(value) {
@@ -259,21 +262,21 @@ supplied
       detail: { field: this.field, steps: steps },
       bubbles: true,
       composed: true
-     
+
    });
 
    this.dispatchEvent(event);
  }
-  
+
 
   _keydownEvent(e) {
     if (e.key == 'Enter') {
       e.preventDefault();
       e.stopPropagation();
       this._matches = null;
-  
+
       const value = e.currentTarget.textContent;
-      
+
       if (value != this._pendingValue && value != this._committedValue) {
           this._commitValue(value, this.segmentId, this.field);
       }
@@ -294,13 +297,13 @@ supplied
         e.stopPropagation();
         this._emitNavigationEvent(-1);
       }
-      
+
     }
 
-    
+
   }
 
-  
+
 
   _inputEvent(e) {
     const value = e.target.innerText;

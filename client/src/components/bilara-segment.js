@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { classMap } from 'lit/directives/class-map';
+import { classMap } from 'lit/directives/class-map.js';
 import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -55,15 +55,15 @@ bilara-cell.string, bilara-cell.string-html {
 }
 
     </style>
-    
-    ${ this.segmentId ? 
+
+    ${ this.segmentId ?
       html`<div class=${classMap({row: true, bookmarked: this._bookmarked})} id="${this.segmentId}">
       <span class=${classMap({segmentId: true, long: displaySegmentId.length > 5})}>${displaySegmentId}</span>
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'],
                 editable = fieldData.permission == 'EDIT';
-          
+
           return html`
             <bilara-cell class="string"
               lang="${language ? language['uid'] : undefined}"
@@ -78,7 +78,7 @@ bilara-cell.string, bilara-cell.string-html {
 
       </div>
       ${this.renderMatches()}
-      
+
     ` : html `<div class="row" id="fields">${this._orderedFields.map(field => {
       return html`<span class="field-title">${field}</span>`
     })
@@ -180,8 +180,8 @@ bilara-cell.string, bilara-cell.string-html {
           sourceField = this._sourceField,
           targetField = this._targetField,
           segmentId = this.segmentId;
-      
-      let request = fetch(`/api/tm/?string=${sourceString}&root_muids=${sourceField}&translation_muids=${targetField}&exclude_uid=${segmentId}`, 
+
+      let request = fetch(`/api/tm/?string=${sourceString}&root_muids=${sourceField}&translation_muids=${targetField}&exclude_uid=${segmentId}`,
           {mode: 'cors'}
           )
           .then(res => res.json())

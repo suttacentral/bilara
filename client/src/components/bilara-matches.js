@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { unsafeHTML } from 'lit/directives/unsafe-html';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 export class BilaraMatches extends LitElement{
     render() {
@@ -60,25 +60,25 @@ flex-basis: 50%;
           border-radius: 4px;
           display: none
       }
-  
+
       </style>
-      
+
       <div id="matches" class="column">
       ${ this._matches.map( (item) => html`
-      
+
         <div class="row">
         <span class="root_string">${unsafeHTML(item.highlighted)}</span>
-        
-        <span class="translation" 
+
+        <span class="translation"
                   @mousedown=${this._mousedownEvent}
                   @mouseup=${this._mouseupEvent}
                   @mousemove=${this._mousemoveEvent}
                   title="${item.segment_ids.length}"
                   >${item.translation}</span>
-        `)}        
+        `)}
         </div>`
     }
-  
+
     static get properties(){
       return {
         _matches: {type: Object}
@@ -108,11 +108,11 @@ flex-basis: 50%;
       this.clicked = false;
     }
 
-  
+
     setFocus(dataType) {
       let e = this.shadowRoot.querySelector(`[data-type=${dataType}]`);
       e.focus();
     }
   }
-  
+
   window.customElements.define('bilara-matches', BilaraMatches);
