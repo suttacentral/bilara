@@ -6,7 +6,7 @@ from git import Repo, GitCommandError
 from github import Github
 from git_branch import GitBranch
 import git_fs
-from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GITHUB_REPO, GIT_REMOTE_REPO, REPO_DIR,
+from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GH_REPO, GIT_REMOTE_REPO, REPO_DIR,
                     GIT_SYNC_ENABLED)
 
 BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
@@ -14,9 +14,13 @@ BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
 if not BASE_PR_DIR.exists():
     BASE_PR_DIR.mkdir(parents=True)
 
-if GITHUB_REPO:
+
+if GIT_SYNC_ENABLED:
     gh = Github(GITHUB_ACCESS_TOKEN)
-    gh_repo = gh.get_repo(GITHUB_REPO)
+    gh_repo = gh.get_repo(GH_REPO)
+else:
+    gh = None
+    gh_repo = None
 
 def get_checkout_paths():
     return {str(folder): PRBranch.get_original_path(folder) for folder in BASE_PR_DIR.glob('*')}
@@ -172,6 +176,6 @@ def perform_housekeeping():
                 shutil.rmtree(pr_dir)
             pr_log.unset(pr_name)
 
-if GITHUB_REPO:
+if GIT_SYNC_ENABLED:
     if pr_log.load():
         perform_housekeeping()

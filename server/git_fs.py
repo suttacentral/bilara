@@ -222,13 +222,13 @@ def finalize_commit():
     print(f'Pushing to {unpublished.name}... ', end='')
     for i in range(0, 3):
         try:
-            git.push('-u', 'origin', unpublished.name)
+            git.push('-u', 'origin', unpublished.name, kill_after_timeout=20)
             print('Success')
             break
         except GitCommandError:
             print('Git push failed, attempting to pull and trying again')
             if i <= 1:
-                git.pull('-Xtheirs')
+                git.pull('-Xtheirs', kill_after_timeout=20)
 
     else:
         print('Failure')
