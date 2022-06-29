@@ -6,7 +6,7 @@ from git import Repo, GitCommandError
 from github import Github
 from git_branch import GitBranch
 import git_fs
-from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GH_REPO, GIT_REMOTE_REPO, REPO_DIR,
+from config import (GITHUB_ACCESS_TOKEN, CHECKOUTS_DIR, GITHUB_REPO, GIT_REMOTE_REPO, REPO_DIR,
                     GIT_SYNC_ENABLED)
 
 BASE_PR_DIR = CHECKOUTS_DIR / 'pull_requests'
@@ -17,10 +17,10 @@ if not BASE_PR_DIR.exists():
 
 if GIT_SYNC_ENABLED:
     gh = Github(GITHUB_ACCESS_TOKEN)
-    gh_repo = gh.get_repo(GH_REPO)
+    github_repo = gh.get_repo(GITHUB_REPO)
 else:
     gh = None
-    gh_repo = None
+    github_repo = None
 
 def get_checkout_paths():
     return {str(folder): PRBranch.get_original_path(folder) for folder in BASE_PR_DIR.glob('*')}
@@ -123,7 +123,7 @@ class PRBranch(GitBranch):
         user = self.user
         existing = pr_log.load()
         if self.name in existing:
-            pr = gh_repo.get_pull(existing[self.name]['number'])
+            pr = github_repo.get_pull(existing[self.name]['number'])
             pr.update_branch()
         else:
             if msg is None:
@@ -136,7 +136,7 @@ updated from Bilara.
 '''
             if title is None:
                 title = f"New translations for {str(self.relative_path)}"
-            pr = gh_repo.create_pull(
+            pr = github_repo.create_pull(
                 title=title,
                 body=msg,
                 head=self.name,
@@ -160,7 +160,7 @@ updated from Bilara.
         return self.create_pr()
 
 def perform_housekeeping():
-    remote_branches = {b.name for b in gh_repo.get_branches()}
+    remote_branches = {b.name for b in github_repo.get_branches()}
     for folder in BASE_PR_DIR.glob('*'):
         if not folder.is_dir():
             continue
@@ -169,7 +169,7 @@ def perform_housekeeping():
 
     for pr_name, pr_value in  pr_log.load().items():
         pr_num = pr_value['number']
-        pr = gh_repo.get_pull(pr_num)
+        pr = github_repo.get_pull(pr_num)
         if pr.state == 'closed':
             pr_dir = BASE_PR_DIR / pr_name
             if pr_dir.exists():
