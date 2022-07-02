@@ -16,7 +16,7 @@ import atexit
 from git_branch import GitBranch, base_repo
 import git_pr
 
-from permissions import make_may_publish_regex
+
 
 _lock = threading.RLock()
 PUSH_DELAY = 15
@@ -158,6 +158,7 @@ def get_publication_state():
     pr_in_progress = {entry.get('path'): entry['url'] for entry in git_pr.pr_log.load().values()}
 
     print(pr_in_progress)
+    from permissions import make_may_publish_regex
     may_publish_regex = make_may_publish_regex()
     result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
     for filepath, sha in unpublished_files.items():
