@@ -9,6 +9,8 @@ from enum import IntEnum
 from config import WORKING_DIR
 from util import json_load, json_save
 
+from projects import get_projects, projects_file
+
 class Permission(IntEnum):
     NONE = 0
     VIEW = 1
@@ -16,11 +18,11 @@ class Permission(IntEnum):
     EDIT = 3
 
 
-publications_file_name = '_publication.json'
+publications_file_name = '_publication-v2.json'
 publications_file = WORKING_DIR / publications_file_name
 
-projects_file_name = '_project.json'
-projects_file = WORKING_DIR / projects_file_name
+
+
 
 
 def source_url_to_path(url):
@@ -48,7 +50,8 @@ def build_rules(publications, projects):
     result['_paths'] = {}
     entries = []
 
-    for pub_id, entry in chain(publications.items(), projects.items()):
+    for entry in chain(publications, projects):
+        pub_id = entry.get('publication_number') or entry.get('project_uid')
         if 'translation_path' in entry:
             source_path = entry['translation_path']
             is_project = True
@@ -61,20 +64,25 @@ def build_rules(publications, projects):
                     file=publications_file_name,
                     msg=f"In {entry['publication_number']}: {e.args[0]} "
                 )
-        github_ids = [entry.get('author_github_handle')]
+        creator_github_ids = entry.get('creator_github_handle') or []
+        if isinstance(creator_github_ids, str):
+            creator_github_ids = [creator_github_ids]
+
+        proofreader_github_ids = entry.get('proofreader_github_handle')  or []
+        if isinstance(proofreader_github_ids, str):
+            proofreader_github_ids = [proofreader_github_ids]
 
         result['_paths'][source_path] = True
 
-        for collaborator in entry.get("collaborator", []):
-            github_ids.append(collaborator.get('author_github_handle'))
-
-        if not any(github_ids) and 'parent_publication' not in entry:
+        if not any(creator_github_ids) and 'parent_publication' not in entry:
             problemsLog.add(
                 file=publications_file_name,
                 msg=f"Publication {pub_id} has no author or collaborator"
             )
 
-        for github_id in github_ids:
+
+
+        for github_id in chain(creator_github_ids, proofreader_github_ids):
             if not github_id:
                 continue
             if github_id not in result:
@@ -83,8 +91,18 @@ def build_rules(publications, projects):
                     Permission.SUGGEST: [],
                     Permission.VIEW: ["*"]
                 }
+
+        for github_id in creator_github_ids:
+            if not github_id:
+                continue
             if source_path not in result[github_id][Permission.EDIT]:
                 result[github_id][Permission.EDIT].append(source_path)
+
+        for github_id in proofreader_github_ids:
+            if not github_id:
+                continue
+            if source_path not in result[github_id][Permission.SUGGEST]:
+                result[github_id][Permission.SUGGEST].append(source_path)
 
     return result
 
