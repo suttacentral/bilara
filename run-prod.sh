@@ -1,4 +1,4 @@
-#bin/env bash
+#!/usr/bin/env bash
 
 PORT=8081
 PROXY_PORT=9096

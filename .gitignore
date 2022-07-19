@@ -6,3 +6,4 @@ node_modules
 *.gpg
 *.pickle
 local.sh
+.DS_Store

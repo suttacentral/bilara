@@ -1,5 +1,4 @@
-#bin/env bash
-
+#!/usr/bin/env bash
 
 if [ -x "./local.sh" ]; then
 ./local.sh
@@ -7,9 +6,9 @@ fi
 
 export FLASK_ENV=development
 
-(trap 'kill 0' SIGINT; ( 
+(trap 'kill 0' SIGINT; (
 	cd server;
 	poetry run python -c "import arango_common; arango_common.run_migrations()" &&
 	poetry run flask run --port 5000 ) &
-	(cd client; npx es-dev-server ) 
+	(cd client; npx es-dev-server )
 )
