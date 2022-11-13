@@ -5,7 +5,7 @@ if [ -x "./local.sh" ]; then
 ./local.sh
 fi
 
-export FLASK_ENV=development
+export FLASK_DEBUG=1
 
 (trap 'kill 0' SIGINT; ( 
 	cd server;

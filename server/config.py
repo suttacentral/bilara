@@ -19,7 +19,7 @@ config = Config({
     'GIT_SYNC_ENABLED': False,
 
     # If disabled, the repo dir will be treated as a normal directory
-    'GIT_COMMIT_ENABLED': False,
+    'GIT_COMMIT_ENABLED': True,
 
     'GIT_APP_KEY': '',
     'GIT_APP_SECRET': '',
