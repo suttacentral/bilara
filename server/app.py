@@ -239,7 +239,7 @@ def get_user_details(github_token=None, auth_token=None, bypass_cache=False, _ca
         try:
             gh_emails = gh_user.get_emails()
             if gh_emails:
-                user["email"] = gh_emails[0]["email"]
+                user["email"] = gh_emails[0].email
 
         except BadCredentialsException as e:
             logging.exception(e)
