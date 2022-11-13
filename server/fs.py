@@ -1,9 +1,10 @@
+import os
 import sys
-import time
 import json
 import pickle
 import pathlib
 import logging
+from filelock import FileLock
 from config import config, WORKING_DIR
 from util import humansortkey, bilarasortkey, deep_dict_merge
 from copy import copy, deepcopy
@@ -76,7 +77,25 @@ def get_long_id(path):
     return pathlib.Path(path).name
 
 
-def save_state():
+def get_state_hex():
+    state_hex = git_fs.unpublished.repo.head.commit.hexsha
+    return state_hex
+
+def get_state_file():
+    return pathlib.Path('/tmp/bilara-state-{hexsha}')
+
+def get_state_lockfile():
+    return get_state_file().with_suffix('.lock')
+
+def remove_stale_state_files():
+    state_hex = get_state_hex()
+    for file in pathlib.Path('/tmp/').glob('bilara-state-*'):
+        if state_hex in file.name:
+            continue
+        file.unlink()    
+    
+
+def save_state(state_file):
     print("Saving file index")
     stored = (
         "_tree_index",
@@ -88,25 +107,15 @@ def save_state():
         "_legal_ids",
     )
     
-    with saved_state_file.open("wb") as f:
+    with state_file.open("wb") as f:
         pickle.dump({k: globals()[k] for k in stored}, f)
+    remove_stale_state_files()
 
-
-def load_state():
-    if not saved_state_file.exists():
-        return False
-    try:
-        with saved_state_file.open("rb") as f:
-            globals().update(pickle.load(f))
-        print("Loaded saved file index")
-        return True
-    except Exception:
-        try:
-            saved_state_file.unlink()
-        except FileNotFoundError:
-            pass
-    
-    return False
+def load_state(state_file):
+    with state_file.open("rb") as f:
+        globals().update(pickle.load(f))
+    print("Loaded saved file index")
+    return True
 
 _build_complete = Event()
 
@@ -168,6 +177,23 @@ def _add_virtual_project_files(uid_index, muid_index, file_index, subtree, meta_
             _add_virtual_comment_file(uid, translation_muids, WORKING_DIR / virtual_file, uid_index, muid_index, file_index, meta_definitions)
 
 def make_file_index(force=False):
+    state_lockfile = get_state_lockfile()
+    lock = FileLock(state_lockfile)
+    state_file = get_state_file()
+    
+    with lock:
+        if state_file.exists():
+            try:
+                print(f'Loading the state (pid = {os.getpid()})')
+                load_state(state_file)
+                return
+            except Exception as e:
+                logging.exception(e)
+        print(f'Generating the state (pid = {os.getpid()})')
+        generate_state()
+        save_state(state_file)
+
+def generate_state():
     global _tree_index
     global _uid_index
     global _muid_index
@@ -176,108 +202,89 @@ def make_file_index(force=False):
     global _special_uid_mapping
     global _legal_ids
 
+    _muid_index = muid_index = {}
+    _uid_index = uid_index = {}
+    _file_index = file_index = {}
+    _legal_ids = set()
 
-    if state_build_lock_file.exists():
-        # We arrived here because another process started the build
-        # let that process do the work
-        for i in range(0, 100):
-            time.sleep(1)
-            if not state_build_lock_file.exists():
-                if load_state():
-                    _build_complete.set()
-                    return
-        # Should not normally reach here, but if so fall through and do the build
-        # regardless after 100 seconds of waiting.
-    try:
-        state_build_lock_file.touch()
-        _muid_index = muid_index = {}
-        _uid_index = uid_index = {}
-        _file_index = file_index = {}
-        _legal_ids = set()
+    for file in sorted(WORKING_DIR.glob('root/**/*.json')):
+        with file.open() as f:
+            data = json.load(f)
+            _legal_ids.update(data.keys())
 
-        for file in sorted(WORKING_DIR.glob('root/**/*.json')):
-            with file.open() as f:
-                data = json.load(f)
-                _legal_ids.update(data.keys())
+    def recurse(folder, meta_definitions=None, depth=0):
+        subtree = {}
+        meta_definitions = meta_definitions.copy()
 
-        def recurse(folder, meta_definitions=None, depth=0):
-            subtree = {}
-            meta_definitions = meta_definitions.copy()
+        metafiles = set(folder.glob("_*.json"))
+        if metafiles:
+            for metafile in sorted(metafiles, key=humansortkey):
+                file_data = json_load(metafile)
+                if isinstance(file_data, dict):
+                    meta_definitions.update(file_data)
 
-            metafiles = set(folder.glob("_*.json"))
-            if metafiles:
-                for metafile in sorted(metafiles, key=humansortkey):
-                    file_data = json_load(metafile)
-                    if isinstance(file_data, dict):
-                        meta_definitions.update(file_data)
+                    for k, v in file_data.items():
+                        if k not in _meta_definitions:
+                            _meta_definitions[k] = v
 
-                        for k, v in file_data.items():
-                            if k not in _meta_definitions:
-                                _meta_definitions[k] = v
+        for file in sorted(folder.glob("*"), key=humansortkey):
 
-            for file in sorted(folder.glob("*"), key=humansortkey):
+            if file.name.startswith("."):
+                continue
+            if file in metafiles:
+                continue
+            long_id = file.stem
+            meta = {}
+            for part in file.parts:
+                if part.endswith(".json"):
+                    part = part[:-5]
+                if part in meta_definitions:
+                    meta[part] = meta_definitions[part]
+            if file.is_dir():
+                subtree[file.name] = recurse(file, meta_definitions=meta_definitions, depth=depth+1)
+                subtree[file.name]["_meta"] = meta
+            elif file.suffix == ".json":
+                mtime = file.stat().st_mtime_ns
+                path = str(file.relative_to(WORKING_DIR))
+                obj = subtree[long_id] = {"path": path, "mtime": mtime, "_meta": meta}
+                if "_" in long_id:
+                    uid, muids = get_uid_and_muids(file)
+                else:
+                    uid = file.name if file.is_dir() else file.stem
+                    muids = None
+                obj["uid"] = uid
+                if uid not in uid_index:
+                    uid_index[uid] = set()
+                uid_index[uid].add(long_id)
+                if long_id in file_index:
+                    logging.error(f"{str(file)} not unique")
+                file_index[long_id] = obj
+                if muids:
+                    for muid in muids:
+                        if muid not in muid_index:
+                            muid_index[muid] = set()
+                        muid_index[muid].add(long_id)
+                
+                    # Create Virtual Files
+                    if 'translation' in muids:
+                        uid, muids = long_id.split('_')
+                        _add_virtual_comment_file(uid, muids, file, uid_index, muid_index, file_index, meta_definitions)
 
-                if file.name.startswith("."):
-                    continue
-                if file in metafiles:
-                    continue
-                long_id = file.stem
-                meta = {}
-                for part in file.parts:
-                    if part.endswith(".json"):
-                        part = part[:-5]
-                    if part in meta_definitions:
-                        meta[part] = meta_definitions[part]
-                if file.is_dir():
-                    subtree[file.name] = recurse(file, meta_definitions=meta_definitions, depth=depth+1)
-                    subtree[file.name]["_meta"] = meta
-                elif file.suffix == ".json":
-                    mtime = file.stat().st_mtime_ns
-                    path = str(file.relative_to(WORKING_DIR))
-                    obj = subtree[long_id] = {"path": path, "mtime": mtime, "_meta": meta}
-                    if "_" in long_id:
-                        uid, muids = get_uid_and_muids(file)
-                    else:
-                        uid = file.name if file.is_dir() else file.stem
-                        muids = None
-                    obj["uid"] = uid
-                    if uid not in uid_index:
-                        uid_index[uid] = set()
-                    uid_index[uid].add(long_id)
-                    if long_id in file_index:
-                        logging.error(f"{str(file)} not unique")
-                    file_index[long_id] = obj
-                    if muids:
-                        for muid in muids:
-                            if muid not in muid_index:
-                                muid_index[muid] = set()
-                            muid_index[muid].add(long_id)
-                    
-                        # Create Virtual Files
-                        if 'translation' in muids:
-                            uid, muids = long_id.split('_')
-                            _add_virtual_comment_file(uid, muids, file, uid_index, muid_index, file_index, meta_definitions)
+        if depth == 0:
+            _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
+        return subtree
 
-            if depth == 0:
-                _add_virtual_project_files(uid_index, muid_index, file_index, subtree, _meta_definitions)
-            return subtree
+    _meta_definitions = {}
+    _tree_index = recurse(WORKING_DIR, {})
+    _uid_index = uid_index
+    _muid_index = muid_index
+    _file_index = file_index
+    _special_uid_mapping = make_special_uid_mapping()
 
-        
-        
-        _meta_definitions = {}
-        _tree_index = recurse(WORKING_DIR, {})
-        _uid_index = uid_index
-        _muid_index = muid_index
-        _file_index = file_index
-        _special_uid_mapping = make_special_uid_mapping()
+    for v in file_index.values():
+        v["_meta"] = invert_meta(v["_meta"])
+    print("File Index Built")
 
-        for v in file_index.values():
-            v["_meta"] = invert_meta(v["_meta"])
-        print("File Index Built")
-        save_state()
-        _build_complete.set()
-    finally:
-        state_build_lock_file.unlink()
     stats_calculator.reset()
 
 
@@ -604,7 +611,6 @@ def get_condensed_tree(path, user):
             future = cache[key] = executor.submit(get_condensed_tree_bg, path, user)
     return future.result()
 
-@profile(sort_args=['cumulative'])
 def get_condensed_tree_bg(path, user):
     print(f"Using user {user}")
     _build_complete.wait()
