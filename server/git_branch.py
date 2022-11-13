@@ -51,6 +51,7 @@ class GitBranch:
             self.repo = self.get_or_create_repo()
         self.origin = self.repo.remotes['origin']
         self.repo.git.config('pull.rebase', 'true')
+        self.repo.git.config('push.default', 'current')
 
     def get_file_map(self):
         files = {}
