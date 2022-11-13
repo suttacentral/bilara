@@ -35,7 +35,6 @@ class ConstructedQuery:
         self.bind_vars = {}
 
     def execute(self, bind_vars={}, **kwargs):
-        print(self.query)
         return self.search.execute(self.query, bind_vars={**self.bind_vars, **bind_vars}, **kwargs)
 
 def grouper(iterable, n):
@@ -49,12 +48,12 @@ def grouper(iterable, n):
 
 
 class Search:    
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.version = 1.2
         self.db = get_db()
         self._cursor_cache = TTLCache(1000, 3600)
         self._build_complete = Event()
-        self._verbose = True
+        self._verbose = verbose
         if self.needs_init():
             self.init()
             self.index()
@@ -172,7 +171,6 @@ class Search:
             self.db[collection].insert(doc)
 
     def update_segment(self, segment):
-        print(segment)
         doc = {
             'muids': segment['field'],
             'string': segment['value'],
@@ -185,10 +183,6 @@ class Search:
         self.insert_or_update('strings', doc)
 
     def execute(self, query, **kwargs):
-        #print("=== Running Query ===")
-        #print(query)
-        if 'bind_vars' in kwargs:
-            print(json.dumps(kwargs['bind_vars']))
         if 'count' not in kwargs:
             kwargs['count'] = True
         return self.db.aql.execute(query, **kwargs)
@@ -363,11 +357,7 @@ class Search:
                 segment_id_filter += ':'
             segment_id_filter += '%'
 
-
-        
-
         query_components.sort(key=lambda obj: not obj.get('query'))
-        print(query_components)
 
         constructed_query = ConstructedQuery(self)
         parts = []
