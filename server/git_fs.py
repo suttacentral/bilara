@@ -16,9 +16,6 @@ import atexit
 from git_branch import GitBranch, base_repo
 import git_pr
 
-
-
-_lock = threading.RLock()
 PUSH_DELAY = 15
 
 published = GitBranch(PUBLISHED_BRANCH_NAME)
@@ -34,50 +31,30 @@ _pending_commit = None
 
 def update_file(file, user):
     global _pending_commit
-    branch = unpublished.branch
     file = str(file).lstrip('/')
-    with _lock:
+    with unpublished.lock:
         commit_message = f'Translations by {user["login"]} to {file}'
-
-        if _pending_commit and branch.commit.message == commit_message:
-            # We can add onto this commit
-            git.add(file)
-            git.commit(amend=True, no_edit=True)
-        else:
-            finalize_commit()
-
-            git.add(file)
-            try:
-                git.commit(m=commit_message, author=f'{user.get("name") or user["login"]} <{user["email"]}>')
-                _pending_commit = branch.commit
-            except GitCommandError as e:
-                if e.status == 1 and ('nothing to commit' in e.stdout or 'nothing added to commit' in e.stdout):
-                    # This is unusual but fine
-                    pass
-                else:
-                    raise
+        print("Adding file")
+        unpublished.add(file)
+        print("Making Commit")
+        unpublished.commit(message=commit_message, author_name=f'{user["name"] or user["login"]}', author_email=user["email"])
+        print("Finalizing Commit")
+        unpublished.finalize_commit()
+        
 
 def update_files(user, files):
-    global _pending_commit
-    with _lock:
-        if _pending_commit:
-            finalize_commit()
-
-        git.add(files)
-        git.commit(m=f"Bulk update", author=f'{user["name"] or user["login"]} <{user["email"]}>')
-        finalize_commit()
+    with unpublished.lock:
+        unpublished.add(files)
+        unpublished.commit(message=f"Bulk update", author_name=f'{user["name"] or user["login"]}', author_email=user["email"])
+        unpublished.finalize_commit()
 
 def update_localization(files, files_deleted):
-    global _pending_commit
-    with _lock:
-        if _pending_commit:
-            finalize_commit()
-
-        git.add(files)
+    with unpublished.lock:
+        unpublished.add(files)
         if files_deleted:
-            git.rm(files_deleted)
-        git.commit(m=f"Update Localization")
-        finalize_commit()
+            unpublished.remove(files_deleted)
+        unpublished.commit(m=f"Update Localization")
+        unpublished.finalize_commit()
 
 def publish_localization(files, files_deleted):
     try:
@@ -119,10 +96,8 @@ def githook(webhook_payload):
         removed.extend(commit['removed'])
 
     print(f'{len(added)} added, {len(modified)} modified, {len(removed)} removed')
-    with _lock:
-        if _pending_commit:
-            finalize_commit()
-        git.pull('-Xtheirs')
+    with unpublished.lock:
+        unpublished.pull('-Xtheirs')
 
     if added or removed  or '_project.json' in modified or '_publication.json' in modified:
         import app
@@ -207,57 +182,3 @@ def create_publish_request(path, user):
     except Exception as e:
         logging.exception("Pull Request Creation Failed")
         return {'error': str(e) }
-
-
-
-
-def finalize_commit():
-    global _pending_commit
-    if not _pending_commit:
-        return
-
-    if not GIT_SYNC_ENABLED:
-        print('Not Pushing because disabled in config')
-        _pending_commit = None
-        return
-    print(f'Pushing to {unpublished.name}... ', end='')
-    for i in range(0, 3):
-        try:
-            git.push('-u', 'origin', unpublished.name, kill_after_timeout=20)
-            print('Success')
-            break
-        except GitCommandError:
-            print('Git push failed, attempting to pull and trying again')
-            if i <= 1:
-                git.pull('-Xtheirs', kill_after_timeout=20)
-
-    else:
-        print('Failure')
-        print('Git push failed multiple times')
-        notify.send_message_to_admin('Bilara failed to push to Github, this requires manual intervention', title='Bilara Push Fail')
-        return
-    _pending_commit = None
-
-
-def finalizer_task_runner(interval):
-    while True:
-        time.sleep(interval)
-        if not _pending_commit:
-            continue
-
-        with _lock:
-            now = time.time()
-            if not _pending_commit:
-                continue
-            if now - _pending_commit.committed_date > PUSH_DELAY:
-                finalize_commit()
-
-atexit.register(finalize_commit)
-
-def start_finalizer(interval):
-    finalizer = threading.Thread(target=finalizer_task_runner, args=(interval,))
-    finalizer.daemon = True
-    finalizer.start()
-    return finalizer
-
-_finalizer = start_finalizer(5)

@@ -28,6 +28,8 @@ executor = ThreadPoolExecutor(max_workers=2)
 saved_state_file = pathlib.Path("./.saved_state.pickle")
 state_build_lock_file = pathlib.Path('./saved_state.lock')
 
+build_ready = Event()
+
 class NoMatchingEntry(Exception):
     pass
 
@@ -117,8 +119,6 @@ def load_state(state_file):
     print("Loaded saved file index")
     return True
 
-_build_complete = Event()
-
 def _add_virtual_comment_file(uid, translation_muids, translation_file, uid_index, muid_index, file_index, meta_definitions):
     muids = translation_muids.replace('translation', 'comment')
     comment_stem = f"{uid}_{muids}"
@@ -186,12 +186,14 @@ def make_file_index(force=False):
             try:
                 print(f'Loading the state (pid = {os.getpid()})')
                 load_state(state_file)
+                build_ready.set()
                 return
             except Exception as e:
                 logging.exception(e)
         print(f'Generating the state (pid = {os.getpid()})')
         generate_state()
         save_state(state_file)
+        build_ready.set()
 
 def generate_state():
     global _tree_index
@@ -613,7 +615,7 @@ def get_condensed_tree(path, user):
 
 def get_condensed_tree_bg(path, user):
     print(f"Using user {user}")
-    _build_complete.wait()
+    build_ready.wait()
     tree = _tree_index
     for part in path:
         tree = tree[part]

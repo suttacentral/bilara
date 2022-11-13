@@ -47,7 +47,7 @@ def update_segment(segment, user):
         logging.error("User not allowed to edit")
         return {"error": "Inadequate Permission"}
 
-    with git_fs._lock:
+    with git_fs.unpublished.lock:
         try:
             file_data = json_load(file)
         except FileNotFoundError:
@@ -72,16 +72,16 @@ def update_segment(segment, user):
             logging.exception(f"could not write segment: {segment}")
             return {"error": "could not write file"}
 
-        executor.submit(background_update, filepath, user, segment)
+        try:
+            if config.GIT_COMMIT_ENABLED:
+                git_fs.update_file(filepath, user)
+        except Exception:
+            logging.exception("Git Commit Failed")
+
+        executor.submit(background_update, segment)
         return result
 
-def background_update(filepath, user, segment):
-    try:
-        if config.GIT_COMMIT_ENABLED:
-            git_fs.update_file(filepath, user)
-    except Exception:
-        logging.exception("Git Commit Failed")
-
+def background_update(segment):
     try:
         search.update_segment(segment)
     except Exception:
