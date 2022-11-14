@@ -1,4 +1,5 @@
 import filelock
+import time
 
 from git import Repo, GitCommandError, Actor
 from config import (
@@ -83,10 +84,22 @@ class GitBranch:
     def commit(self, message, author_name=None, author_email=None):
         if author_name:
             author = Actor(author_name, author_email)
-            self.repo.index.commit(message, author=author)
-            return
+        else:
+            author = None
+        retry_delay = 0.5
+        for i in range(0, 5):
+            try:
+                self.repo.index.commit(message, author=author)
+                if i > 0:
+                    print(f'Commit succeeded after {i+1} attempts')
+                return
+            except OSError:
+                # index.commit emits an OSError if it can not acquire the git repo lock
+                time.sleep(retry_delay)
+                retry_delay += 0.5
         
-        self.repo.index.commit(message)
+        # Try one last time to commit and just throw the exception
+        self.repo.index.commit(message, author=author)
 
     def finalize_commit(self):
         if not GIT_SYNC_ENABLED:

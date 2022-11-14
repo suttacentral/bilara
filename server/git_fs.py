@@ -34,19 +34,17 @@ def update_file(file, user):
     file = str(file).lstrip('/')
     with unpublished.lock:
         commit_message = f'Translations by {user["login"]} to {file}'
-        print("Adding file")
         unpublished.add(file)
-        print("Making Commit")
         unpublished.commit(message=commit_message, author_name=f'{user["name"] or user["login"]}', author_email=user["email"])
-        print("Finalizing Commit")
-        unpublished.finalize_commit()
+    
+    unpublished.finalize_commit()
         
 
 def update_files(user, files):
     with unpublished.lock:
         unpublished.add(files)
         unpublished.commit(message=f"Bulk update", author_name=f'{user["name"] or user["login"]}', author_email=user["email"])
-        unpublished.finalize_commit()
+    unpublished.finalize_commit()
 
 def update_localization(files, files_deleted):
     with unpublished.lock:
@@ -54,7 +52,8 @@ def update_localization(files, files_deleted):
         if files_deleted:
             unpublished.remove(files_deleted)
         unpublished.commit(m=f"Update Localization")
-        unpublished.finalize_commit()
+    
+    unpublished.finalize_commit()
 
 def publish_localization(files, files_deleted):
     try:
