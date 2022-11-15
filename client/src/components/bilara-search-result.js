@@ -10,7 +10,7 @@ import {
 } from 'lit-element';
 import {
     repeat
-} from 'lit-html/directives/repeat';
+} from 'lit-html/directives/repeat.js';
 
 import { formStyles } from './shared-styles';
 

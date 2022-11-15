@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit-element';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 
 export class BilaraMatches extends LitElement{
     render() {

@@ -1,7 +1,7 @@
 import { css, html } from 'lit-element';
 
 
-import { repeat } from 'lit-html/directives/repeat';
+import { repeat } from 'lit-html/directives/repeat.js';
 
 import { store } from '../store.js';
 

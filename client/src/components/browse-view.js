@@ -1,5 +1,5 @@
 import { html, css, LitElement } from 'lit-element';
-import { repeat } from 'lit-html/directives/repeat';
+import { repeat } from 'lit-html/directives/repeat.js';
 import { PageViewElement } from './page-view-element.js';
 
 import {navigate} from '../actions/app.js';
@@ -15,7 +15,7 @@ import { featureFlags } from '../util.js';
 
 import { setPublishData } from '../actions/dialog.js';
 
-import '@lion/dialog/lion-dialog.js';
+import '@lion/dialog/define';
 
 import './bilara-dialog-publish.js';
 

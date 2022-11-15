@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
-import { classMap } from 'lit-html/directives/class-map';
+import { classMap } from 'lit-html/directives/class-map.js';
 import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
