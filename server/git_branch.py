@@ -1,5 +1,6 @@
 import filelock
 import time
+from retry import retry
 
 from git import Repo, GitCommandError, Actor
 from config import (
@@ -64,40 +65,32 @@ class GitBranch:
                 files[filepath] = sha
         return files
 
+    @retry(exceptions=IOError, tries=7, delay=0.5, backoff=2)
     def add(self, files):
         self.repo.index.add(files)
-        
+
+    @retry(exceptions=IOError, tries=7, delay=0.5, backoff=2)
     def remove(self, files):
         self.repo.index.remove(files, working_tree=True)
 
+    @retry(exceptions=IOError, tries=5, delay=2, jitter=2)
     def pull(self, *args, **kwargs):
         print(f'Pulling {self.name}')
         self.origin.pull()
 
+    @retry(exceptions=IOError, tries=5, delay=2, jitter=2)
     def push(self, *args, **kwargs):
         if not GIT_SYNC_ENABLED:
             print('Not Pushing because disabled in config')
             return
         self.origin.push(*args, **kwargs)
 
+    @retry(exceptions=IOError, tries=7, delay=0.5, backoff=2)
     def commit(self, message, author_name=None, author_email=None):
         if author_name:
             author = Actor(author_name, author_email)
         else:
             author = None
-        retry_delay = 0.5
-        for i in range(0, 5):
-            try:
-                self.repo.index.commit(message, author=author)
-                if i > 0:
-                    print(f'Commit succeeded after {i+1} attempts')
-                return
-            except OSError:
-                # index.commit emits an OSError if it can not acquire the git repo lock
-                time.sleep(retry_delay)
-                retry_delay += 0.5
-        
-        # Try one last time to commit and just throw the exception
         self.repo.index.commit(message, author=author)
 
     def finalize_commit(self):
@@ -108,14 +101,14 @@ class GitBranch:
         git = self.repo.git
         
         print(f'Pushing to {self.name}... ', end='')
-        for i in range(0, 3):
+        for i in range(0, 4):
             try:
                 self.origin.push(kill_after_timeout=20).raise_if_error()
                 print('Success')
                 break
-            except GitCommandError:
+            except (GitCommandError, IOError):
                 print('Git push failed, attempting to pull and trying again')
-                if i <= 1:
+                if i <= 2:
                     git.pull('-Xtheirs', kill_after_timeout=20)
 
         else:
@@ -123,4 +116,3 @@ class GitBranch:
             print('Git push failed multiple times')
             notify.send_message_to_admin('Bilara failed to push to Github, this requires manual intervention', title='Bilara Push Fail')
             return
-        _pending_commit = None
