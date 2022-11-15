@@ -84,7 +84,8 @@ def get_state_hex():
     return state_hex
 
 def get_state_file():
-    return pathlib.Path('/tmp/bilara-state-{hexsha}')
+    state_hex = get_state_hex()
+    return pathlib.Path(f'/tmp/bilara-state-{state_hex}')
 
 def get_state_lockfile():
     return get_state_file().with_suffix('.lock')

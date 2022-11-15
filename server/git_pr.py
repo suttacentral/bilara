@@ -88,11 +88,9 @@ class PRBranch(GitBranch):
     def copy_files(self):
         file_path = git_fs.unpublished.path / (str(self.relative_path) +'.json')
         if file_path.exists():
-            print(f'Using {file_path}')
             files = [file_path]
         else:
             files = sorted((git_fs.unpublished.path / self.relative_path).glob('**/*.json'))
-            print(f'Using {files}')
         if not files:
             logging.error(f'No files copied for {self.relative_path}')
         else:
@@ -107,13 +105,13 @@ class PRBranch(GitBranch):
             new_file = self.path / file.relative_to(git_fs.unpublished.path)
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file, new_file)
-            self.repo.git.add(str(new_file))
+            self.add([new_file])
 
     def delete_these_files(self, files):
         for file in files:
             pub_file = self.path / file.relative_to(git_fs.unpublished.path)
             if pub_file.exists():
-                self.repo.git.rm(pub_file)
+                self.remove([pub_file])
 
     def create_pr(self, msg=None, title=None):
         if not GIT_SYNC_ENABLED:
