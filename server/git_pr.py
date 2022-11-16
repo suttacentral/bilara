@@ -97,6 +97,7 @@ class PRBranch(GitBranch):
             self.copy_these_files(files)
 
     def copy_these_files(self, files):
+        new_files = []
         for file in files:
             if file.name.startswith('_'):
                 continue
@@ -105,7 +106,8 @@ class PRBranch(GitBranch):
             new_file = self.path / file.relative_to(git_fs.unpublished.path)
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file, new_file)
-            self.add([new_file])
+            new_files.append(new_file)
+        self.add(new_files)
 
     def delete_these_files(self, files):
         for file in files:
