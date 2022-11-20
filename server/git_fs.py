@@ -128,13 +128,19 @@ def get_publication_state():
         unpublished.pull()
     published_files = published.get_file_map()
     unpublished_files = unpublished.get_file_map()
-
+    
+    not_published = {f for f in unpublished_files if f not in published_files}
+    fully_published = {f for f,sha in unpublished_files.items() if published_files.get(f) == sha}
+    modified = set(unpublished_files) - not_published - fully_published
+    
     pr_in_progress = {entry.get('path'): entry['url'] for entry in git_pr.pr_log.load().values()}
 
     print(pr_in_progress)
     from permissions import make_may_publish_regex
     may_publish_regex = make_may_publish_regex()
+    
     result = defaultdict(lambda: {'PUBLISHED':0, 'UNPUBLISHED': 0, 'MODIFIED': 0})
+    
     for filepath, sha in unpublished_files.items():
         pathkey = filepath[:-5] if filepath.endswith('.json') else filepath
         if not filepath.startswith('translation/'):
@@ -143,13 +149,14 @@ def get_publication_state():
             continue
         elif pathkey in pr_in_progress:
                 state = {'state': 'PULL_REQUEST', 'url': pr_in_progress[pathkey]}
-        elif filepath not in published_files:
+        elif filepath in not_published:
             state = 'UNPUBLISHED'
+        elif filepath in fully_published:
+            state = 'PUBLISHED'
+        elif filepath in modified:
+            state = 'MODIFIED'
         else:
-            if published_files[filepath] == sha:
-                state = 'PUBLISHED'
-            else:
-                state = 'MODIFIED'
+            logging.error(f'Filepath {filepath} has unexpected indeterminate publication status')
         result[filepath] = state
         if 'state' in state:
             state = 'MODIFIED'
