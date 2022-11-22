@@ -11,5 +11,5 @@ export FLASK_DEBUG=1
 	cd server;
 	poetry run python -c "import arango_common; arango_common.run_migrations()" &&
 	poetry run flask run --port 5000 ) &
-	(cd client; npx es-dev-server ) 
+	(cd client; npx web-dev-server --watch) 
 )
