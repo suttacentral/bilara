@@ -65,6 +65,6 @@ export default {
       ],
     }),
     /* Copy assets */
-    copy({ patterns: '{fonts,images}/*' }),
+    copy({ patterns: '{fonts,images}/**' }),
   ],
 };
