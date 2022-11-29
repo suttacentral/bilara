@@ -1,8 +1,13 @@
 import filelock
 import time
 from retry import retry
+from pathlib import Path
+import notify
+import logging
 
-from git import Repo, GitCommandError, Actor
+import pygit2
+
+from git import Repo, GitCommandError, Actor, GitCmdObjectDB
 from config import (
     GIT_REMOTE_REPO,
     REPO_DIR,
@@ -17,6 +22,9 @@ else:
     base_repo = Repo.clone_from(
         GIT_REMOTE_REPO, REPO_DIR, bare=True
     )
+
+class MergeConflict(Exception):
+    pass
 
 class GitBranch:
     repo = None
@@ -43,16 +51,20 @@ class GitBranch:
             ],
         )
 
-    def __init__(self, branch_name):
+    def __init__(self, branch_name, repo_path=None):
         self.lock = filelock.FileLock(f'/tmp/{branch_name}.branch.lock')
         self.name = branch_name
-        self.path = self.get_checkout_dir()
-        if self.path.exists():
+        if repo_path:
+            self.path = repo_path
             self.repo = Repo(self.path)
         else:
-            self.repo = self.get_or_create_repo()
-        self.origin = self.repo.remotes['origin']
+            self.path = self.get_checkout_dir()
+            if self.path.exists():
+                self.repo = Repo(self.path)
+            else:
+                self.repo = self.get_or_create_repo()
         self.repo.git.config('push.default', 'current')
+        self.repo.git.config('pull.ff', 'true')
 
     def get_file_map(self):
         files = {}
@@ -74,16 +86,15 @@ class GitBranch:
         self.repo.index.remove(files, working_tree=True)
 
     @retry(exceptions=IOError, tries=5, delay=2, jitter=2)
-    def pull(self, *args, **kwargs):
-        print(f'Pulling {self.name}')
-        self.origin.pull()
+    def pull(self, remote_name='origin'):
+        self.repo.remotes[remote_name].pull()
 
     @retry(exceptions=IOError, tries=5, delay=2, jitter=2)
-    def push(self, *args, **kwargs):
+    def push(self, remote_name='origin'):
         if not GIT_SYNC_ENABLED:
             print('Not Pushing because disabled in config')
             return
-        self.origin.push(*args, **kwargs)
+        self.repo.remotes[remote_name].push(self.name)
 
     @retry(exceptions=IOError, tries=7, delay=0.5, backoff=2)
     def commit(self, message, author_name=None, author_email=None):
@@ -93,26 +104,101 @@ class GitBranch:
             author = None
         self.repo.index.commit(message, author=author)
 
-    def finalize_commit(self):
+    def sync_remote(self, remote_name='origin'):
         if not GIT_SYNC_ENABLED:
             print('Not Pushing because disabled in config')
             return
-        
-        git = self.repo.git
-        
-        print(f'Pushing to {self.name}... ', end='')
-        for i in range(0, 4):
-            try:
-                self.origin.push(kill_after_timeout=20).raise_if_error()
-                print('Success')
-                break
-            except (GitCommandError, IOError):
-                print('Git push failed, attempting to pull and trying again')
-                if i <= 2:
-                    git.pull('-Xtheirs', kill_after_timeout=20)
+        remote = self.repo.remotes[remote_name]
+        try:
+            remote.pull(X='theirs', kill_after_timeout=20)
+            remote.push()
+            return True
+        except (GitCommandError, IOError) as e:
+            logging.exception('Failed to pull/push')
+            return False
 
+class PyGitBranch(GitBranch):
+    pygit2_repo = None
+    def __init__(self, branch_name, repo_path=None):
+        super().__init__(branch_name, repo_path)
+        self.pygit2_repo = pygit2.Repository(self.path)
+
+    def add(self, files):
+        if isinstance(files, (str, Path)):
+            self.pygit2_repo.index.add(files)
         else:
-            print('Failure')
-            print('Git push failed multiple times')
-            notify.send_message_to_admin('Bilara failed to push to Github, this requires manual intervention', title='Bilara Push Fail')
+            self.pygit2_repo.index.add_all(files)
+
+    def pull_NOT_WORKING(self, remote_name='origin'):
+        print(f'Pulling {self.name}')
+        
+        branch = self.name
+        
+        repo = self.pygit2_repo
+        
+        
+        remote = repo.remotes[remote_name]
+        remote.fetch(refspecs=[branch])
+        remote_master_id = repo.lookup_reference(f'refs/remotes/origin//{branch}').target
+        merge_result, _ = repo.merge_analysis(remote_master_id)
+        # Up to date, do nothing
+        if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE:
             return
+        # We can just fastforward
+        elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD:
+            repo.checkout_tree(repo.get(remote_master_id))
+            try:
+                master_ref = repo.lookup_reference(f'refs/heads/{branch}')
+                master_ref.set_target(remote_master_id)
+            except KeyError:
+                repo.create_branch(branch, repo.get(remote_master_id))
+            repo.head.set_target(remote_master_id)
+        elif merge_result & pygit2.GIT_MERGE_ANALYSIS_NORMAL:
+            repo.merge(remote_master_id)
+
+            if repo.index.conflicts is not None:
+                for conflict in repo.index.conflicts:
+                    print 
+                raise MergeConflict(f'Conflicts found in: {conflict[0].path}' )
+
+            user = repo.default_signature
+            tree = repo.index.write_tree()
+            commit = repo.create_commit('HEAD',
+                                        user,
+                                        user,
+                                        'Merge!',
+                                        tree,
+                                        [repo.head.target, remote_master_id])
+            # We need to do this or git CLI will think we are still merging.
+            repo.state_cleanup()
+        else:
+            raise MergeConflict('Unknown merge analysis result')
+        remote.fetch([branch])
+
+    @retry(exceptions=IOError, tries=5, delay=2, jitter=2)
+    def push(self, remote_name='origin'):
+        if not GIT_SYNC_ENABLED:
+            print('Not Pushing because disabled in config')
+            return
+        repo = self.pygit2_repo
+        ref = f'refs/heads/{self.name}:refs/heads/{self.name}'
+        remote = repo.remotes[remote_name]
+        remote.push([ref])
+
+    def commit(self, message, author_name=None, author_email=None):
+        repo = self.pygit2_repo
+        
+        if author_name:
+            author = pygit2.Signature(author_name, author_email)
+        else:
+            author = repo.default_signature
+        
+        committer = repo.default_signature        
+        
+        index = repo.index
+        index.write()
+        tree = index.write_tree()
+        ref = repo.head.name
+        parents = [repo.head.target]
+        
+        repo.create_commit(ref, author, committer, message, tree, parents)
