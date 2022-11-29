@@ -1,6 +1,7 @@
 import logging
 import git_fs
 from config import config
+import pre_commit
 from util import bilarasortkey
 from fs import get_file_path, get_file, get_parent_uid, is_id_legal
 from util import json_load, json_save
@@ -24,6 +25,7 @@ def update_segment(segment, user):
     """
 
     segment_id = segment["segmentId"]
+    segment = pre_commit.modify(segment)
 
     if not is_id_legal(segment_id):
         logging.error(f"Invalid Segment ID: {segment_id}")
