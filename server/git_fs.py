@@ -25,7 +25,6 @@ git = unpublished.repo.git
 
 def create_empty_commit(user, branch_name):
     git.commit(allow_empty=True, m=f'Translations by {user["login"]}', author=f'{user["name"]} <{user["email"]}>')
-    _pending_commits[branch_name] = time.time()
 
 _pending_commit = None
 
@@ -36,15 +35,11 @@ def update_file(file, user):
         commit_message = f'Translations by {user["login"]} to {file}'
         unpublished.add(file)
         unpublished.commit(message=commit_message, author_name=f'{user["name"] or user["login"]}', author_email=user["email"])
-    
-    unpublished.finalize_commit()
-        
 
 def update_files(user, files):
     with unpublished.lock:
         unpublished.add(files)
         unpublished.commit(message=f"Bulk update", author_name=f'{user["name"] or user["login"]}', author_email=user["email"])
-    unpublished.finalize_commit()
 
 def update_localization(files, files_deleted):
     with unpublished.lock:
@@ -53,7 +48,7 @@ def update_localization(files, files_deleted):
             unpublished.remove(files_deleted)
         unpublished.commit(m=f"Update Localization")
     
-    unpublished.finalize_commit()
+    unpublished.sync_remote()
 
 def publish_localization(files, files_deleted):
     try:

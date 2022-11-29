@@ -1,3 +1,4 @@
+import atexit
 import logging
 import time
 from urllib.parse import urlencode
@@ -20,8 +21,10 @@ import git_fs
 import git_pr
 import fs
 import permissions
-from segment_updates import update_segment
 from search import search
+from bilara_types import SegmentUpdate, User
+import tasks
+import task_runner
 
 app = Flask(__name__)
 
@@ -46,10 +49,17 @@ def segments(long_id):
 
 @app.route("/api/segment/", methods=["POST"])
 def update():
-    segment = request.get_json()
+    segment: SegmentUpdate = request.get_json()
     segments_logger.debug(segment)
-    user = get_user_details()
-    return jsonify(update_segment(segment=segment, user=user))
+    user: User = get_user_details()
+    task = {
+        'segment': segment,
+        'user': user
+    }
+    tasks.add_task(task_id=f'update-{user["login"]}-{segment["segmentId"]}',
+                   task_type='segment-update',
+                   task=task)
+    return {"success": True}
 
 
 @app.route("/api/nav/")
@@ -127,7 +137,11 @@ def publish_request():
 def webhook():
     data = request.get_json()
     if 'pusher' in data:
-        git_fs.githook(data)
+        task = {
+                'refs': data['refs'],
+                'commits': data['commits']
+                }
+        tasks.add_task(f'githook-{data["head_commit"]["id"]}', 'githook', task)
     if 'action' in data:
         git_pr.perform_housekeeping()
     return "Okay", 200
@@ -256,6 +270,12 @@ def init():
     problemsLog.clear()
     permissions.get_rules(rebuild=True)
     fs.make_file_index()
+    try:
+        tr = task_runner.TaskRunner()
+        tr.start()
+        atexit.register(task_runner.close_task_runner, tr)
+    except task_runner.AlreadyRunningException:
+        pass
 
 
 init()

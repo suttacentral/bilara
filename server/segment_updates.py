@@ -10,21 +10,23 @@ from permissions import Permission, get_permissions
 from concurrent.futures import ThreadPoolExecutor, wait
 
 from search import search
-
+from bilara_types import SegmentUpdate, User
 
 executor = ThreadPoolExecutor(max_workers=1)
 
-def update_segment(segment, user):
+def update_segment(segment: SegmentUpdate, user: User):
     """
     segment looks like:
     {
       "segmentId": "dn1:1.1",
       "field": "translation-en-sujato",
-      "value": "..", "oldValue": "..."
+      "value": "..",
+      "oldValue": "..."
     }
     """
 
     segment_id = segment["segmentId"]
+    
     segment = pre_commit.modify(segment)
 
     if not is_id_legal(segment_id):
@@ -79,6 +81,7 @@ def update_segment(segment, user):
                 git_fs.update_file(filepath, user)
         except Exception:
             logging.exception("Git Commit Failed")
+            result = {"error": "Git commit failed"}
 
         executor.submit(background_update, segment)
         return result

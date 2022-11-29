@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, FIRST_COMPLETED, wait
 
 MIGRATIONS_DIR = pathlib.Path(__file__).parent / 'migrations'
 
-def get_db():
+def get_db() -> StandardDatabase:
     client = ArangoClient()
     return client.db(username="bilara", password="bilara", name="bilara")
 
