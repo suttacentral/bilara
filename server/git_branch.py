@@ -90,11 +90,11 @@ class GitBranch:
         self.repo.remotes[remote_name].pull()
 
     @retry(exceptions=IOError, tries=5, delay=2, jitter=2)
-    def push(self, remote_name='origin'):
+    def push(self, remote_name='origin', **kwargs):
         if not GIT_SYNC_ENABLED:
             print('Not Pushing because disabled in config')
             return
-        self.repo.remotes[remote_name].push(self.name)
+        self.repo.remotes[remote_name].push(self.name, **kwargs)
 
     @retry(exceptions=IOError, tries=7, delay=0.5, backoff=2)
     def commit(self, message, author_name=None, author_email=None):
