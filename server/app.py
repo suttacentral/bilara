@@ -154,7 +154,7 @@ if config.GITHUB_AUTH_ENABLED:
         "github",
         consumer_key=config.GIT_APP_KEY,
         consumer_secret=config.GIT_APP_SECRET,
-        request_token_params={"scope": "repo read:user user:email"},
+        request_token_params={"scope": "read:user user:email"},
         base_url="https://api.github.com/",
         request_token_url=None,
         access_token_method="POST",
