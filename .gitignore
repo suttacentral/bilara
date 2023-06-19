@@ -6,3 +6,9 @@ node_modules
 *.gpg
 *.pickle
 local.sh
+.env
+.idea
+*.crt
+flask_session/
+log
+

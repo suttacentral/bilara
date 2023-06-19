@@ -28,6 +28,8 @@ filelock = "^3.8.0"
 ipython = "^8.4.0"
 retry = "^0.9.2"
 pygit2 = "^1.11.1"
+elasticsearch = "^8.8.0"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.4.0"

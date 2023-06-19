@@ -26,6 +26,11 @@ from bilara_types import SegmentUpdate, User
 import tasks
 import task_runner
 
+
+import arango_common
+arango_common.run_migrations()
+
+
 app = Flask(__name__)
 
 cors = CORS(app)
