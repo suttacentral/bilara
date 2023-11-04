@@ -167,7 +167,11 @@ def perform_housekeeping():
         if folder.name not in remote_branches:
             shutil.rmtree(folder)
 
-    for pr_name, pr_value in  pr_log.load().items():
+    for pr_name, pr_value in pr_log.load().items():
+        if pr_value is None:
+            # I don't know exactly how this happens, but it does very rarely
+            pr_log.unset(pr_name)
+            continue
         pr_num = pr_value['number']
         pr = gh_repo.get_pull(pr_num)
         if pr.state == 'closed':
