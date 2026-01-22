@@ -26,9 +26,22 @@ class BilaraColumnsDialog extends BilaraDialog {
         return [
           dialogStyles,
           css`
-          [disabled]{
-              color: orange;
-          }
+            [disabled]{
+                color: orange;
+            }
+            
+            #columns {
+                max-height: 60vh;
+                overflow-y: auto;
+                padding-bottom: 100px;
+            }
+            
+            button {
+                position: relative;
+                top: auto;
+                display: inline-block;
+                margin-top: 16px;
+            }
           `
         ]
     
