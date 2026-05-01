@@ -52,6 +52,14 @@ div
   display: block;
 }
 
+
+.string[dir='rtl'],
+.string-html[dir='rtl']
+{
+  text-align: right;
+  unicode-bidi: plaintext;
+}
+
 .string.editable:focus
 {
     box-shadow: 0 0 0 1px var(--bilara-red);
@@ -133,6 +141,7 @@ supplied
     return html`
     <div class="${classMap({'root': this._root, 'show-html': this._showHtml})}">
     <span class="${classMap({'string': true, 'editable': this._editable})}" tabindex="${this._editable == 'true' ? 0 : -1}"
+                  dir="${this._dir || 'auto'}"    
                   contenteditable="${this._editable == true ? contentEditableValue : 'false'}"
                   @keydown="${this._keydownEvent}"
                   @focus="${this._focusEvent}"
@@ -140,7 +149,7 @@ supplied
                   @blur="${this._blur}"
                   @mousedown="${this._click}"
                 ></span>
-    <span class="string-html" @mousedown="${this._click}"></span>
+    <span class="string-html" dir="${this._dir || 'auto'}" @mousedown="${this._click}"></span>
     ${this.renderStatus()}
     
     </div>`
@@ -152,6 +161,7 @@ supplied
       segmentId: String,
       field: String,
       _editable: Boolean,
+      _dir: String,
       _value: String,
       _root: Boolean,
       _showHtml: Boolean,

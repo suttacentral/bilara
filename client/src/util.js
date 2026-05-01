@@ -71,3 +71,28 @@ export function deepClone(obj) {
     [d]: (obj[d] !== null && obj[d].constructor === Object) ? deepClone(obj[d]) : obj[d]
   }), {});
 }
+
+const RTL_LANGS = new Set([
+  'ar',
+  'arc',
+  'dv',
+  'fa',
+  'he',
+  'ku',
+  'ps',
+  'syr',
+  'ur',
+  'yi'
+]);
+
+export function getLangFromField(field) {
+  if (!field || typeof field !== 'string') return null;
+  const parts = field.split('-');
+  return parts.length > 1 ? parts[1].toLowerCase() : null;
+}
+
+export function isRtlLanguage(lang) {
+  if (!lang || typeof lang !== 'string') return false;
+  const base = lang.toLowerCase().split('-')[0];
+  return RTL_LANGS.has(base);
+}

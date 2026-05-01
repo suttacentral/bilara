@@ -5,6 +5,7 @@ import { focusSegment } from '../actions/segment.js';
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { ColumnStyles } from '../styles/columns.js';
+import { isRtlLanguage } from '../util.js';
 import './bilara-cell.js';
 import './bilara-matches.js';
 
@@ -62,11 +63,13 @@ bilara-cell.string, bilara-cell.string-html {
       ${this._orderedFields.map(field => {
           const fieldData = this._fields[field],
                 language = fieldData['language'],
-                editable = fieldData.permission == 'EDIT';
+                editable = fieldData.permission == 'EDIT',
+                dir = isRtlLanguage(language && language['uid']) ? 'rtl' : 'ltr';
           
           return html`
             <bilara-cell class="string"
               lang="${language ? language['uid'] : undefined}"
+              ._dir="${dir}"
               segmentId="${this.segmentId}"
               field="${field}"
               ._editable="${ editable }"

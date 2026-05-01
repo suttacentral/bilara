@@ -18,6 +18,8 @@ import { highlightMatch } from '../util.js'
 
 import { contentEditableValue } from '../util.js';
 
+import { getLangFromField, isRtlLanguage } from '../util.js';
+
 import { BilaraUpdatable } from './bilara-updatable.js';
 
 export class BilaraSearchResult extends BilaraUpdatable {
@@ -53,6 +55,10 @@ export class BilaraSearchResult extends BilaraUpdatable {
         .result-translation-text {
           padding: 0 8px;
           font-size: 0.9em
+        }
+        .result-translation-text[dir='rtl'] {
+          text-align: right;
+          unicode-bidi: plaintext;
         }
         .result-root-text {
           font-style: italic;
@@ -154,6 +160,8 @@ export class BilaraSearchResult extends BilaraUpdatable {
 
     render() {
         const uid = /(.*):/.exec(this._segmentId)[1];
+        const targetLang = getLangFromField(this._target && this._target.field);
+        const targetDir = isRtlLanguage(targetLang) ? 'rtl' : 'ltr';
         return html `
             <form class="result" id="${this._segmentId}" @submit="${this._submitResult}">
             <div class="result-location">
@@ -167,7 +175,7 @@ export class BilaraSearchResult extends BilaraUpdatable {
             }
             </div>
             <div class="status-wrapper">
-            <div class="result-translation-text" contenteditable="${contentEditableValue}" @input=${this._input} @keydown=${this._keydownEvent}></div>
+            <div class="result-translation-text" dir="${targetDir}" contenteditable="${contentEditableValue}" @input=${this._input} @keydown=${this._keydownEvent}></div>
             ${this.renderStatus()}
             </div>
             <div class="result-root-text"></div>
