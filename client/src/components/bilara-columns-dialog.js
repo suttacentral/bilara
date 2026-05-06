@@ -38,12 +38,18 @@ class BilaraColumnsDialog extends BilaraDialog {
                 background-color: var(--bilara-black);
                 border: 2px solid var(--bilara-secondary-color);
                 border-radius: 8px;
-                min-height: 300px;
-                max-height: 80vh;
+                height: 80vh;
                 width: 420px;
                 max-width: 90vw;
                 box-shadow: 0 8px 32px rgba(0,0,0,0.4);
                 overflow: hidden;
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
             }
 
             .dialog-header {
@@ -380,12 +386,16 @@ class BilaraColumnsDialog extends BilaraDialog {
         `
     }
 
+    _cancel() {
+        this.dispatchEvent(new Event('close-overlay', {bubbles: true, composed: true}));
+    }
+
     _accept(e) {
         e.preventDefault();
         const data = formToJSON(e.target);
         let selectedFields = data.columns;
         store.dispatch(updateTertiary(this._keyValue, selectedFields));
-        this.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+        this.dispatchEvent(new Event('close-overlay', {bubbles: true, composed: true}));
         window.location.reload(false);
     }
 }
