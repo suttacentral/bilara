@@ -37,6 +37,9 @@ import './bilara-modal.js';
 
 import { themes, defaultTheme } from '../styles/themes.js';
 
+// Set the shutdown date/time to display the retirement banner; leave empty to hide it.
+const RETIREMENT_DATE = '2026-08-17';
+
 class BilaraApp extends connect(store)(LitElement) {
   static get styles() {
     return [
@@ -48,6 +51,7 @@ class BilaraApp extends connect(store)(LitElement) {
     top: 0;
 
     display: flex;
+    flex-direction: column;
 
     width: 100%;
     height: var(--bilara-header-height);
@@ -55,6 +59,28 @@ class BilaraApp extends connect(store)(LitElement) {
     color: var(--bilara-secondary-text-color);
     background-color: var(--bilara-black);
     box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.app-header-banner
+{
+    padding: .5em 1em;
+
+    font-weight: bold;
+    text-align: center;
+
+    color: #fff;
+    background-color: var(--bilara-red, red);
+}
+
+.app-header-banner a
+{
+    color: inherit;
+    text-decoration: underline;
+}
+
+.app-header-row
+{
+    display: flex;
 
     justify-content: space-between;
 }
@@ -325,7 +351,7 @@ details a
   }
 
   render() {
-    
+
     const translationUrl = this._page.subpath.length ? '/translation' + this._page.subpath.join('/') : null;
 
     // Anything that's related to rendering should be done in here.
@@ -333,6 +359,11 @@ details a
 
     <!-- Header -->
     <header class="app-header">
+    ${ RETIREMENT_DATE ? html`
+    <div class="app-header-banner">
+      This version of Bilara is being retired. It will turn off at <b>${RETIREMENT_DATE}</b>. The new Bilara will reappear at this same URL shortly after.&nbsp;<a href="https://discourse.suttacentral.net/" target="_blank">Check our forum for status updates.</a>
+    </div>` : ''}
+    <div class="app-header-row">
     <div class="app-header-left">
        <a href="/browse"><h1 main-title>${this.appTitle}</h1></a>
                    <details>
@@ -350,7 +381,7 @@ details a
       <li>Repeat until finished!</li>
       </ol>
       <b>Some tips</b>
-      <ul>   
+      <ul>
             <li>Write plain text. Don’t input anything other than plain text.</li>
             <li>Your translations are securely saved at Github using git version control, which keeps a full record of every change made. In emergency, contact admins, and they will restore your text if possible.</li>
             <li>Github has a <a href="https://github.com/suttacentral/bilara-data/pulse" target="_blank">range of fancy stats</a>.</li>
@@ -373,14 +404,15 @@ details a
   <img src="${this._avatarUrl || '../images/bob.jpg'}" alt="${this._username}">
   <figcaption class="user-name">${this._username}</figcaption>
 </figure></a>
-<a href="/logout" target="_top" class="app-log">Logout</a>` 
-: html`<form action="/api/login" method="post"><button class="app-log">Login</button></form>` 
+<a href="/logout" target="_top" class="app-log">Logout</a>`
+: html`<form action="/api/login" method="post"><button class="app-log">Login</button></form>`
         }
         </div>
+    </div>
     </header>
 
       <bilara-modal></bilara-modal>
-        
+
       <!-- Main content -->
       <main role="main" class="main-content">
         ${ this._userMustRevalidate ? '' : html`
@@ -437,7 +469,7 @@ details a
 
   updated(changedProps) {
     if (changedProps.has('_page') || changedProps.has('_activeSegmentId')) {
-      
+
       const pageTitle = this._activeSegmentId ? this._activeSegmentId : this.appTitle;
       updateMetadata({
         title: pageTitle,
